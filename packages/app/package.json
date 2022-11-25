@@ -1,5 +1,5 @@
 {
-  "name": "app-base",
+  "name": "app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@darwinia/ui": "^0.0.1",
-    "@popperjs/core": "^2.11.6",
     "@types/react-transition-group": "^4.4.5",
     "i18next": "^21.9.2",
     "react": "^18.2.0",

@@ -1,5 +1,5 @@
 {
-  "name": "@feemarket/app-config",
+  "name": "@package/template",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",

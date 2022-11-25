@@ -1,10 +1,10 @@
 {
-  "name": "fee-market",
+  "name": "template",
   "private": true,
   "scripts": {
     "build": "lerna run build",
-    "dev:app-base": "lerna run dev --scope=app-base",
-    "build:app-base": "lerna run build --scope=app-base",
+    "dev:app": "lerna run dev --scope=app",
+    "build:app": "lerna run build --scope=app",
     "build:app-types": "lerna run build --scope @feemarket/app-types",
     "build:app-config": "lerna run build --scope @feemarket/app-config",
     "build:app-utils": "lerna run build --scope @feemarket/app-utils",
