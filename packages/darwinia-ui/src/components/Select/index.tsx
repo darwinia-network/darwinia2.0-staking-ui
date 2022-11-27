@@ -1,8 +1,7 @@
-import { CSSProperties, MouseEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { Placeholder } from "../../types";
 import "./styles.scss";
 import caretDown from "../../assets/images/caret-down.svg";
-import Scrollbars from "react-custom-scrollbars";
 import { CSSTransition } from "react-transition-group";
 
 type SelectSize = "large" | "small";
@@ -189,13 +188,12 @@ const Select = ({
         <img src={caretDown} alt="image" />
       </div>
       <CSSTransition unmountOnExit={true} in={isDropdownVisible} timeout={300} classNames={"dw-drop-down"}>
-        <Scrollbars
-          autoHeight={true}
-          autoHeightMax={dropdownHeight}
-          className={`dw-select-options-wrapper ${dropdownClassName}`}
+        <div
+          style={{ maxHeight: `${dropdownHeight}px` }}
+          className={`dw-select-options-wrapper dw-custom-scrollbar ${dropdownClassName}`}
         >
           <div className={"dw-select-options"}>{selectOptionsJSX}</div>
-        </Scrollbars>
+        </div>
       </CSSTransition>
     </div>
   );

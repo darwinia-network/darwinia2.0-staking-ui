@@ -1,6 +1,5 @@
 import "./styles.scss";
-import { useEffect, useRef, useState } from "react";
-import Scrollbars from "react-custom-scrollbars";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface Tab {
   id: string;
@@ -35,6 +34,25 @@ const Tabs = ({ onChange, tabs, activeTabId }: TabsProps) => {
     }
   };
 
+  /*Monitor Tabs changes in size*/
+  useEffect(() => {
+    const mutation = new MutationObserver(() => {
+      updateActiveTabUI();
+    });
+
+    if (tabsRef.current) {
+      mutation.observe(tabsRef.current, {
+        childList: true,
+        attributes: true,
+        subtree: true,
+      });
+    }
+
+    return () => {
+      mutation.disconnect();
+    };
+  }, [activeTabIndex]);
+
   useEffect(() => {
     setTimeout(() => {
       updateActiveTabUI();
@@ -64,8 +82,7 @@ const Tabs = ({ onChange, tabs, activeTabId }: TabsProps) => {
 
   return (
     <div className={"dw-tabs-wrapper"}>
-      {/*autoHeight={true} autoHeightMax={200}*/}
-      <div className={"dw-tabs-scrollview"}>
+      <div className={"dw-tabs-scrollview dw-custom-scrollbar"}>
         <div ref={tabsRef} className={"dw-tabs"}>
           <div ref={railRef} className={"dw-tab-rail"} />
           {tabs.map((item, index) => {

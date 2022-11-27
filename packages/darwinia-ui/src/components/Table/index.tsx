@@ -4,7 +4,6 @@ import sortDescendIcon from "../../assets/images/sort-descend.svg";
 import noData from "../../assets/images/no-data.svg";
 import { useState } from "react";
 import "./styles.scss";
-import Scrollbars from "react-custom-scrollbars";
 import Pagination, { PaginationProps } from "../Pagination";
 import Spinner from "../Spinner";
 
@@ -56,8 +55,6 @@ const Table = <T extends TableRow>({
   isLoading = false,
   spinnerText,
 }: TableProps<T>) => {
-  /* This will make sure that the table's vertical scrollbar doesn't show until maxAutoHeight is reached */
-  const maxAutoHeight = "99999px";
   const [sortKey, setSortKey] = useState<keyof T | undefined>();
   const [sortOrder, setSortOrder] = useState<Order | undefined>();
   const defaultSortOrder: Order = "ascend";
@@ -82,7 +79,7 @@ const Table = <T extends TableRow>({
     <Spinner spinnerText={spinnerText} isLoading={isLoading}>
       <div className={"dw-table"}>
         {headerSlot}
-        <Scrollbars autoHeight={true} autoHeightMax={maxAutoHeight} className={"dw-table-scrollview"}>
+        <div className={"dw-table-scrollview dw-custom-scrollbar"}>
           <div style={{ minWidth: minWidth }}>
             {/*Table header*/}
             <div className={"dw-table-header"}>
@@ -123,7 +120,7 @@ const Table = <T extends TableRow>({
               })}
             </div>
           </div>
-        </Scrollbars>
+        </div>
         {pagination && dataSource.length > 0 && (
           <div className={"dw-table-pagination"}>
             <Pagination {...pagination} />
