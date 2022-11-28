@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@darwinia/app-wallet": "^1.0.0",
     "@darwinia/ui": "^0.0.1",
     "@types/react-transition-group": "^4.4.5",
     "i18next": "^21.9.2",

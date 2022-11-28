@@ -3,6 +3,8 @@ const enUs = {
   [localeKeys.welcomeToReact]: "Welcome To React 👏",
   [localeKeys.messagesCounter]: `Hello {{user}}, <i><strong style="color: yellow;">you've</strong></i> got {{counter}} messages.`,
   [localeKeys.menu]: "menu",
+  [localeKeys.goHome]: "go home",
+  [localeKeys.pageNotFound]: "page not found",
   [localeKeys.overview]: "overview",
   [localeKeys.relayers]: "relayers",
   [localeKeys.relayersOverview]: "relayers overview",

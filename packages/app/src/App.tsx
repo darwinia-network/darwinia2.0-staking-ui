@@ -1,13 +1,12 @@
 import Root from "./Root";
+import { WalletProvider } from "@darwinia/app-wallet";
 
-/* WEIRD BUG FIX 🐛🔧
- * For some reasons the App component rejects all React's hooks,
- * it says that App component isn't a functional component.
- * A quick fix was to move all the code in here to a separate Root
- * component
- * */
 const App = () => {
-  return <Root />;
+  return (
+    <WalletProvider>
+      <Root />
+    </WalletProvider>
+  );
 };
 
 export default App;

@@ -6,8 +6,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import localeKeys from "./locale/localeKeys";
 import { Spinner } from "@darwinia/ui";
+import { useWallet } from "@darwinia/app-wallet";
 
 const Root = () => {
+  const test = useWallet();
+  console.log("root=====", test.provider);
   const { t } = useTranslation();
   const location = useLocation();
   const [pageTitle, setPageTitle] = useState("");

@@ -2,6 +2,8 @@
 const localeKeys = {
   welcomeToReact: "welcomeToReact",
   messagesCounter: "messagesCounter",
+  goHome: "goHome",
+  pageNotFound: "pageNotFound",
   menu: "menu",
   overview: "overview",
   relayers: "relayers",

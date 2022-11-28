@@ -1,5 +1,10 @@
+import { useTranslation } from "react-i18next";
+import localeKeys from "../locale/localeKeys";
+import ErrorCatcher from "./ErrorCatcher";
+
 const NotFound = () => {
-  return <div className={"flex justify-center items-center text-2xl h-screen"}>Page Not Found</div>;
+  const { t } = useTranslation();
+  return <ErrorCatcher title="404" message={t(localeKeys.pageNotFound)} />;
 };
 
 export default NotFound;

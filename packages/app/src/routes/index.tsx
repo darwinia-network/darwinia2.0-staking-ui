@@ -27,8 +27,8 @@ const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
 const browserRouter = createHashRouter([
   {
     path: "/",
-    element: App(),
-    errorElement: ErrorCatcher(),
+    element: <App />,
+    errorElement: <ErrorCatcher />,
     children: [
       {
         index: true,
@@ -58,7 +58,7 @@ const browserRouter = createHashRouter([
   },
   {
     path: "*",
-    element: NotFound(),
+    element: <NotFound />,
   },
 ]);
 
