@@ -1,6 +1,7 @@
 import { ContractInterface } from "ethers";
 
 export type SupportedWallet = "MetaMask";
+export type SupportedBrowser = "Chrome" | "Firefox" | "Brave" | "Edge" | "Opera";
 export type ChainName = "Crab" | "Pangolin" | "Darwinia" | "Pangoro";
 
 export interface Token {
@@ -19,8 +20,13 @@ export interface ChainConfig {
   contractAddress: string;
 }
 
+export interface WalletExtension {
+  browser: SupportedBrowser;
+  downloadURL: string;
+}
+
 export interface WalletConfig {
   name: SupportedWallet;
   logo: string;
-  downloadURL: string;
+  extensions: WalletExtension[];
 }
