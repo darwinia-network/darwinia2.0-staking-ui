@@ -1,12 +1,12 @@
 import { NetworkOption } from "./types";
-import localeKeys from "../locale/localeKeys";
 import darwiniaLogo from "../assets/images/darwinia-icon.svg";
 import ethereumLogo from "../assets/images/ethereum-icon.svg";
 import crabLogo from "../assets/images/crab-icon.svg";
-import { TFunction, useTranslation } from "react-i18next";
+import { TFunction } from "react-i18next";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const useNetworkList = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   return {
     networkList: getNetworkList(t),
   };

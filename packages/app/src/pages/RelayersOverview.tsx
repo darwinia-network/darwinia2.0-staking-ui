@@ -1,9 +1,8 @@
-import localeKeys from "../locale/localeKeys";
-import { useTranslation } from "react-i18next";
 import { Column, Input, Table, SortEvent, Tabs, Tab, PaginationProps } from "@darwinia/ui";
 import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import relayerAvatar from "../assets/images/relayer-avatar.svg";
 import { useNavigate } from "react-router-dom";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 interface Relayer {
   id: string;
@@ -16,7 +15,7 @@ interface Relayer {
 }
 
 const RelayersOverview = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState("");
   const navigate = useNavigate();

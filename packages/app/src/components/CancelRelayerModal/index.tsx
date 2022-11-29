@@ -1,8 +1,7 @@
 import { ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import { useEffect, useState } from "react";
 import AccountMini from "../AccountMini";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 export interface CancelRelayerModalProps {
   isVisible: boolean;
@@ -10,7 +9,7 @@ export interface CancelRelayerModalProps {
 }
 
 const CancelRelayerModal = ({ isVisible, onClose }: CancelRelayerModalProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isModalVisible, setModalVisibility] = useState(false);
 
   useEffect(() => {

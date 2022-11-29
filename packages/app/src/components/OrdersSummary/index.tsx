@@ -1,11 +1,10 @@
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import finishedIcon from "../../assets/images/finished.svg";
 import inProgressIcon from "../../assets/images/in-progress.svg";
 import outOfSlotIcon from "../../assets/images/out-of-slot.svg";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const OrdersSummary = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const summaryData = [
     { title: t(localeKeys.finished), data: "99,900", icon: finishedIcon },
     { title: `${t(localeKeys.inProgress)} (${t(localeKeys.inSlot)})`, data: "3,332", icon: inProgressIcon },

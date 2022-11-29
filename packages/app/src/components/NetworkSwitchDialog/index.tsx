@@ -3,9 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import useNetworkList from "../../data/useNetworkList";
 import { Destination, Network, NetworkOption } from "../../data/types";
 import { Scrollbars } from "react-custom-scrollbars";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import switchIcon from "../../assets/images/switch-icon.svg";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 export interface TransferSelection {
   networkType: keyof NetworkOption;
@@ -18,7 +17,7 @@ interface NetworkSwitchDialogProps {
 }
 
 const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }: NetworkSwitchDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const { networkList } = useNetworkList();
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const selectedNetworkObj = useRef<Network | undefined>(undefined);
@@ -202,7 +201,7 @@ interface DestinationListProps {
   showList: boolean;
 }
 const DestinationList = ({ network, selectedDestination, onDestinationChanged, showList }: DestinationListProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const destinationListRef = useRef<HTMLDivElement>(null);
   const listHeight = useRef(0);
   if (destinationListRef.current) {

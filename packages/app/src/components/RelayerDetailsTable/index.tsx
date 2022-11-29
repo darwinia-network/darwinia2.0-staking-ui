@@ -1,8 +1,7 @@
 import { Column, PaginationProps, Table } from "@darwinia/ui";
-import localeKeys from "../../locale/localeKeys";
-import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 interface Order {
   id: string;
@@ -14,7 +13,7 @@ interface Order {
 }
 
 const RelayerDetailsTable = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const columns: Column<Order>[] = [

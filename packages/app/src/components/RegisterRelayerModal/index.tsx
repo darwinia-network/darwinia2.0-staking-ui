@@ -1,8 +1,7 @@
 import { Input, ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState } from "react";
 import AccountMini from "../AccountMini";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 export interface RegisterRelayerModalProps {
   isVisible: boolean;
@@ -10,7 +9,7 @@ export interface RegisterRelayerModalProps {
 }
 
 const RegisterRelayerModal = ({ isVisible, onClose }: RegisterRelayerModalProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isModalVisible, setModalVisibility] = useState(false);
   const [deposit, setDeposit] = useState("");
   const [depositError, setDepositError] = useState<JSX.Element | null>(null);

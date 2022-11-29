@@ -1,8 +1,7 @@
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const OverviewSummary = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const summaryData = [
     { title: t(localeKeys.totalRelayers), data: "105 / 105" },
     { title: t(localeKeys.averageSpeed), data: "13s" },

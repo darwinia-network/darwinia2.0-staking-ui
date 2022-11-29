@@ -1,5 +1,5 @@
 /* all translation keys will be declared here */
-const localeKeys = {
+export const localeKeys = {
   welcomeToReact: "welcomeToReact",
   messagesCounter: "messagesCounter",
   goHome: "goHome",
@@ -124,5 +124,3 @@ const localeKeys = {
   extrinsic: "extrinsic",
   treasury: "treasury",
 };
-
-export default localeKeys;

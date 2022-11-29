@@ -1,8 +1,6 @@
 import { Input, ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import { ChangeEvent, useEffect, useState } from "react";
-import AccountMini from "../AccountMini";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 export interface ModifyQuoteModalProps {
   isVisible: boolean;
@@ -10,7 +8,7 @@ export interface ModifyQuoteModalProps {
 }
 
 const ModifyQuoteModal = ({ isVisible, onClose }: ModifyQuoteModalProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isModalVisible, setModalVisibility] = useState(false);
   const [quote, setQuote] = useState("");
   const [quoteError, setQuoteError] = useState<JSX.Element | null>(null);

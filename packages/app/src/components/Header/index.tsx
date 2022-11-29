@@ -4,8 +4,6 @@ import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { Drawer, Modal } from "@darwinia/ui";
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import Menu from "../Menu";
 import NetworkSwitchButton from "../NetworkSwitchButton";
 
@@ -14,6 +12,7 @@ import { Popover } from "@darwinia/ui";
 import useNetworkList from "../../data/useNetworkList";
 import { NetworkOption } from "../../data/types";
 import useMenuList from "../../data/useMenuList";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 interface Props {
   title: string;
@@ -22,7 +21,7 @@ interface Props {
 /*This will be the nav bar container on mobile devices BUT will
   be the page title container on the PC */
 const Header = ({ title }: Props) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const { menuList } = useMenuList();
   const location = useLocation();
   const [isDrawerVisible, setDrawerVisibility] = useState(false);

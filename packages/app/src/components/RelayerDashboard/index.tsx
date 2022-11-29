@@ -3,12 +3,11 @@ import Balance from "../Balance";
 import RelayerDetailsChart from "../RelayerDetailsChart";
 import RelayerDetailsTable from "../RelayerDetailsTable";
 import { Button, SlideDownUp } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import { useState } from "react";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const RelayerDashboard = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isNotificationVisible, setNotificationVisibility] = useState(true);
   const onSwitchNetwork = () => {
     console.log("switch network====");

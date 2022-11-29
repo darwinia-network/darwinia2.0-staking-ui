@@ -1,14 +1,13 @@
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import helpIcon from "../../assets/images/help.svg";
 import editIcon from "../../assets/images/edit.svg";
 import ModifyQuoteModal from "../ModifyQuoteModal";
 import { useState } from "react";
 import ModifyCollateralBalanceModal from "../ModifyCollateralBalanceModal";
 import { Tooltip } from "@darwinia/ui";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const Balance = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isModifyQuoteModalVisible, setModifyQuoteModalVisible] = useState(false);
   const [isModifyCollateralBalanceModalVisible, setModifyCollateralBalanceModalVisible] = useState(false);
 

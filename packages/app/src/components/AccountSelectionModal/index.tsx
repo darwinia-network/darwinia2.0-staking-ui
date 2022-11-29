@@ -1,8 +1,7 @@
 import { ModalEnhanced } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import { useEffect, useState } from "react";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 export interface AccountSelectionModalProps {
   isVisible: boolean;
@@ -42,7 +41,7 @@ const accounts: AccountInfo[] = [
 ];
 
 const AccountSelectionModal = ({ isVisible, onClose }: AccountSelectionModalProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isModalVisible, setModalVisibility] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<AccountInfo | null>(null);
 

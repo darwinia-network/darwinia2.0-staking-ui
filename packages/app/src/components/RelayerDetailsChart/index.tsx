@@ -1,9 +1,8 @@
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import Chart from "../Chart";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const RelayerDetailsChart = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const chartsData = [
     {
       title: t(localeKeys.rewardsOrSlash, { currency: "ring" }),

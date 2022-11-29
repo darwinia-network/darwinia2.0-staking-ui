@@ -1,19 +1,18 @@
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
-import { useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
 import { useState } from "react";
 import { Button, Tooltip } from "@darwinia/ui";
 import helpIcon from "../../assets/images/help.svg";
 import AccountSelectionModal from "../AccountSelectionModal";
 import RegisterRelayerModal from "../RegisterRelayerModal";
 import CancelRelayerModal from "../CancelRelayerModal";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 interface AccountProps {
   advanced?: boolean;
 }
 
 const Account = ({ advanced = false }: AccountProps) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const [isRegistered, setRegistered] = useState(false);
 
   const [isActiveAccountModalVisible, setActiveAccountModalVisible] = useState(false);

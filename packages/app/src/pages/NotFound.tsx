@@ -1,9 +1,8 @@
-import { useTranslation } from "react-i18next";
-import localeKeys from "../locale/localeKeys";
 import ErrorCatcher from "./ErrorCatcher";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const NotFound = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   return <ErrorCatcher title="404" message={t(localeKeys.pageNotFound)} />;
 };
 

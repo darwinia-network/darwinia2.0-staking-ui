@@ -1,8 +1,8 @@
 import OrderDetailsScaffold, { Info } from "../components/OrderDetailsScaffold";
-import { TFunction, useTranslation } from "react-i18next";
-import localeKeys from "../locale/localeKeys";
+import { TFunction } from "react-i18next";
 import { createStatusLabel } from "../components/OrdersTable";
 import { Tooltip } from "@darwinia/ui";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 interface Slot {
   id: string;
@@ -12,7 +12,7 @@ interface Slot {
 }
 
 const OrderDetails = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
 
   const slots: Slot[] = [
     {

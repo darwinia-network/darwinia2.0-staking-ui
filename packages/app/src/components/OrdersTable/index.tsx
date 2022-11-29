@@ -1,12 +1,12 @@
 import { Button, Column, Input, PaginationProps, Table } from "@darwinia/ui";
-import { TFunction, useTranslation } from "react-i18next";
-import localeKeys from "../../locale/localeKeys";
+import { TFunction } from "react-i18next";
 import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import { OptionProps, Select } from "@darwinia/ui";
 import relayerAvatar from "../../assets/images/relayer-avatar.svg";
 import { ModalEnhanced } from "@darwinia/ui";
 import { useNavigate } from "react-router-dom";
 import DatePickerFakeInput from "../DatePickerFakeInput";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 type Status = "all" | "finished" | "inProgress";
 
@@ -25,7 +25,7 @@ interface Order {
 }
 
 const OrdersTable = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const navigate = useNavigate();
   const [keywords, setKeywords] = useState("");
   const dropdownMaxHeight = 200;

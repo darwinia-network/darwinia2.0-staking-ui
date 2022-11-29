@@ -1,12 +1,11 @@
-import localeKeys from "../../locale/localeKeys";
-import { DateRangePicker, DatePickEvent, Popover, Select, DateRangePickerRef } from "@darwinia/ui";
-import { useTranslation } from "react-i18next";
-import { useRef, useState } from "react";
+import { DateRangePicker, DatePickEvent, DateRangePickerRef } from "@darwinia/ui";
+import { useRef } from "react";
 import clearIcon from "../../assets/images/clear.svg";
 import caretDown from "../../assets/images/caret-down.svg";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const DatePickerFakeInput = () => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const dateRangePickerRef = useRef<DateRangePickerRef>(null);
 
   const handleDone = (event: DatePickEvent) => {

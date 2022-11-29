@@ -1,13 +1,14 @@
-import { useTranslation } from "react-i18next";
 import metamaskLogo from "../../assets/images/metamask-logo.svg";
 import { Button } from "@darwinia/ui";
-import localeKeys from "../../locale/localeKeys";
+import { useWallet } from "@darwinia/app-wallet";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const ConnectWallet = ({ onConnected }: { onConnected: () => void }) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
+  const { connectWallet } = useWallet();
   const onConnectWallet = () => {
-    console.log("connect wallet===");
-    onConnected();
+    connectWallet();
+    // onConnected();
   };
   return (
     <div

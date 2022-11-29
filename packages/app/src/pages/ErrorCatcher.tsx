@@ -1,9 +1,8 @@
 import { ReactNode, useCallback, useEffect } from "react";
 import { useRouteError, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { Button } from "@darwinia/ui";
-import localeKeys from "../locale/localeKeys";
 import errorIcon from "../assets/images/not-found.png";
+import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 interface Props {
   title?: ReactNode;
@@ -11,7 +10,7 @@ interface Props {
 }
 
 const ErrorCatcher = ({ title = "Oops!", message = "Sorry, an unexpected error has occurred." }: Props) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const navigate = useNavigate();
   const error = useRouteError();
 
