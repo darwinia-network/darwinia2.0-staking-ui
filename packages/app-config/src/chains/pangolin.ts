@@ -1,15 +1,18 @@
 import { ChainConfig } from "@darwinia/app-types";
 import contractABI from "../abi/contract.json";
 
-export const Pangolin: ChainConfig = {
+export const pangolin: ChainConfig = {
   name: "Pangolin",
   displayName: "Pangolin",
-  explorerURL: "https://pangolin.subscan.io/",
+  explorerURL: ["https://pangolin.subscan.io/"],
+  rpcURL: ["https://pangolin-rpc.darwinia.network/"],
   kton: {
+    name: "KTON",
     symbol: "KTON",
     decimals: 18,
   },
   ring: {
+    name: "PRING",
     symbol: "PRING",
     decimals: 18,
   },

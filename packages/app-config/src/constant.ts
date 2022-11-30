@@ -1,3 +1,3 @@
-const TEST = "test";
+const STORAGE = "darwinia_storage";
 
-export { TEST };
+export { STORAGE };

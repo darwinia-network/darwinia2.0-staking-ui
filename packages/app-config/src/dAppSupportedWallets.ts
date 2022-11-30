@@ -1,7 +1,7 @@
 import metaMaskLogo from "./assets/images/metamask-logo.svg";
 import { WalletConfig } from "@darwinia/app-types";
 
-export const walletsConfig: WalletConfig[] = [
+export const dAppSupportedWallets: WalletConfig[] = [
   {
     name: "MetaMask",
     logo: metaMaskLogo,

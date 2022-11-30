@@ -2,15 +2,14 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import { Scrollbars } from "react-custom-scrollbars";
 import { Outlet, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Spinner } from "@darwinia/ui";
+import { useCallback, useEffect, useState } from "react";
+import { Button, notification, Spinner } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const Root = () => {
-  const test = useWallet();
+  const { isConnecting, error } = useWallet();
   const { t } = useAppTranslation();
-  console.log("root=====", test.provider);
   const location = useLocation();
   const [pageTitle, setPageTitle] = useState("");
   const pagesPathTitleMap = {
@@ -34,7 +33,20 @@ const Root = () => {
    * UI from collapsing on PC when the browser size is small */
   // const mainContentMinWidth = "lg:min-w-[1000px]";
   const mainContentMinWidth = "";
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(isConnecting);
+  }, [isConnecting]);
+
+  useEffect(() => {
+    console.log(error);
+    if (error) {
+      notification.error({
+        message: <div>{error.message}</div>,
+      });
+    }
+  }, [error]);
 
   return (
     <Spinner isLoading={loading}>
