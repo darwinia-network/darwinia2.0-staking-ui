@@ -2,14 +2,40 @@ import metamaskLogo from "../../assets/images/metamask-logo.svg";
 import { Button } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { useEffect } from "react";
+import { getStore, setStore } from "@darwinia/app-utils";
+import { ethers } from "ethers";
 
 const ConnectWallet = ({ onConnected }: { onConnected: () => void }) => {
   const { t } = useAppTranslation();
-  const { connectWallet } = useWallet();
+  const { connectWallet, isWalletConnected, provider, selectedAccount } = useWallet();
   const onConnectWallet = () => {
     connectWallet();
     // onConnected();
   };
+
+  useEffect(() => {
+    const shouldAutoConnect = getStore<number>("isConnectedToWallet");
+    if (shouldAutoConnect) {
+      connectWallet();
+    }
+    console.log(shouldAutoConnect);
+  }, []);
+
+  useEffect(() => {
+    setStore("isConnectedToWallet", isWalletConnected);
+    if (isWalletConnected && selectedAccount) {
+      provider
+        ?.getBalance(selectedAccount)
+        .then((a) => {
+          console.log("balance", ethers.utils.formatEther(a));
+        })
+        .catch(() => {
+          //ignore
+        });
+    }
+  }, [isWalletConnected, selectedAccount, provider]);
+
   return (
     <div
       className={

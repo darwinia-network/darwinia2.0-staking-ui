@@ -1,4 +1,6 @@
 import { ContractInterface } from "ethers";
+import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
+import { Contract } from "@ethersproject/contracts";
 
 export type SupportedWallet = "MetaMask";
 export type SupportedBrowser = "Chrome" | "Firefox" | "Brave" | "Edge" | "Opera";
@@ -39,9 +41,12 @@ export interface WalletError {
 }
 
 export interface WalletCtx {
-  provider: string | undefined;
-  signer: string | undefined;
+  provider: Web3Provider | undefined;
+  signer: JsonRpcSigner | undefined;
+  contract: Contract | undefined;
   isConnecting: boolean;
+  isWalletConnected: boolean;
   connectWallet: () => void;
   error: WalletError | undefined;
+  selectedAccount: string | undefined;
 }

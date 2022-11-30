@@ -1,13 +1,7 @@
 import { Storage } from "@darwinia/app-types";
 import { STORAGE } from "@darwinia/app-config";
 
-const convertToString = (value: number) => {
-  return `${value}`;
-};
-
-export { convertToString };
-
-export const setStore = (key: keyof Storage, value: never) => {
+export const setStore = (key: keyof Storage, value: unknown) => {
   try {
     const oldValue = JSON.parse(localStorage.getItem(STORAGE) ?? "{}");
     const updatedValue = {

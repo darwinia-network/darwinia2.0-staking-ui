@@ -1,14 +1,18 @@
-import { createContext, ErrorInfo, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
 import { dAppSupportedWallets, pangolin } from "@darwinia/app-config";
 import { ChainConfig, WalletCtx, WalletError, SupportedWallet, WalletConfig } from "@darwinia/app-types";
-import { ethers } from "ethers";
+import { Contract, ethers } from "ethers";
+import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
 
 /*This is just a blueprint, no value will be stored in here*/
 const initialState: WalletCtx = {
   provider: undefined,
   signer: undefined,
   isConnecting: false,
+  isWalletConnected: false,
   error: undefined,
+  selectedAccount: undefined,
+  contract: undefined,
   connectWallet: () => {
     //do nothing
   },
@@ -17,13 +21,16 @@ const initialState: WalletCtx = {
 const WalletContext = createContext<WalletCtx>(initialState);
 
 export const WalletProvider = ({ children }: PropsWithChildren) => {
-  const [provider, setProvider] = useState<string>();
-  const [signer, setSigner] = useState();
+  const [provider, setProvider] = useState<Web3Provider>();
+  const [signer, setSigner] = useState<JsonRpcSigner>();
+  const [contract, setContract] = useState<Contract>();
   const [isConnecting, setConnecting] = useState<boolean>(false);
+  const [isWalletConnected, setWalletConnected] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>();
   const [error, setError] = useState<WalletError | undefined>(undefined);
-  const [selectedNetwork, setSelectedNetwork] = useState<ChainConfig>(pangolin);
-  const [selectedWallet, setSelectedWallet] = useState<SupportedWallet>("MetaMask");
+  // selectedNetwork and selectedWallet maybe dynamic in the future
+  const [selectedNetwork] = useState<ChainConfig>(pangolin);
+  const [selectedWallet] = useState<SupportedWallet>("MetaMask");
   const [walletConfig, setWalletConfig] = useState<WalletConfig>();
 
   const isWalletInstalled = () => {
@@ -37,8 +44,9 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     }
   }, [selectedWallet]);
 
+  /* Listen to metamask account changes */
   useEffect(() => {
-    if (!isWalletInstalled()) {
+    if (!isWalletInstalled() || !isWalletConnected) {
       return;
     }
 
@@ -54,7 +62,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     return () => {
       window.ethereum?.removeListener("accountsChanged", onAccountsChanged);
     };
-  }, []);
+  }, [isWalletConnected]);
 
   /*Connect to MetaMask*/
   const connectWallet = useCallback(async () => {
@@ -64,6 +72,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
           code: 0,
           message: "Wallet is not installed",
         });
+        setWalletConnected(false);
         return;
       }
 
@@ -87,11 +96,13 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
           if (accounts && Array.isArray(accounts) && accounts.length > 0) {
             setSelectedAccount(accounts[0]);
             setConnecting(false);
+            setWalletConnected(true);
           }
         } catch (e) {
           setConnecting(false);
+          setWalletConnected(false);
           setError({
-            code: 3,
+            code: 4,
             message: "Account access permission rejected",
           });
         }
@@ -123,6 +134,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
               if (accounts && Array.isArray(accounts) && accounts.length > 0) {
                 setSelectedAccount(accounts[0]);
                 setConnecting(false);
+                setWalletConnected(true);
               }
             } catch (e) {
               setConnecting(false);
@@ -130,6 +142,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
                 code: 3,
                 message: "Account access permission rejected",
               });
+              setWalletConnected(false);
             }
           }
         } catch (e) {
@@ -138,10 +151,12 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
             message: "User rejected adding ethereum chain",
           });
           setConnecting(false);
+          setWalletConnected(false);
         }
         return;
       }
       setConnecting(false);
+      setWalletConnected(false);
       setError({
         code: 4,
         message: "Something else happened",
@@ -149,12 +164,25 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     }
   }, [isWalletInstalled, walletConfig, selectedNetwork]);
 
+  /*This will be fired once the connection to the wallet is successful*/
   useEffect(() => {
-    setProvider("mabadiliko");
-  }, []);
+    if (!isWalletConnected || !selectedAccount) {
+      return;
+    }
+    //refresh the page with the newly selected account
+    console.log("refresh====");
+    const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+    const newSigner = newProvider.getSigner();
+    const newContract = new ethers.Contract(selectedNetwork.contractAddress, selectedNetwork.contractInterface, signer);
+    setProvider(newProvider);
+    setSigner(newSigner);
+    setContract(newContract);
+  }, [selectedAccount, isWalletConnected]);
 
   return (
-    <WalletContext.Provider value={{ provider, signer, isConnecting, connectWallet, error }}>
+    <WalletContext.Provider
+      value={{ provider, isWalletConnected, contract, signer, selectedAccount, isConnecting, connectWallet, error }}
+    >
       {children}
     </WalletContext.Provider>
   );
