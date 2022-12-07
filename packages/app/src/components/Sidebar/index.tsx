@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Scrollbars } from "react-custom-scrollbars";
-import Menu from "../Menu";
+import { Menu } from "@darwinia/ui";
 import logo from "../../assets/images/logo.svg";
 import useMenuList from "../../data/useMenuList";
 

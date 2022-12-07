@@ -35,10 +35,18 @@ const MenuItem = ({ icon, text, hasSubMenu, path, isOpen, level, isChildMenu, ..
           let isActive;
           if (path === "/") {
             // root path is only compared to root path
-            isActive = location.pathname === path;
+            const isRouterRootPath =
+              (location.hash === "" && location.pathname === "/") ||
+              (location.hash === "#/" && location.pathname === "/");
+            // location.hash === "" && location.pathname === '/'
+            if (isRouterRootPath) {
+              isActive = true;
+            }
           } else {
             // other path will be resolved just by checking if the path contains the root path
-            isActive = location.pathname.includes(path ?? "");
+            if (typeof path === "string") {
+              isActive = location.href.includes(path);
+            }
           }
           const activeClass = isActive ? "dw-active" : "";
 

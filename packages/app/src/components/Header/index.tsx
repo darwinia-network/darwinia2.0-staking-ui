@@ -4,7 +4,7 @@ import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { Drawer, Modal } from "@darwinia/ui";
 import { useEffect, useRef, useState } from "react";
-import Menu from "../Menu";
+import { Menu } from "@darwinia/ui";
 import NetworkSwitchButton from "../NetworkSwitchButton";
 
 import NetworkSwitchDialog, { TransferSelection } from "../NetworkSwitchDialog";

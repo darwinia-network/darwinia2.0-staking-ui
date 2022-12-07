@@ -7,14 +7,15 @@ export type SupportedBrowser = "Chrome" | "Firefox" | "Brave" | "Edge" | "Opera"
 export type ChainName = "Crab" | "Pangolin" | "Darwinia" | "Pangoro";
 
 export interface Token {
-  name: string;
+  address: string;
   symbol: string;
   decimals: number;
+  logo?: string;
 }
 
 export interface ChainConfig {
-  name: ChainName;
-  displayName: string;
+  name: ChainName; // this name is used to set the chain name in MetaMask, the user will later see this name on Metamask
+  displayName: string; // This name is used on the dApp just for the user to see
   chainId: number;
   ring: Token;
   kton: Token;
@@ -47,6 +48,7 @@ export interface WalletCtx {
   isConnecting: boolean;
   isWalletConnected: boolean;
   connectWallet: () => void;
+  addKTONtoWallet: () => void;
   error: WalletError | undefined;
   selectedAccount: string | undefined;
 }

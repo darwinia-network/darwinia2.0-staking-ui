@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { createHashRouter } from "react-router-dom";
+import { createHashRouter, createBrowserRouter } from "react-router-dom";
 import { Suspense } from "react";
 import App from "../App";
 import NotFound from "../pages/NotFound";
@@ -24,7 +24,7 @@ const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
  * is the child page of relayers-overview. If there are more than one root pages that
  * need to jump to the same page, make sure that their parent paths match the links
  * accordingly ie: add several links (in createHashRouter) that will open the same component */
-const browserRouter = createHashRouter([
+const browserRouter = createBrowserRouter([
   {
     path: "/",
     element: <App />,

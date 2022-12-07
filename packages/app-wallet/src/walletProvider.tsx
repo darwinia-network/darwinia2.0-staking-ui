@@ -16,6 +16,9 @@ const initialState: WalletCtx = {
   connectWallet: () => {
     //do nothing
   },
+  addKTONtoWallet: () => {
+    //do nothing
+  },
 };
 
 const WalletContext = createContext<WalletCtx>(initialState);
@@ -57,12 +60,52 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       console.log("account changed=====", accounts);
     };
 
+    const onChainChanged = () => {
+      /*Metamask recommends reloading the whole page ref: https://docs.metamask.io/guide/ethereum-provider.html#events */
+      window.location.reload();
+    };
+
     window.ethereum?.on<string[]>("accountsChanged", onAccountsChanged);
+    window.ethereum?.on("chainChanged", onChainChanged);
 
     return () => {
       window.ethereum?.removeListener("accountsChanged", onAccountsChanged);
+      window.ethereum?.removeListener("chainChanged", onChainChanged);
     };
   }, [isWalletConnected]);
+
+  const addKTONtoWallet = useCallback(async () => {
+    try {
+      if (!isWalletInstalled() || !selectedNetwork) {
+        return;
+      }
+
+      const ktonConfig = selectedNetwork.kton;
+
+      const isSuccessful = await window.ethereum.request({
+        method: "wallet_watchAsset",
+        params: {
+          type: "ERC20",
+          options: {
+            address: ktonConfig.address,
+            symbol: ktonConfig.symbol,
+            decimals: ktonConfig.decimals,
+            image: ktonConfig.logo,
+          },
+        },
+      });
+
+      if (!isSuccessful) {
+        console.log("Something went wrong 💣");
+        return;
+      }
+
+      console.log("Token added successfully 🎉");
+    } catch (e) {
+      //ignore
+      console.log(e);
+    }
+  }, [selectedNetwork]);
 
   /*Connect to MetaMask*/
   const connectWallet = useCallback(async () => {
@@ -73,10 +116,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
           message: "Wallet is not installed",
         });
         setWalletConnected(false);
-        return;
-      }
-
-      if (!walletConfig) {
         return;
       }
 
@@ -162,7 +201,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         message: "Something else happened",
       });
     }
-  }, [isWalletInstalled, walletConfig, selectedNetwork]);
+  }, [isWalletInstalled, selectedNetwork]);
 
   /*This will be fired once the connection to the wallet is successful*/
   useEffect(() => {
@@ -170,7 +209,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       return;
     }
     //refresh the page with the newly selected account
-    console.log("refresh====");
     const newProvider = new ethers.providers.Web3Provider(window.ethereum);
     const newSigner = newProvider.getSigner();
     const newContract = new ethers.Contract(selectedNetwork.contractAddress, selectedNetwork.contractInterface, signer);
@@ -181,7 +219,17 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <WalletContext.Provider
-      value={{ provider, isWalletConnected, contract, signer, selectedAccount, isConnecting, connectWallet, error }}
+      value={{
+        provider,
+        isWalletConnected,
+        contract,
+        signer,
+        selectedAccount,
+        isConnecting,
+        connectWallet,
+        addKTONtoWallet,
+        error,
+      }}
     >
       {children}
     </WalletContext.Provider>
