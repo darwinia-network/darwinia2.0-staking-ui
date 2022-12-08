@@ -2,7 +2,6 @@ import { Button, Radio } from "@darwinia/ui";
 import { useEffect, useRef, useState } from "react";
 import useNetworkList from "../../data/useNetworkList";
 import { Destination, Network, NetworkOption } from "../../data/types";
-import { Scrollbars } from "react-custom-scrollbars";
 import switchIcon from "../../assets/images/switch-icon.svg";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
 
@@ -108,7 +107,7 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
         {networkType === "liveNets" ? t(localeKeys.liveNets) : t(localeKeys.testNets)}
       </div>
       <div className={"flex-1 flex bg-blackSecondary"}>
-        <Scrollbars className={"flex-1"}>
+        <div className={"flex-1 h-[330px] lg:h-[405px] dw-custom-scrollbar"}>
           {/*live networks*/}
           <div className={"flex flex-col gap-[0.625rem]"}>
             <Radio.Group
@@ -128,7 +127,7 @@ const NetworkSwitchDialog = ({ onNetworkSelectionCompleted, transferSelection }:
               })}
             </Radio.Group>
           </div>
-        </Scrollbars>
+        </div>
       </div>
       <div className={"flex justify-end"}>
         <div

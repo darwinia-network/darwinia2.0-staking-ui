@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Scrollbars } from "react-custom-scrollbars";
 import { Menu } from "@darwinia/ui";
 import logo from "../../assets/images/logo.svg";
 import useMenuList from "../../data/useMenuList";
@@ -16,11 +15,11 @@ const Sidebar = () => {
           </Link>
         </div>
       </div>
-      <Scrollbars className={"flex-1"}>
+      <div className={"flex-1 dw-custom-scrollbar"}>
         <div className={"flex-1 flex"}>
           <Menu menuList={menuList} />
         </div>
-      </Scrollbars>
+      </div>
     </div>
   );
 };
