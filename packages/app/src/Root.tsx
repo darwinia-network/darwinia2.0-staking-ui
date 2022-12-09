@@ -5,14 +5,10 @@ import { useWallet } from "@darwinia/app-wallet";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { Scrollbars } from "react-custom-scrollbars";
 
 const Root = () => {
   const { isConnecting, error } = useWallet();
-
-  /* Set this value to control the minimum content width on PC to avoid the
-   * UI from collapsing on PC when the browser size is small */
-  // const mainContentMinWidth = "lg:min-w-[1000px]";
-  const mainContentMinWidth = "";
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,16 +29,16 @@ const Root = () => {
         <div className={"flex flex-1 flex-col"}>
           <Header />
           {/*Main Content*/}
-          <div className={"min-h-screen flex flex-col"}>
-            <div className={"flex flex-1 wrapper-padding justify-center pt-[50px] lg:pt-[60px]"}>
-              <div className={"flex-1 container flex bg-link"}>
-                <div className={"flex flex-1"}>
+          <Scrollbars className={"flex flex-1"}>
+            <div className={"flex flex-1 flex-col h-full"}>
+              <div className={"flex flex-1 wrapper-padding justify-center"}>
+                <div className={"flex flex-1 app-container"}>
                   <Outlet />
                 </div>
               </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
+          </Scrollbars>
         </div>
       </div>
     </Spinner>

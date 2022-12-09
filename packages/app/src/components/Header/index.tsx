@@ -3,25 +3,44 @@ import logoIcon from "../../assets/images/logo.svg";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { useState } from "react";
-import { Drawer } from "@darwinia/ui";
+import { Button, Drawer } from "@darwinia/ui";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
 
 const Header = () => {
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
+  const [connectedNetwork, setConnectedNetwork] = useState<number>(1);
   const { t } = useAppTranslation();
 
   const toggleMobileNavigation = () => {
     setDrawerVisibility((isVisible) => !isVisible);
   };
 
+  const changeConnectedNetwork = (id: number) => {
+    setConnectedNetwork(id);
+  };
+
+  const networks = [
+    {
+      name: "darwinia",
+      id: 1,
+    },
+    {
+      name: "crab",
+      id: 2,
+    },
+    {
+      name: "testnet",
+      id: 3,
+    },
+  ];
+
   const onDrawerClosed = () => {
     setDrawerVisibility(false);
   };
   return (
-    <div className={`shrink-0 h-[50px] lg:h-[60px] fixed w-full z-[50]`}>
-      {/*mobile navigation bar*/}
-      <div className={"justify-center wrapper-padding flex h-full left-0 right-0 top-0"}>
-        <div className={"container bg-primary"}>
+    <div className={`shrink-0 h-[66px] lg:h-[60px] w-full z-[50]`}>
+      <div className={"justify-center flex h-full"}>
+        <div className={"app-container w-full"}>
           <div className={"flex flex-1 h-full shrink-0 items-center justify-between pl-[0.625rem]"}>
             {/*Logo*/}
             <div className={"shrink-0 h-full"}>
@@ -29,12 +48,32 @@ const Header = () => {
                 <img className={"self-center w-[9.25rem]"} src={logoIcon} alt="image" />
               </Link>
             </div>
-            {/*Navigation toggle*/}
+            {/*PC network switch and wallet connection*/}
+            <div className={"hidden lg:flex items-center gap-[40px]"}>
+              {networks.map((network) => {
+                const activeNetworkClass = network.id === connectedNetwork ? `after:block` : `after:hidden`;
+                return (
+                  <div
+                    onClick={() => {
+                      changeConnectedNetwork(network.id);
+                    }}
+                    className={`cursor-pointer relative h-[36px] flex items-center after:absolute after:left-0 after:right-0 after:h-[4px] after:bottom-0 after:bg-primary ${activeNetworkClass}`}
+                    key={network.id}
+                  >
+                    {network.name}
+                  </div>
+                );
+              })}
+              <Button className={"!h-[36px]"} btnType={"secondary"}>
+                Wallet Info
+              </Button>
+            </div>
+            {/*network switch toggle*/}
             <div
               onClick={() => {
                 toggleMobileNavigation();
               }}
-              className={"shrink-0 h-full flex pr-[0.625rem] pl-[1.2rem]"}
+              className={"shrink-0 h-full flex pr-[0.625rem] pl-[1.2rem] lg:hidden"}
             >
               <img className={"self-center w-[1rem] h-[0.875rem]"} src={menuToggleIcon} alt="image" />
             </div>

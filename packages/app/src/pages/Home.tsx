@@ -1,6 +1,6 @@
 const Home = () => {
   return (
-    <div className={"flex flex-1 justify-center items-center"}>
+    <div className={"flex flex-1 justify-center items-center bg-link"}>
       <div>Everything stripped out!</div>
     </div>
   );
