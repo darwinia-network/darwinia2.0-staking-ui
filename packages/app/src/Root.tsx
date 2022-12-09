@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 const Root = () => {
   const { isConnecting, error } = useWallet();
@@ -27,28 +29,21 @@ const Root = () => {
 
   return (
     <Spinner isLoading={loading}>
-      <div className={"flex h-screen flex-col"}>
-        <div>Header</div>
-        {/*Main Content*/}
-        <div className={"flex-1 flex flex-col"}>
-          <div style={{ position: "relative", overflow: "hidden", width: "100%", height: "100%" }} className={"flex-1"}>
-            <div
-              style={{
-                position: "absolute",
-                top: "0px",
-                bottom: "0px",
-                left: "0px",
-                right: "0px",
-              }}
-              className={"dw-custom-scrollbar flex"}
-            >
-              <div className={`${mainContentMinWidth} flex flex-1 p-[0.9375rem] pt-0 lg:p-[1.875rem] lg:pt-0`}>
-                <Outlet />
+      <div className={"flex h-screen justify-center flex-1"}>
+        <div className={"flex flex-1 flex-col"}>
+          <Header />
+          {/*Main Content*/}
+          <div className={"min-h-screen flex flex-col"}>
+            <div className={"flex flex-1 wrapper-padding justify-center pt-[50px] lg:pt-[60px]"}>
+              <div className={"flex-1 container flex bg-link"}>
+                <div className={"flex flex-1"}>
+                  <Outlet />
+                </div>
               </div>
             </div>
+            <Footer />
           </div>
         </div>
-        <div>Footer</div>
       </div>
     </Spinner>
   );
