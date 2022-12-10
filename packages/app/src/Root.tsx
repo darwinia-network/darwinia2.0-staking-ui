@@ -5,7 +5,7 @@ import { useWallet } from "@darwinia/app-wallet";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { Scrollbars } from "react-custom-scrollbars";
-import { getStore } from "@darwinia/app-utils";
+import { getStore, setStore } from "@darwinia/app-utils";
 
 const Root = () => {
   const { isConnecting, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
@@ -15,13 +15,14 @@ const Root = () => {
 
   useEffect(() => {
     setLoading(isConnecting);
-  }, [isConnecting]);
+  }, [isConnecting, isWalletConnected]);
 
   /*Monitor wallet connection and redirect to the required location */
   useEffect(() => {
     /* if the user has just connected to the wallet, this will redirect to the
      * staking page */
     if (isWalletConnected) {
+      setStore("isConnectedToWallet", isWalletConnected);
       if (location.pathname === "/") {
         /* This user is connected to wallet already but trying to go to the homepage,
          * force redirect him to the staking page  */

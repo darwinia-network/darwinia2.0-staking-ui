@@ -1,13 +1,14 @@
 import metamaskLogo from "../assets/images/metamask-logo.svg";
 import { Button } from "@darwinia/ui";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
-import { useNavigate } from "react-router-dom";
+import { useWallet } from "@darwinia/app-wallet";
 
 const Home = () => {
   const { t } = useAppTranslation();
-  const navigate = useNavigate();
+  const { connectWallet } = useWallet();
+
   const goToStakingPage = () => {
-    navigate("/staking");
+    connectWallet();
   };
   return (
     <div className={"flex flex-1 justify-center items-center"}>
