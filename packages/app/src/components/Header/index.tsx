@@ -16,9 +16,23 @@ const Header = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
-  /* use the first network by default */
+  /* set the wallet network accordingly */
   useEffect(() => {
-    changeConnectedNetwork(supportedNetworks[1]);
+    const searchString = window.location.href.split("?")[1];
+    if (searchString) {
+      const searchParams = new URLSearchParams(searchString);
+      const network = searchParams.get("network");
+      if (network) {
+        // the URL contains the network param
+        const foundNetwork = supportedNetworks.find((item) => item.name.toLowerCase() === network.toLowerCase());
+        if (foundNetwork) {
+          changeConnectedNetwork(foundNetwork);
+          return;
+        }
+      }
+    }
+    /* use the first network by default */
+    changeConnectedNetwork(supportedNetworks[0]);
   }, []);
 
   useEffect(() => {
@@ -55,7 +69,8 @@ const Header = () => {
             {/*PC network switch and wallet connection*/}
             <div className={"hidden lg:flex items-center gap-[40px]"}>
               {supportedNetworks.map((network) => {
-                const activeNetworkClass = network.name === selectedNetwork?.name ? `after:block` : `after:hidden`;
+                const activeNetworkClass =
+                  network.name.toLowerCase() === selectedNetwork?.name.toLowerCase() ? `after:block` : `after:hidden`;
                 return (
                   <div
                     onClick={() => {
