@@ -7,6 +7,9 @@ const enUs = {
   [localeKeys.pageNotFound]: "page not found",
   [localeKeys.confirm]: "confirm",
   [localeKeys.darwiniaNetwork]: "darwinia network",
+  [localeKeys.connectWallet]: "connect wallet",
+  [localeKeys.connectToMetamask]: "connect to metaMask",
+  [localeKeys.connectWalletInfo]: "Connect wallet to participate in Staking and Deposit in Darwinia.",
 };
 
 export default enUs;

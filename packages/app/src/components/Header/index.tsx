@@ -1,71 +1,75 @@
-import { Link } from "react-router-dom";
-import logoIcon from "../../assets/images/logo.svg";
+import { Link, useLocation, useNavigation, useSearchParams } from "react-router-dom";
+import logoIcon from "../../assets/images/logo.png";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Drawer } from "@darwinia/ui";
 import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { useWallet } from "@darwinia/app-wallet";
+import { supportedNetworks } from "@darwinia/app-config";
+import { ChainConfig } from "@darwinia/app-types";
 
 const Header = () => {
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
-  const [connectedNetwork, setConnectedNetwork] = useState<number>(1);
   const { t } = useAppTranslation();
+  const { selectedNetwork, changeSelectedNetwork } = useWallet();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+
+  /* use the first network by default */
+  useEffect(() => {
+    changeConnectedNetwork(supportedNetworks[1]);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedNetwork) {
+      return;
+    }
+
+    searchParams.set("network", selectedNetwork.name);
+    setSearchParams(searchParams);
+  }, [selectedNetwork]);
 
   const toggleMobileNavigation = () => {
     setDrawerVisibility((isVisible) => !isVisible);
   };
 
-  const changeConnectedNetwork = (id: number) => {
-    setConnectedNetwork(id);
+  const changeConnectedNetwork = (network: ChainConfig) => {
+    changeSelectedNetwork(network);
   };
-
-  const networks = [
-    {
-      name: "darwinia",
-      id: 1,
-    },
-    {
-      name: "crab",
-      id: 2,
-    },
-    {
-      name: "testnet",
-      id: 3,
-    },
-  ];
 
   const onDrawerClosed = () => {
     setDrawerVisibility(false);
   };
   return (
     <div className={`shrink-0 h-[66px] lg:h-[60px] w-full z-[50]`}>
-      <div className={"justify-center flex h-full"}>
+      <div className={"justify-center flex h-full wrapper-padding"}>
         <div className={"app-container w-full"}>
-          <div className={"flex flex-1 h-full shrink-0 items-center justify-between pl-[0.625rem]"}>
+          <div className={"flex flex-1 h-full shrink-0 items-center justify-between"}>
             {/*Logo*/}
             <div className={"shrink-0 h-full"}>
-              <Link className={"h-full flex"} to={"/"}>
-                <img className={"self-center w-[9.25rem]"} src={logoIcon} alt="image" />
+              <Link className={"h-full flex"} to={`/staking${location.search}`}>
+                <img className={"self-center w-[146px]"} src={logoIcon} alt="image" />
               </Link>
             </div>
             {/*PC network switch and wallet connection*/}
             <div className={"hidden lg:flex items-center gap-[40px]"}>
-              {networks.map((network) => {
-                const activeNetworkClass = network.id === connectedNetwork ? `after:block` : `after:hidden`;
+              {supportedNetworks.map((network) => {
+                const activeNetworkClass = network.name === selectedNetwork?.name ? `after:block` : `after:hidden`;
                 return (
                   <div
                     onClick={() => {
-                      changeConnectedNetwork(network.id);
+                      changeConnectedNetwork(network);
                     }}
                     className={`cursor-pointer relative h-[36px] flex items-center after:absolute after:left-0 after:right-0 after:h-[4px] after:bottom-0 after:bg-primary ${activeNetworkClass}`}
-                    key={network.id}
+                    key={`${network.name}-${network.displayName}`}
                   >
-                    {network.name}
+                    {network.displayName}
                   </div>
                 );
               })}
-              <Button className={"!h-[36px]"} btnType={"secondary"}>
-                Wallet Info
+              <Button className={"!h-[36px] !px-[15px]"} btnType={"secondary"}>
+                {t(localeKeys.connectWallet)}
               </Button>
             </div>
             {/*network switch toggle*/}

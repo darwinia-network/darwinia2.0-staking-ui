@@ -1,19 +1,41 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useNavigation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
-import { useAppTranslation, localeKeys } from "@package/app-locale";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { Scrollbars } from "react-custom-scrollbars";
+import { getStore } from "@darwinia/app-utils";
 
 const Root = () => {
-  const { isConnecting, error } = useWallet();
+  const { isConnecting, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setLoading(isConnecting);
   }, [isConnecting]);
+
+  /*Monitor wallet connection and redirect to the required location */
+  useEffect(() => {
+    /* if the user has just connected to the wallet, this will redirect to the
+     * staking page */
+    if (isWalletConnected) {
+      if (location.pathname === "/") {
+        /* This user is connected to wallet already but trying to go to the homepage,
+         * force redirect him to the staking page  */
+        navigate(`/staking${location.search}`);
+        return;
+      }
+
+      /* only navigate if the user is supposed to be redirected to another URL */
+      if (location.state && location.state.from) {
+        const nextPath = location.state.from.pathname ? location.state.from.pathname : "/staking";
+        navigate(`${nextPath}${location.search}`);
+      }
+    }
+  }, [isWalletConnected, location]);
 
   useEffect(() => {
     if (error) {
@@ -22,6 +44,14 @@ const Root = () => {
       });
     }
   }, [error]);
+
+  //check if it should auto connect to wallet or wait for the user to click the connect wallet button
+  useEffect(() => {
+    const shouldAutoConnect = getStore<boolean>("isConnectedToWallet");
+    if (shouldAutoConnect) {
+      connectWallet();
+    }
+  }, [selectedNetwork]);
 
   return (
     <Spinner isLoading={loading}>

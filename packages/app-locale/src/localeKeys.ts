@@ -8,4 +8,7 @@ export const localeKeys = {
   cancel: "cancel",
   confirm: "confirm",
   darwiniaNetwork: "darwiniaNetwork",
+  connectWallet: "connectWallet",
+  connectToMetamask: "connectToMetamask",
+  connectWalletInfo: "connectWalletInfo",
 };
