@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import logoIcon from "../../assets/images/logo.png";
 import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
@@ -8,11 +8,14 @@ import { useAppTranslation, localeKeys } from "@package/app-locale";
 import { useWallet } from "@darwinia/app-wallet";
 import { supportedNetworks } from "@darwinia/app-config";
 import { ChainConfig } from "@darwinia/app-types";
+import { toShortAddress } from "@darwinia/app-utils";
+import JazzIcon from "../JazzIcon";
+import { ethers } from "ethers";
 
 const Header = () => {
   const [isDrawerVisible, setDrawerVisibility] = useState(false);
   const { t } = useAppTranslation();
-  const { selectedNetwork, changeSelectedNetwork } = useWallet();
+  const { selectedNetwork, changeSelectedNetwork, selectedAccount, connectWallet } = useWallet();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
@@ -83,9 +86,24 @@ const Header = () => {
                   </div>
                 );
               })}
-              <Button className={"!h-[36px] !px-[15px]"} btnType={"secondary"}>
-                {t(localeKeys.connectWallet)}
-              </Button>
+              {selectedAccount ? (
+                <div className={"border-primary border px-[15px] py-[5px]"}>
+                  <div className={"flex items-center gap-[10px]"}>
+                    <JazzIcon size={20} address={ethers.utils.getAddress(selectedAccount)} />
+                    <div>{toShortAddress(ethers.utils.getAddress(selectedAccount))}</div>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    connectWallet();
+                  }}
+                  className={"!h-[36px] !px-[15px]"}
+                  btnType={"secondary"}
+                >
+                  {t(localeKeys.connectWallet)}
+                </Button>
+              )}
             </div>
             {/*network switch toggle*/}
             <div

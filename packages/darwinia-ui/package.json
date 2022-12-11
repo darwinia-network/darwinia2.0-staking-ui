@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "vite",
+    "watch": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
