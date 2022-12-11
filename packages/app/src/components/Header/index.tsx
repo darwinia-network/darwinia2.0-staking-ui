@@ -79,7 +79,7 @@ const Header = () => {
                     onClick={() => {
                       changeConnectedNetwork(network);
                     }}
-                    className={`cursor-pointer relative h-[36px] flex items-center after:absolute after:left-0 after:right-0 after:h-[4px] after:bottom-0 after:bg-primary ${activeNetworkClass}`}
+                    className={`cursor-pointer relative h-[36px] flex items-center after:absolute after:left-0 after:right-0 after:h-[2px] after:bottom-0 after:bg-primary ${activeNetworkClass}`}
                     key={`${network.name}-${network.displayName}`}
                   >
                     {network.displayName}

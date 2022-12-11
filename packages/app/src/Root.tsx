@@ -61,7 +61,7 @@ const Root = () => {
           <Header />
           {/*Main Content*/}
           <Scrollbars className={"flex flex-1"}>
-            <div className={"flex flex-1 flex-col h-full"}>
+            <div className={"flex flex-1 flex-col h-full pt-[15px] lg:pt-[30px]"}>
               <div className={"flex flex-1 wrapper-padding justify-center"}>
                 <div className={"flex flex-1 app-container"}>
                   <Outlet />
