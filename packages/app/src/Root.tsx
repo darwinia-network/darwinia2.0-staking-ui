@@ -26,17 +26,17 @@ const Root = () => {
       if (location.pathname === "/") {
         /* This user is connected to wallet already but trying to go to the homepage,
          * force redirect him to the staking page  */
-        navigate(`/staking${location.search}`);
+        navigate(`/staking${location.search}`, { replace: true });
         return;
       }
 
       /* only navigate if the user is supposed to be redirected to another URL */
       if (location.state && location.state.from) {
         const nextPath = location.state.from.pathname ? location.state.from.pathname : "/staking";
-        navigate(`${nextPath}${location.search}`);
+        navigate(`${nextPath}${location.search}`, { replace: true });
       }
     }
-  }, [isWalletConnected, location]);
+  }, [isWalletConnected, location.state]);
 
   useEffect(() => {
     if (error) {
@@ -56,14 +56,14 @@ const Root = () => {
 
   return (
     <Spinner isLoading={loading}>
-      <div className={"flex h-screen justify-center flex-1"}>
+      <div className={"flex flex-col h-screen justify-center flex-1"}>
         <div className={"flex flex-1 flex-col"}>
           <Header />
           {/*Main Content*/}
           <Scrollbars className={"flex flex-1"}>
             <div className={"flex flex-1 flex-col h-full pt-[15px] lg:pt-[30px]"}>
-              <div className={"flex flex-1 wrapper-padding justify-center"}>
-                <div className={"flex flex-1 app-container"}>
+              <div className={"flex flex-1 flex-col wrapper-padding items-center"}>
+                <div className={"flex flex-col flex-1 app-container w-full"}>
                   <Outlet />
                 </div>
               </div>

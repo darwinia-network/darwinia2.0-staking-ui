@@ -122,3 +122,14 @@ a {
     font-family: JetBrainsMono-Bold, serif !important;
   }
 }
+
+.tab-content-enter {
+  opacity: 0;
+}
+.tab-content-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+.tab-content-enter-done {
+  opacity: 1;
+}

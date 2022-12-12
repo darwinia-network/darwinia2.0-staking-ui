@@ -23,6 +23,7 @@ export const localeKeys = {
   selectCollator: "selectCollator",
   stakingBasicInfo: "stakingBasicInfo",
   stake: "stake",
-  balance: "balance",
-  useDepositToStake: "useDepositToStake",
+  balanceAmount: "balanceAmount",
+  useDeposit: "useDeposit",
+  noDelegations: "noDelegations",
 };

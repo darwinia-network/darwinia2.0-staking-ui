@@ -59,7 +59,7 @@ const Header = () => {
     setDrawerVisibility(false);
   };
   return (
-    <div className={`shrink-0 h-[66px] lg:h-[60px] w-full z-[50]`}>
+    <div className={`shrink-0 h-[66px] lg:h-[60px] w-full`}>
       <div className={"justify-center flex h-full wrapper-padding"}>
         <div className={"app-container w-full"}>
           <div className={"flex flex-1 h-full shrink-0 items-center justify-between"}>

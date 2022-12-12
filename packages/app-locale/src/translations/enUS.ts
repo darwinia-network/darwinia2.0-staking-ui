@@ -21,9 +21,10 @@ const enUs = {
   [localeKeys.delegate]: "delegate",
   [localeKeys.selectCollator]: "select collator",
   [localeKeys.stakingBasicInfo]: `Note that it takes 1 session(～{{sessionTime}}) to get rewards if your collator get elected. The delegation locks your tokens, and You need to unbond in order for your staked tokens to be transferrable again, which takes ～{{unbondTime}}.`,
-  [localeKeys.balance]: "balance",
-  [localeKeys.useDepositToStake]: "Use A Deposit To Stake",
+  [localeKeys.balanceAmount]: "balance: {{amount}}",
+  [localeKeys.useDeposit]: "Use A Deposit",
   [localeKeys.stake]: "stake",
+  [localeKeys.noDelegations]: "no delegations",
 };
 
 export default enUs;

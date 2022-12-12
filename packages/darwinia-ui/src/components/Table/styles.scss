@@ -1,15 +1,11 @@
 @import "../../assets/styles/common";
 
 .dw-table {
-  border-radius: var(--10px);
-  padding: var(--15px) var(--10px);
+  border-radius: 0;
+  padding: var(--20px);
   background-color: var(--blackSecondary);
   display: flex;
   flex-direction: column;
-
-  @include dwLg() {
-    padding: var(--30px);
-  }
 
   .dw-table-scrollview {
     flex: 1;
