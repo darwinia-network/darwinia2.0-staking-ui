@@ -26,4 +26,8 @@ export const localeKeys = {
   balanceAmount: "balanceAmount",
   useDeposit: "useDeposit",
   noDelegations: "noDelegations",
+  waitingCollatorWarning: "waitingCollatorWarning",
+  powerNotWorking: "powerNotWorking",
+  unbondAll: "unbondAll",
+  changeCollator: "changeCollator",
 };

@@ -133,3 +133,12 @@ a {
 .tab-content-enter-done {
   opacity: 1;
 }
+
+.flex-ellipsis {
+  min-width: 0;
+  * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

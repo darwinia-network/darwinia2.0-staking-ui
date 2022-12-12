@@ -1,83 +1,16 @@
 import { localeKeys, useAppTranslation } from "@package/app-locale";
-import { Button, Column, Input, Table } from "@darwinia/ui";
+import { Button, Input } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useWallet } from "@darwinia/app-wallet";
 import caretDownIcon from "../../assets/images/caret-down.svg";
-import { TableRow } from "@darwinia/ui/src/components/Table";
-
-interface Delegation extends TableRow {
-  collator: string;
-  previousReward: string;
-  staked: string;
-  bondedTokens: string[];
-}
+import JazzIcon from "../JazzIcon";
+import switchIcon from "../../assets/images/switch.svg";
+import StakingRecordsTable from "../StakingRecordsTable";
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
-  const { selectedNetwork } = useWallet();
-
-  const dataSource: Delegation[] = [
-    {
-      id: "1",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      bondedTokens: ["12,983", "322,435", "2"],
-    },
-    {
-      id: "2",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      bondedTokens: ["12,983", "322,435", "2"],
-    },
-    {
-      id: "3",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      bondedTokens: ["12,983", "322,435", "2"],
-    },
-    {
-      id: "4",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      bondedTokens: ["12,983", "322,435", "2"],
-    },
-  ];
-
-  const columns: Column<Delegation>[] = [
-    {
-      id: "1",
-      title: <div>Collator</div>,
-      key: "collator",
-    },
-    {
-      id: "2",
-      title: <div>Your rewards last session / in total</div>,
-      key: "previousReward",
-      width: "200px",
-    },
-    {
-      id: "3",
-      title: <div>You staked (power)</div>,
-      key: "staked",
-      width: "150px",
-    },
-    {
-      id: "4",
-      title: <div>Your Bonded Tokens</div>,
-      key: "bondedTokens",
-    },
-    {
-      id: "5",
-      title: <div>Unknown</div>,
-      key: "collator",
-      width: "250px",
-    },
-  ];
+  const { selectedNetwork, selectedAccount } = useWallet();
 
   return (
     <div>
@@ -124,14 +57,24 @@ const StakingOverview = () => {
         </div>
         <Button className={"w-full lg:w-auto !px-[55px]"}>{t(localeKeys.stake)}</Button>
         {/*Selected collator*/}
-        <div>Darwinia</div>
-        <div></div>
-      </div>
-      <div className={"flex flex-col"}>
-        <div className={"flex flex-col mt-[20px]"}>
-          <Table noDataText={t(localeKeys.noDelegations)} dataSource={dataSource} columns={columns} />
+        <div
+          className={"flex items-center gap-[10px] py-[10px] px-[15px] lg:px-[25px] lg:py-[20px] border border-primary"}
+        >
+          <div className={"shrink-0"}>
+            <JazzIcon size={30} address={selectedAccount ?? ""} />
+          </div>
+          <div className={"lg:flex lg:gap-[10px] min-w-0"}>
+            <div>darwinia</div>
+            <div>
+              <div className={"break-words"}>{selectedAccount}</div>
+            </div>
+          </div>
+          <div className={"shrink-0"}>
+            <img className={"w-[24px]"} src={switchIcon} alt="image" />
+          </div>
         </div>
       </div>
+      <StakingRecordsTable />
     </div>
   );
 };

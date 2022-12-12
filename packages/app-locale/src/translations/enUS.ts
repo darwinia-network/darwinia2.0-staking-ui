@@ -19,12 +19,16 @@ const enUs = {
   [localeKeys.staking]: "staking",
   [localeKeys.deposit]: "deposit",
   [localeKeys.delegate]: "delegate",
-  [localeKeys.selectCollator]: "select collator",
+  [localeKeys.selectCollator]: "select a collator",
   [localeKeys.stakingBasicInfo]: `Note that it takes 1 session(～{{sessionTime}}) to get rewards if your collator get elected. The delegation locks your tokens, and You need to unbond in order for your staked tokens to be transferrable again, which takes ～{{unbondTime}}.`,
   [localeKeys.balanceAmount]: "balance: {{amount}}",
   [localeKeys.useDeposit]: "Use A Deposit",
   [localeKeys.stake]: "stake",
   [localeKeys.noDelegations]: "no delegations",
+  [localeKeys.waitingCollatorWarning]: `This collator is currently in the waiting pool. The rewards will not be earned until the collator joins the active pool.`,
+  [localeKeys.powerNotWorking]: `The power is not working yet, You can delegate a collator to complete staking.`,
+  [localeKeys.unbondAll]: "unbond all",
+  [localeKeys.changeCollator]: "change collator",
 };
 
 export default enUs;
