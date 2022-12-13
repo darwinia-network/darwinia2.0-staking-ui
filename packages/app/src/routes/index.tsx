@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import App from "../App";
 import NotFound from "../pages/NotFound";
 import ErrorCatcher from "../pages/ErrorCatcher";
+import Protected from "../components/Protected";
 import { Spinner } from "@darwinia/ui";
 
 const LazyLoader = ({ componentFileName }: { componentFileName: string }) => {
@@ -33,6 +34,14 @@ const browserRouter = createHashRouter([
       {
         index: true,
         element: <LazyLoader componentFileName={"Home"} />,
+      },
+      {
+        path: "staking",
+        element: (
+          <Protected>
+            <LazyLoader componentFileName={"Staking"} />
+          </Protected>
+        ),
       },
       /*{
         path: "relayers-overview",

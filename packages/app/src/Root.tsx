@@ -1,21 +1,42 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useNavigation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
-import { useAppTranslation, localeKeys } from "@package/app-locale";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import { Scrollbars } from "react-custom-scrollbars";
+import { getStore, setStore } from "@darwinia/app-utils";
 
 const Root = () => {
-  const { isConnecting, error } = useWallet();
-
-  /* Set this value to control the minimum content width on PC to avoid the
-   * UI from collapsing on PC when the browser size is small */
-  // const mainContentMinWidth = "lg:min-w-[1000px]";
-  const mainContentMinWidth = "";
+  const { isConnecting, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setLoading(isConnecting);
-  }, [isConnecting]);
+  }, [isConnecting, isWalletConnected]);
+
+  /*Monitor wallet connection and redirect to the required location */
+  useEffect(() => {
+    /* if the user has just connected to the wallet, this will redirect to the
+     * staking page */
+    if (isWalletConnected) {
+      setStore("isConnectedToWallet", isWalletConnected);
+      if (location.pathname === "/") {
+        /* This user is connected to wallet already but trying to go to the homepage,
+         * force redirect him to the staking page  */
+        navigate(`/staking${location.search}`, { replace: true });
+        return;
+      }
+
+      /* only navigate if the user is supposed to be redirected to another URL */
+      if (location.state && location.state.from) {
+        const nextPath = location.state.from.pathname ? location.state.from.pathname : "/staking";
+        navigate(`${nextPath}${location.search}`, { replace: true });
+      }
+    }
+  }, [isWalletConnected, location.state]);
 
   useEffect(() => {
     if (error) {
@@ -25,30 +46,31 @@ const Root = () => {
     }
   }, [error]);
 
+  //check if it should auto connect to wallet or wait for the user to click the connect wallet button
+  useEffect(() => {
+    const shouldAutoConnect = getStore<boolean>("isConnectedToWallet");
+    if (shouldAutoConnect) {
+      connectWallet();
+    }
+  }, [selectedNetwork]);
+
   return (
     <Spinner isLoading={loading}>
-      <div className={"flex h-screen flex-col"}>
-        <div>Header</div>
-        {/*Main Content*/}
-        <div className={"flex-1 flex flex-col"}>
-          <div style={{ position: "relative", overflow: "hidden", width: "100%", height: "100%" }} className={"flex-1"}>
-            <div
-              style={{
-                position: "absolute",
-                top: "0px",
-                bottom: "0px",
-                left: "0px",
-                right: "0px",
-              }}
-              className={"dw-custom-scrollbar flex"}
-            >
-              <div className={`${mainContentMinWidth} flex flex-1 p-[0.9375rem] pt-0 lg:p-[1.875rem] lg:pt-0`}>
-                <Outlet />
+      <div className={"flex flex-col h-screen justify-center flex-1"}>
+        <div className={"flex flex-1 flex-col"}>
+          <Header />
+          {/*Main Content*/}
+          <Scrollbars className={"flex flex-1"}>
+            <div className={"flex flex-1 flex-col h-full pt-[15px] lg:pt-[30px]"}>
+              <div className={"flex flex-1 flex-col wrapper-padding items-center"}>
+                <div className={"flex flex-col flex-1 app-container w-full"}>
+                  <Outlet />
+                </div>
               </div>
+              <Footer />
             </div>
-          </div>
+          </Scrollbars>
         </div>
-        <div>Footer</div>
       </div>
     </Spinner>
   );

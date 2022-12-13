@@ -45,7 +45,7 @@ import { InputProps } from "./components/Input";
 import { ButtonProps, ButtonSize } from "./components/Button";
 import { RadioGroupProps, RadioButtonExtensionProps, RadioButtonProps } from "./components/Radio";
 import { DrawerRefs, DrawerProps } from "./components/Drawer";
-import { TableProps, Column, Order, SortEvent } from "./components/Table";
+import { TableProps, Column, Order, SortEvent, TableRow } from "./components/Table";
 import { Tab, TabsProps } from "./components/Tabs";
 import { PaginationProps } from "./components/Pagination";
 import { SpinnerProps } from "./components/Spinner";
@@ -74,6 +74,7 @@ export type {
   DrawerRefs,
   DrawerProps,
   TableProps,
+  TableRow,
   Column,
   Order,
   SortEvent,

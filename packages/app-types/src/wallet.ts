@@ -49,6 +49,8 @@ export interface WalletCtx {
   isWalletConnected: boolean;
   connectWallet: () => void;
   addKTONtoWallet: () => void;
+  changeSelectedNetwork: (network: ChainConfig) => void;
+  selectedNetwork: ChainConfig | undefined;
   error: WalletError | undefined;
   selectedAccount: string | undefined;
 }

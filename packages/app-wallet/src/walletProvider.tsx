@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { dAppSupportedWallets, pangolin } from "@darwinia/app-config";
+import { dAppSupportedWallets, supportedNetworks } from "@darwinia/app-config";
 import { ChainConfig, WalletCtx, WalletError, SupportedWallet, WalletConfig } from "@darwinia/app-types";
 import { Contract, ethers } from "ethers";
 import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
@@ -13,6 +13,10 @@ const initialState: WalletCtx = {
   error: undefined,
   selectedAccount: undefined,
   contract: undefined,
+  selectedNetwork: undefined,
+  changeSelectedNetwork: () => {
+    // do nothing
+  },
   connectWallet: () => {
     //do nothing
   },
@@ -31,8 +35,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   const [isWalletConnected, setWalletConnected] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>();
   const [error, setError] = useState<WalletError | undefined>(undefined);
-  // selectedNetwork and selectedWallet maybe dynamic in the future
-  const [selectedNetwork] = useState<ChainConfig>(pangolin);
+  const [selectedNetwork, setSelectedNetwork] = useState<ChainConfig>();
   const [selectedWallet] = useState<SupportedWallet>("MetaMask");
   const [walletConfig, setWalletConfig] = useState<WalletConfig>();
 
@@ -109,6 +112,9 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
 
   /*Connect to MetaMask*/
   const connectWallet = useCallback(async () => {
+    if (!selectedNetwork) {
+      return;
+    }
     try {
       if (!isWalletInstalled()) {
         setError({
@@ -203,9 +209,16 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     }
   }, [isWalletInstalled, selectedNetwork]);
 
+  const changeSelectedNetwork = useCallback(
+    (network: ChainConfig) => {
+      setSelectedNetwork(network);
+    },
+    [selectedNetwork]
+  );
+
   /*This will be fired once the connection to the wallet is successful*/
   useEffect(() => {
-    if (!isWalletConnected || !selectedAccount) {
+    if (!isWalletConnected || !selectedAccount || !selectedNetwork) {
       return;
     }
     //refresh the page with the newly selected account
@@ -215,7 +228,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     setProvider(newProvider);
     setSigner(newSigner);
     setContract(newContract);
-  }, [selectedAccount, isWalletConnected]);
+  }, [selectedAccount, isWalletConnected, selectedNetwork]);
 
   return (
     <WalletContext.Provider
@@ -229,6 +242,8 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         connectWallet,
         addKTONtoWallet,
         error,
+        changeSelectedNetwork,
+        selectedNetwork,
       }}
     >
       {children}

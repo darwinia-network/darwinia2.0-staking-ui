@@ -2,7 +2,7 @@
 
 .dw-calendar {
   border: 1px solid var(--halfWhite);
-  border-radius: var(--borderRadius5px);
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   user-select: none;

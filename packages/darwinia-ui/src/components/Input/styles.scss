@@ -31,14 +31,12 @@
         }
 
         &.dw-with-right-slot {
-          border-radius: var(--5px);
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          border-radius: 0;
           border-right: none;
         }
 
         &.dw-without-right-slot {
-          border-radius: var(--5px);
+          border-radius: 0;
         }
 
         .dw-input {
@@ -77,9 +75,7 @@
         background-color: var(--blackSecondary);
         border: 1px solid var(--halfWhite);
         border-left: none;
-        border-radius: var(--5px);
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
+        border-radius: 0;
 
         &.dw-border-error {
           border-color: var(--danger);
