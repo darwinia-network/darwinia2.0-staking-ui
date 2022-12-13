@@ -70,7 +70,7 @@ const StakingOverview = () => {
             </div>
           </div>
           <div className={"shrink-0"}>
-            <img className={"w-[24px]"} src={switchIcon} alt="image" />
+            <img className={"w-[24px] clickable"} src={switchIcon} alt="image" />
           </div>
         </div>
       </div>

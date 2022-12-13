@@ -29,6 +29,15 @@ const enUs = {
   [localeKeys.powerNotWorking]: `The power is not working yet, You can delegate a collator to complete staking.`,
   [localeKeys.unbondAll]: "unbond all",
   [localeKeys.changeCollator]: "change collator",
+  [localeKeys.loading]: "loading",
+  [localeKeys.undelegationInfo]: `Undelegation is executable in {{undelegationTime}}`,
+  [localeKeys.executeUndelegation]: "Execute Undelegation",
+  [localeKeys.execute]: "execute",
+  [localeKeys.commission]: "commission",
+  [localeKeys.collator]: "collator",
+  [localeKeys.rewardLastSession]: "Your Rewards Last Session / In Total",
+  [localeKeys.youStaked]: "You Staked (Power)",
+  [localeKeys.bondedTokens]: "Your Bonded Tokens",
 };
 
 export default enUs;
