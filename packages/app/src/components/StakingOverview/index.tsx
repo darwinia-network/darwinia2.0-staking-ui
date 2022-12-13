@@ -1,5 +1,5 @@
 import { localeKeys, useAppTranslation } from "@package/app-locale";
-import { Button, Input } from "@darwinia/ui";
+import { Button, CheckboxGroup, CheckboxItem, Dropdown, Input } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useWallet } from "@darwinia/app-wallet";
@@ -7,10 +7,77 @@ import caretDownIcon from "../../assets/images/caret-down.svg";
 import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";
 import StakingRecordsTable from "../StakingRecordsTable";
+import { useState } from "react";
+
+interface Deposit extends CheckboxItem {
+  id: string;
+  amount: string;
+}
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork, selectedAccount } = useWallet();
+  const [selectedDeposit, setSelectedDeposit] = useState<Deposit[]>([]);
+
+  const depositList: Deposit[] = [
+    {
+      id: "1",
+      amount: "1,200",
+    },
+    {
+      id: "2",
+      amount: "1,300",
+    },
+    {
+      id: "3",
+      amount: "1,400",
+    },
+    {
+      id: "4",
+      amount: "1,500",
+    },
+    {
+      id: "5",
+      amount: "1,600",
+    },
+  ];
+
+  const depositRenderer = (option: Deposit) => {
+    return (
+      <div className={"flex justify-between"}>
+        <div>ID#{option.id}</div>
+        <div>{option.amount}</div>
+      </div>
+    );
+  };
+
+  const onDepositSelectionChange = (selectedItem: Deposit, allItems: Deposit[]) => {
+    setSelectedDeposit(allItems);
+  };
+
+  const getDepositsDropdown = () => {
+    if (depositList.length === 0) {
+      return (
+        <div className={"w-full border border-halfWhite bg-blackSecondary border-t-0"}>
+          <div className={"bg-[rgba(255,255,255,0.2)] px-[10px] py-[6px] text-halfWhite"}>no active deposits</div>
+        </div>
+      );
+    }
+    return (
+      <div
+        className={
+          "w-full border border-halfWhite border-t-0 bg-blackSecondary max-h-[310px] p-[10px] dw-custom-scrollbar"
+        }
+      >
+        <CheckboxGroup
+          options={depositList}
+          render={depositRenderer}
+          onChange={onDepositSelectionChange}
+          selectedOptions={selectedDeposit}
+        />
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -35,6 +102,7 @@ const StakingOverview = () => {
                 }
                 placeholder={t(localeKeys.balanceAmount, { amount: 0 })}
               />
+              <div className={"text-12-bold text-primary pt-[10px]"}>+0 {t(localeKeys.power)}</div>
             </div>
             <div className={"flex-1"}>
               <Input
@@ -47,15 +115,38 @@ const StakingOverview = () => {
                 }
                 placeholder={t(localeKeys.balanceAmount, { amount: 0 })}
               />
+              <div className={"text-12-bold text-primary pt-[10px]"}>+0 {t(localeKeys.power)}</div>
             </div>
             {/*use a deposit*/}
-            <div className={"flex-1 flex justify-between items-center border border-halfWhite px-[10px]"}>
-              <div className={"py-[7px]"}>{t(localeKeys.useDeposit)}</div>
-              <img className={"w-[16px]"} src={caretDownIcon} alt="image" />
-            </div>
+            <Dropdown
+              closeOnInteraction={false}
+              overlay={getDepositsDropdown()}
+              triggerEvent={"click"}
+              className={"flex-1"}
+              dropdownClassName={"w-full top-[40px]"}
+            >
+              <div>
+                <div className={"flex-1 flex justify-between items-center border border-halfWhite px-[10px]"}>
+                  <div className={"py-[7px]"}>
+                    {selectedDeposit.length === 0
+                      ? t(localeKeys.useDeposit)
+                      : t(localeKeys.depositSelected, { number: selectedDeposit.length })}
+                  </div>
+                  <img className={"w-[16px]"} src={caretDownIcon} alt="image" />
+                </div>
+                <div className={"text-12-bold text-primary pt-[10px]"}>+0 {t(localeKeys.power)}</div>
+              </div>
+            </Dropdown>
           </div>
         </div>
-        <Button className={"w-full lg:w-auto !px-[55px]"}>{t(localeKeys.stake)}</Button>
+        <div className={"w-full flex flex-col lg:flex-row gap-[10px]"}>
+          <Button className={"w-full lg:w-auto !px-[55px]"}>
+            {t(localeKeys.approveKton, { token: selectedNetwork?.kton.symbol })}
+          </Button>
+          <Button disabled className={"w-full lg:w-auto !px-[55px]"}>
+            {t(localeKeys.stake)}
+          </Button>
+        </div>
         {/*Selected collator*/}
         <div
           className={"flex items-center gap-[10px] py-[10px] px-[15px] lg:px-[25px] lg:py-[20px] border border-primary"}

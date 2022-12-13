@@ -11,7 +11,7 @@ const enUs = {
   [localeKeys.connectToMetamask]: "connect to metaMask",
   [localeKeys.connectWalletInfo]: "Connect wallet to participate in Staking and Deposit in Darwinia.",
   [localeKeys.latestStakingRewards]: "latest staking rewards",
-  [localeKeys.reservedInStaking]: "reserved in staking",
+  [localeKeys.reservedInStaking]: "Reserved in staking",
   [localeKeys.bonded]: "bonded",
   [localeKeys.inDeposit]: "in deposit",
   [localeKeys.seeDetailed]: `See detailed staking rewards in `,
@@ -38,6 +38,9 @@ const enUs = {
   [localeKeys.rewardLastSession]: "Your Rewards Last Session / In Total",
   [localeKeys.youStaked]: "You Staked (Power)",
   [localeKeys.bondedTokens]: "Your Bonded Tokens",
+  [localeKeys.approveKton]: "approve {{token}}",
+  [localeKeys.depositSelected]: "{{number}} Deposits selected",
+  [localeKeys.power]: "Power",
 };
 
 export default enUs;

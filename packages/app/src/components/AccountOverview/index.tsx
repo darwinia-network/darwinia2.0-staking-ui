@@ -40,11 +40,11 @@ const AccountOverview = () => {
       {/*Power Card*/}
       <div className={"card lg:max-w-[66.08%] flex-1 flex flex-col gap-[20px] bg-primary"}>
         <div className={"flex justify-between items-center"}>
-          <div className={"flex items-center gap-[30px]"}>
-            <img className={"w-[44px]"} src={powerIcon} alt="image" />
-            <div className={"capitalize text-24-bold text-[30px]"}>power</div>
+          <div className={"flex items-center gap-[10px] lg:gap-[30px]"}>
+            <img className={"w-[30px] lg:w-[44px]"} src={powerIcon} alt="image" />
+            <div className={"text-24-bold text-[30px]"}>{t(localeKeys.power)}</div>
           </div>
-          <div className={"capitalize text-24-bold text-[30px]"}>0</div>
+          <div className={"text-24-bold text-[30px]"}>94261823</div>
         </div>
         <div className={"card"}>
           <div className={"flex gap-[10px] flex-col"}>

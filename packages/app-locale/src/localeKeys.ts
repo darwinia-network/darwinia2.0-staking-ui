@@ -39,4 +39,7 @@ export const localeKeys = {
   rewardLastSession: "rewardLastSession",
   youStaked: "youStaked",
   bondedTokens: "bondedTokens",
+  approveKton: "approveKton",
+  depositSelected: "depositSelected",
+  power: "power",
 };
