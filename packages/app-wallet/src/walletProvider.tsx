@@ -8,7 +8,7 @@ import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
 const initialState: WalletCtx = {
   provider: undefined,
   signer: undefined,
-  isConnecting: false,
+  isRequestingWalletConnection: false,
   isWalletConnected: false,
   error: undefined,
   selectedAccount: undefined,
@@ -31,7 +31,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   const [provider, setProvider] = useState<Web3Provider>();
   const [signer, setSigner] = useState<JsonRpcSigner>();
   const [contract, setContract] = useState<Contract>();
-  const [isConnecting, setConnecting] = useState<boolean>(false);
+  const [isRequestingWalletConnection, setRequestingWalletConnection] = useState<boolean>(false);
   const [isWalletConnected, setWalletConnected] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>();
   const [error, setError] = useState<WalletError | undefined>(undefined);
@@ -125,7 +125,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         return;
       }
 
-      setConnecting(true);
+      setRequestingWalletConnection(true);
       //try switching the token to the selected network token
       const chainResponse = await window.ethereum.request({
         method: "wallet_switchEthereumChain",
@@ -140,11 +140,11 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
           });
           if (accounts && Array.isArray(accounts) && accounts.length > 0) {
             setSelectedAccount(accounts[0]);
-            setConnecting(false);
+            setRequestingWalletConnection(false);
             setWalletConnected(true);
           }
         } catch (e) {
-          setConnecting(false);
+          setRequestingWalletConnection(false);
           setWalletConnected(false);
           setError({
             code: 4,
@@ -178,11 +178,11 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
               });
               if (accounts && Array.isArray(accounts) && accounts.length > 0) {
                 setSelectedAccount(accounts[0]);
-                setConnecting(false);
+                setRequestingWalletConnection(false);
                 setWalletConnected(true);
               }
             } catch (e) {
-              setConnecting(false);
+              setRequestingWalletConnection(false);
               setError({
                 code: 3,
                 message: "Account access permission rejected",
@@ -195,12 +195,12 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
             code: 1,
             message: "User rejected adding ethereum chain",
           });
-          setConnecting(false);
+          setRequestingWalletConnection(false);
           setWalletConnected(false);
         }
         return;
       }
-      setConnecting(false);
+      setRequestingWalletConnection(false);
       setWalletConnected(false);
       setError({
         code: 4,
@@ -238,7 +238,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         contract,
         signer,
         selectedAccount,
-        isConnecting,
+        isRequestingWalletConnection,
         connectWallet,
         addKTONtoWallet,
         error,

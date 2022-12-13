@@ -7,16 +7,13 @@ const Home = () => {
   const { t } = useAppTranslation();
   const { connectWallet } = useWallet();
 
-  const goToStakingPage = () => {
-    connectWallet();
-  };
   return (
     <div className={"flex flex-1 justify-center items-center"}>
       <div className={"flex flex-col items-center gap-[20px] max-w-[550px]"}>
         <img className={"w-[96px]"} src={metamaskLogo} alt="image" />
         <Button
           onClick={() => {
-            goToStakingPage();
+            connectWallet();
           }}
         >
           {t(localeKeys.connectToMetamask)}

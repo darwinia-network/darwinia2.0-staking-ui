@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate, useNavigation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
 import Header from "./components/Header";
@@ -8,20 +8,23 @@ import { Scrollbars } from "react-custom-scrollbars";
 import { getStore, setStore } from "@darwinia/app-utils";
 
 const Root = () => {
-  const { isConnecting, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
+  const { isRequestingWalletConnection, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  /*This lock will prevent the app from infinite redirecting sometimes */
+  const isUserAuthed = useRef(false);
 
   useEffect(() => {
-    setLoading(isConnecting);
-  }, [isConnecting, isWalletConnected]);
+    setLoading(isRequestingWalletConnection);
+  }, [isRequestingWalletConnection, isWalletConnected]);
 
   /*Monitor wallet connection and redirect to the required location */
   useEffect(() => {
     /* if the user has just connected to the wallet, this will redirect to the
      * staking page */
-    if (isWalletConnected) {
+    if (isWalletConnected && !isUserAuthed.current) {
+      isUserAuthed.current = true;
       setStore("isConnectedToWallet", isWalletConnected);
       if (location.pathname === "/") {
         /* This user is connected to wallet already but trying to go to the homepage,

@@ -18,7 +18,7 @@ const JazzIcon = ({ address, size = 40, onCopy }: Props) => {
     }
   };
   return (
-    <div className={"cursor-copy flex items-center"} onClick={copyAddress}>
+    <div className={"!cursor-copy flex items-center clickable"} onClick={copyAddress}>
       <Icon diameter={size} seed={jsNumberForAddress(address)} />
     </div>
   );

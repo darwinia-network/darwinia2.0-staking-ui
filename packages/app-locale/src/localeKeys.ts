@@ -30,4 +30,13 @@ export const localeKeys = {
   powerNotWorking: "powerNotWorking",
   unbondAll: "unbondAll",
   changeCollator: "changeCollator",
+  loading: "loading",
+  undelegationInfo: "undelegationInfo",
+  executeUndelegation: "executeUndelegation",
+  execute: "execute",
+  commission: "commission",
+  collator: "collator",
+  rewardLastSession: "rewardLastSession",
+  youStaked: "youStaked",
+  bondedTokens: "bondedTokens",
 };

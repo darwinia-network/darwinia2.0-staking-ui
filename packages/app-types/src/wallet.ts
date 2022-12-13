@@ -45,7 +45,7 @@ export interface WalletCtx {
   provider: Web3Provider | undefined;
   signer: JsonRpcSigner | undefined;
   contract: Contract | undefined;
-  isConnecting: boolean;
+  isRequestingWalletConnection: boolean;
   isWalletConnected: boolean;
   connectWallet: () => void;
   addKTONtoWallet: () => void;
