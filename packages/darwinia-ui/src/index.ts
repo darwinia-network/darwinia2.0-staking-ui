@@ -16,6 +16,7 @@ import Dropdown from "./components/Dropdown";
 import DateRangePicker from "./components/DateRangePicker";
 import notification from "./components/Notification";
 import Menu from "./components/Menu";
+import CheckboxGroup from "./components/CheckboxGroup";
 
 export {
   Button,
@@ -36,6 +37,7 @@ export {
   DateRangePicker,
   notification,
   Menu,
+  CheckboxGroup,
 };
 
 /*Types*/
@@ -58,6 +60,7 @@ import { DateRangePickerRef, DateRangePickerProps } from "./components/DateRange
 import { Placement as NotificationPlacement, NotificationConfig } from "./components/Notification";
 import { Placement as DropdownPlacement } from "./components/Dropdown";
 import { MenuObject, MenuProps } from "./components/Menu";
+import { CheckboxProps, CheckboxItem } from "./components/CheckboxGroup";
 
 export type {
   PopoverReport,
@@ -95,4 +98,6 @@ export type {
   DropdownPlacement,
   MenuObject,
   MenuProps,
+  CheckboxProps,
+  CheckboxItem,
 };

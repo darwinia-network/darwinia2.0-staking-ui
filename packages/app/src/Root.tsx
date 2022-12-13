@@ -24,11 +24,11 @@ const Root = () => {
     /* if the user has just connected to the wallet, this will redirect to the
      * staking page */
     if (isWalletConnected && !isUserAuthed.current) {
-      isUserAuthed.current = true;
       setStore("isConnectedToWallet", isWalletConnected);
       if (location.pathname === "/") {
         /* This user is connected to wallet already but trying to go to the homepage,
          * force redirect him to the staking page  */
+        isUserAuthed.current = true;
         navigate(`/staking${location.search}`, { replace: true });
         return;
       }
