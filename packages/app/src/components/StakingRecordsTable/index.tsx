@@ -1,4 +1,4 @@
-import { Button, Column, Table, Tooltip, TableRow, Popover } from "@darwinia/ui";
+import { Button, Column, Table, Tooltip, TableRow, Popover, ModalEnhanced, Input } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@package/app-locale";
 import { useWallet } from "@darwinia/app-wallet";
 import JazzIcon from "../JazzIcon";
@@ -7,7 +7,7 @@ import plusIcon from "../../assets/images/plus-square.svg";
 import minusIcon from "../../assets/images/minus-square.svg";
 import helpIcon from "../../assets/images/help.svg";
 import reloadIcon from "../../assets/images/reload.svg";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface Bond {
   amount: string;
@@ -15,7 +15,7 @@ interface Bond {
   isDeposit: boolean;
 }
 
-interface Delegation extends TableRow {
+interface Delegate extends TableRow {
   collator?: string;
   previousReward?: string;
   staked: string;
@@ -31,10 +31,33 @@ interface Delegation extends TableRow {
 const StakingRecordsTable = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
-  const [collatorMoreOptionsTrigger, setCollatorMoreOptionsTrigger] = useState<HTMLButtonElement | null>(null);
-  const [delegatorMoreOptionsTrigger, setDelegatorMoreOptionsTrigger] = useState<HTMLButtonElement | null>(null);
+  const [showBondModal, setShowBondModal] = useState<boolean>(false);
+  const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
+  const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
+  const delegateToUpdate = useRef<Delegate | null>(null);
 
-  const dataSource: Delegation[] = [
+  const onCloseBondModal = () => {
+    delegateToUpdate.current = null;
+    setShowBondModal(false);
+  };
+
+  const onShowBondModal = (modalType: BondModalType, delegate: Delegate, symbol: string) => {
+    delegateToUpdate.current = delegate;
+    setTokenSymbolToUpdate(symbol);
+    setBondModalType(modalType);
+    setShowBondModal(true);
+  };
+
+  const onShowDepositModal = (modalType: BondModalType, delegate: Delegate, symbol: string) => {
+    delegateToUpdate.current = delegate;
+    console.log("show deposit modal");
+  };
+
+  const onConfirmBondModal = () => {
+    console.log("confirm====");
+  };
+
+  const dataSource: Delegate[] = [
     {
       id: "1",
       collator: "chchainkoney.com",
@@ -184,7 +207,7 @@ const StakingRecordsTable = () => {
     },
   ];
 
-  const columns: Column<Delegation>[] = [
+  const columns: Column<Delegate>[] = [
     {
       id: "1",
       title: <div>{t(localeKeys.collator)}</div>,
@@ -250,9 +273,33 @@ const StakingRecordsTable = () => {
                     {item.amount} {item.isDeposit ? t(localeKeys.deposit) : ""} {item.symbol.toUpperCase()}
                   </div>
                   {row.isMigrated ? null : (
-                    <div className={"flex gap-[5px]"}>
-                      <img src={plusIcon} className={"clickable w-[16px]"} alt="image" />
-                      <img src={minusIcon} className={"clickable w-[16px]"} alt="image" />
+                    <div>
+                      <div className={"flex gap-[5px]"}>
+                        <img
+                          onClick={() => {
+                            if (item.isDeposit) {
+                              onShowDepositModal("bondMore", row, item.symbol);
+                              return;
+                            }
+                            onShowBondModal("bondMore", row, item.symbol);
+                          }}
+                          src={plusIcon}
+                          className={"clickable w-[16px]"}
+                          alt="image"
+                        />
+                        <img
+                          onClick={() => {
+                            if (item.isDeposit) {
+                              onShowDepositModal("unbond", row, item.symbol);
+                              return;
+                            }
+                            onShowBondModal("unbond", row, item.symbol);
+                          }}
+                          src={minusIcon}
+                          className={"clickable w-[16px]"}
+                          alt="image"
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -305,11 +352,9 @@ const StakingRecordsTable = () => {
 
         if (row.canChangeCollator) {
           const options = (
-            <>
-              <div>Del Option 1</div>
-              <div>Del Option 2</div>
-              <div>Del Option 3</div>
-            </>
+            <div className={"flex items-end flex-col gap-[5px]"}>
+              <Button btnType={"secondary"}>{t(localeKeys.undelegate)}</Button>
+            </div>
           );
           return (
             <div className={"flex gap-[10px]"}>
@@ -322,11 +367,10 @@ const StakingRecordsTable = () => {
         }
 
         const options = (
-          <>
-            <div>Collator Option 1</div>
-            <div>Collator Option 2</div>
-            <div>Collator Option 3</div>
-          </>
+          <div className={"flex flex-col items-end gap-[5px]"}>
+            <Button btnType={"secondary"}>{t(localeKeys.sessionKey)}</Button>
+            <Button btnType={"secondary"}>{t(localeKeys.stopCollating)}</Button>
+          </div>
         );
 
         return (
@@ -345,9 +389,19 @@ const StakingRecordsTable = () => {
       <div className={"flex flex-col mt-[20px]"}>
         <Table noDataText={t(localeKeys.noDelegations)} dataSource={dataSource} columns={columns} />
       </div>
+      <BondTokenModal
+        symbol={tokenSymbolToUpdate}
+        onCancel={onCloseBondModal}
+        onConfirm={onConfirmBondModal}
+        type={bondModalType}
+        isVisible={showBondModal}
+        onClose={onCloseBondModal}
+      />
     </div>
   );
 };
+
+export default StakingRecordsTable;
 
 interface MoreOptionsProps {
   options: JSX.Element;
@@ -361,10 +415,60 @@ const MoreOptions = ({ options }: MoreOptionsProps) => {
         ...
       </Button>
       <Popover triggerElementState={moreOptionsTrigger} triggerEvent={"click"}>
-        <div className={"border border-primary bg-black p-[10px]"}>{options}</div>
+        <div>{options}</div>
       </Popover>
     </>
   );
 };
 
-export default StakingRecordsTable;
+type BondModalType = "bondMore" | "unbond";
+
+interface BondProps {
+  symbol: string;
+  type: BondModalType;
+  isVisible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol }: BondProps) => {
+  const { t } = useAppTranslation();
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const getErrorJSX = () => {
+    return hasError ? <div /> : null;
+  };
+  return (
+    <ModalEnhanced
+      modalTitle={type === "bondMore" ? t(localeKeys.bondMore) : t(localeKeys.unbond)}
+      cancelText={t(localeKeys.cancel)}
+      confirmText={type === "bondMore" ? t(localeKeys.bond) : t(localeKeys.unbond)}
+      onConfirm={onConfirm}
+      confirmLoading={isLoading}
+      isVisible={isVisible}
+      onClose={onClose}
+      onCancel={onCancel}
+      className={"!max-w-[400px]"}
+    >
+      <div>
+        {type === "unbond" && (
+          <div className={"pb-[20px] mb-[20px] divider border-b"}>
+            {t(localeKeys.unbondTimeInfo, { unbondingTime: "14 days" })}
+          </div>
+        )}
+        <div className={"flex flex-col gap-[10px]"}>
+          <div className={"text-12-bold"}>{t(localeKeys.amount)}</div>
+          <Input
+            hasErrorMessage={false}
+            error={getErrorJSX()}
+            bottomTip={<div className={"text-primary"}>+0 {t(localeKeys.power)}</div>}
+            leftIcon={null}
+            placeholder={t(localeKeys.balanceAmount, { amount: 0 })}
+            rightSlot={<div className={"flex items-center px-[10px]"}>{symbol}</div>}
+          />
+        </div>
+      </div>
+    </ModalEnhanced>
+  );
+};

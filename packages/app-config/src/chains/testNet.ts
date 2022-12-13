@@ -3,7 +3,7 @@ import contractABI from "../abi/testNetContract.json";
 
 export const testNet: ChainConfig = {
   name: "Pangolin",
-  displayName: "testNet",
+  displayName: "TestNet",
   explorerURL: ["https://pangolin.subscan.io/"],
   rpcURL: ["https://pangolin-rpc.darwinia.network/"],
   kton: {
