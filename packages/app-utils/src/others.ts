@@ -28,3 +28,7 @@ export const toShortAddress = (accountAddress: string) => {
   const secondPart = accountAddress.slice(-4);
   return `${firstPart}...${secondPart}`;
 };
+
+export const parseNumber = (value: string): number | undefined => {
+  return value.trim().length === 0 ? undefined : Number(value);
+};

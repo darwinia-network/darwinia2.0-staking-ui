@@ -52,4 +52,10 @@ export const localeKeys = {
   amount: "amount",
   bondMoreDeposits: "bondMoreDeposits",
   unbondDeposits: "unbondDeposits",
+  updateCommission: "updateCommission",
+  commissionPercentInfo: "commissionPercentInfo",
+  update: "update",
+  updateSessionKey: "updateSessionKey",
+  sureToUndelegate: "sureToUndelegate",
+  undelegationConfirmInfo: "undelegationConfirmInfo",
 };

@@ -23,7 +23,7 @@ const enUs = {
   [localeKeys.selectCollator]: "Select a collator",
   [localeKeys.stakingBasicInfo]: `Note that it takes 1 session(～{{sessionTime}}) to get rewards if your collator get elected. The delegation locks your tokens, and You need to unbond in order for your staked tokens to be transferrable again, which takes ～{{unbondTime}}.`,
   [localeKeys.balanceAmount]: "Balance: {{amount}}",
-  [localeKeys.useDeposit]: "Use A Deposit",
+  [localeKeys.useDeposit]: "Use a deposit",
   [localeKeys.stake]: "Stake",
   [localeKeys.noDelegations]: "No delegations",
   [localeKeys.waitingCollatorWarning]: `This collator is currently in the waiting pool. The rewards will not be earned until the collator joins the active pool.`,
@@ -44,7 +44,7 @@ const enUs = {
   [localeKeys.power]: "Power",
   [localeKeys.sessionKey]: "Session key",
   [localeKeys.stopCollating]: "Stop collating",
-  [localeKeys.undelegate]: "undelegate",
+  [localeKeys.undelegate]: "Undelegate",
   [localeKeys.bond]: "Bond",
   [localeKeys.unbond]: "Unbond",
   [localeKeys.bondMore]: "Bond more",
@@ -52,6 +52,12 @@ const enUs = {
   [localeKeys.amount]: "Amount",
   [localeKeys.bondMoreDeposits]: "Bond more deposits",
   [localeKeys.unbondDeposits]: "Unbond deposits",
+  [localeKeys.updateCommission]: "Update commission",
+  [localeKeys.commissionPercentInfo]: "The percent a collator takes off the top of the due staking rewards.",
+  [localeKeys.update]: "Update",
+  [localeKeys.updateSessionKey]: "Update session key",
+  [localeKeys.sureToUndelegate]: "sure to undelegate now?",
+  [localeKeys.undelegationConfirmInfo]: `The undelegation takes {{unbondingTime}} and then it will have to be manually executed to make those tokens transferrable. The power won’t work immediately after you undelegate the collator.`,
 };
 
 export default enUs;
