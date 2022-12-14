@@ -58,6 +58,14 @@ const enUs = {
   [localeKeys.updateSessionKey]: "Update session key",
   [localeKeys.sureToUndelegate]: "sure to undelegate now?",
   [localeKeys.undelegationConfirmInfo]: `The undelegation takes {{unbondingTime}} and then it will have to be manually executed to make those tokens transferrable. The power won’t work immediately after you undelegate the collator.`,
+  [localeKeys.tokensToBeReleased]: `{{amount}} is unbonding and will be released in {{timeLeft}}.`,
+  [localeKeys.cancelUnbonding]: "Cancel unbonding",
+  [localeKeys.tokensReadyToRelease]: `{{amount}} has complete the unbonding exit delay period.`,
+  [localeKeys.releaseNow]: "Release them now",
+  [localeKeys.depositsToBeReleased]: `{{amount}} Deposit {{token}} is unbonding and will be released to deposit in {{timeLeft}}.`,
+  [localeKeys.depositsReadyToRelease]: `{{amount}} has complete the unbonding exit delay period.`,
+  [localeKeys.releaseThem]: "Release them",
+  [localeKeys.toTermDeposit]: "to term deposit.",
 };
 
 export default enUs;

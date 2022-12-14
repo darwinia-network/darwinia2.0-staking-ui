@@ -58,6 +58,8 @@ const StakingRecordsTable = () => {
   const { selectedNetwork } = useWallet();
   const [showBondTokenModal, setShowBondTokenModal] = useState<boolean>(false);
   const [showCommissionUpdateModal, setShowCommissionUpdateModal] = useState<boolean>(false);
+  const [showSessionKeyUpdateModal, setShowSessionKeyUpdateModal] = useState<boolean>(false);
+  const [showUndelegateModal, setShowUndelegateModal] = useState<boolean>(false);
   const [showBondDepositModal, setShowBondDepositModal] = useState<boolean>(false);
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
   const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
@@ -82,6 +84,14 @@ const StakingRecordsTable = () => {
     setShowCommissionUpdateModal(false);
   };
 
+  const onCloseSessionKeyUpdateModal = () => {
+    setShowSessionKeyUpdateModal(false);
+  };
+
+  const onCloseUndelegateModal = () => {
+    setShowUndelegateModal(false);
+  };
+
   const onCloseBondDepositModal = () => {
     delegateToUpdate.current = null;
     setShowBondDepositModal(false);
@@ -100,20 +110,64 @@ const StakingRecordsTable = () => {
     setShowBondDepositModal(true);
   };
 
-  const onShowCommissionUpdateModal = () => {
+  const onShowCommissionUpdateModal = (delegate: Delegate) => {
+    delegateToUpdate.current = delegate;
     setShowCommissionUpdateModal(true);
   };
 
+  const onShowSessionKeyUpdateModal = (delegate: Delegate) => {
+    delegateToUpdate.current = delegate;
+    // trigger click to auto close the popover
+    document.body.click();
+    setShowSessionKeyUpdateModal(true);
+  };
+
+  const onStopCollatingModal = (delegate: Delegate) => {
+    document.body.click();
+    console.log("stop collating=====");
+  };
+
+  const onShowUndelegateModal = (delegate: Delegate) => {
+    delegateToUpdate.current = delegate;
+    // trigger click to auto close the popover
+    document.body.click();
+    setShowUndelegateModal(true);
+  };
+
   const onConfirmBondToken = () => {
-    console.log("confirm bond token====");
+    console.log("confirm bond token======");
   };
 
   const onConfirmCommissionUpdate = () => {
-    console.log("confirm commission update====");
+    console.log("confirm commission update======");
+  };
+
+  const onConfirmSessionKeyUpdate = () => {
+    console.log("confirm session key update====");
+  };
+
+  const onConfirmUndelegation = () => {
+    console.log("confirm undelegation======");
   };
 
   const onConfirmBondDeposit = () => {
-    console.log("confirm bond token====");
+    console.log("confirm bond token======");
+  };
+
+  const onCancelDepositUnbonding = () => {
+    console.log("cancel deposit unbonding====");
+  };
+
+  const onCancelTokenUnbonding = () => {
+    console.log("cancel token unbonding====");
+  };
+
+  const onReleaseDeposit = () => {
+    console.log("release deposit=====");
+  };
+
+  const onReleaseToken = () => {
+    console.log("release token=====");
   };
 
   const dataSource: Delegate[] = [
@@ -326,8 +380,67 @@ const StakingRecordsTable = () => {
         return (
           <div>
             {row.bondedTokens.map((item, index) => {
-              return (
-                <div className={"flex gap-[5px]"} key={`${row.collator}-${index}`}>
+              let message: JSX.Element = <div />;
+              if (item.isDeposit) {
+                // create a message for unbonding deposits
+                message = (
+                  <div className={"flex flex-col gap-[10px] text-14-bold !text-[10px] !leading-[15px]"}>
+                    <div>
+                      {t(localeKeys.depositsToBeReleased, { amount: "11", token: "RING", timeLeft: "7 days" })}
+                      <span
+                        onClick={() => {
+                          onCancelDepositUnbonding();
+                        }}
+                        className={"text-primary pl-[8px] clickable"}
+                      >
+                        {t(localeKeys.cancelUnbonding)}
+                      </span>
+                    </div>
+                    <div>
+                      {t(localeKeys.depositsReadyToRelease, { amount: "11 RING" })}
+                      <span
+                        onClick={() => {
+                          onReleaseDeposit();
+                        }}
+                        className={"text-primary clickable"}
+                      >
+                        &nbsp;{t(localeKeys.releaseThem)}&nbsp;
+                      </span>
+                      {t(localeKeys.toTermDeposit)}
+                    </div>
+                  </div>
+                );
+              } else {
+                // create a message for unbonding RING
+                message = (
+                  <div className={"flex flex-col gap-[10px] text-14-bold !text-[10px] !leading-[15px]"}>
+                    <div>
+                      {t(localeKeys.tokensToBeReleased, { amount: "11 RING", timeLeft: "7 days" })}
+                      <span
+                        onClick={() => {
+                          onCancelTokenUnbonding();
+                        }}
+                        className={"text-primary pl-[8px] clickable"}
+                      >
+                        {t(localeKeys.cancelUnbonding)}
+                      </span>
+                    </div>
+                    <div>
+                      {t(localeKeys.tokensReadyToRelease, { amount: "11 RING" })}
+                      <span
+                        onClick={() => {
+                          onReleaseToken();
+                        }}
+                        className={"text-primary pl-[8px] clickable"}
+                      >
+                        {t(localeKeys.releaseNow)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+              const bondJSX = (
+                <div className={"flex gap-[5px]"}>
                   <div>
                     {item.amount} {item.isDeposit ? t(localeKeys.deposit) : ""} {item.symbol.toUpperCase()}
                   </div>
@@ -361,6 +474,13 @@ const StakingRecordsTable = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              );
+              return (
+                <div className={"flex"} key={`${row.collator}-${index}`}>
+                  <Tooltip extendTriggerToPopover={true} offset={[0, 0]} message={message}>
+                    {bondJSX}
+                  </Tooltip>
                 </div>
               );
             })}
@@ -412,7 +532,14 @@ const StakingRecordsTable = () => {
         if (row.canChangeCollator) {
           const options = (
             <div className={"flex items-end flex-col gap-[5px]"}>
-              <Button btnType={"secondary"}>{t(localeKeys.undelegate)}</Button>
+              <Button
+                onClick={() => {
+                  onShowUndelegateModal(row);
+                }}
+                btnType={"secondary"}
+              >
+                {t(localeKeys.undelegate)}
+              </Button>
             </div>
           );
           return (
@@ -427,14 +554,34 @@ const StakingRecordsTable = () => {
 
         const options = (
           <div className={"flex flex-col items-end gap-[5px]"}>
-            <Button btnType={"secondary"}>{t(localeKeys.sessionKey)}</Button>
-            <Button btnType={"secondary"}>{t(localeKeys.stopCollating)}</Button>
+            <Button
+              onClick={() => {
+                onShowSessionKeyUpdateModal(row);
+              }}
+              btnType={"secondary"}
+            >
+              {t(localeKeys.sessionKey)}
+            </Button>
+            <Button
+              onClick={() => {
+                onStopCollatingModal(row);
+              }}
+              btnType={"secondary"}
+            >
+              {t(localeKeys.stopCollating)}
+            </Button>
           </div>
         );
 
         return (
           <div className={"flex gap-[10px]"}>
-            <Button onClick={onShowCommissionUpdateModal} className={"!h-[36px] !px-[15px]"} btnType={"secondary"}>
+            <Button
+              onClick={() => {
+                onShowCommissionUpdateModal(row);
+              }}
+              className={"!h-[36px] !px-[15px]"}
+              btnType={"secondary"}
+            >
               {t(localeKeys.commission)}
             </Button>
             <MoreOptions options={options} />
@@ -471,6 +618,19 @@ const StakingRecordsTable = () => {
         onConfirm={onConfirmCommissionUpdate}
         isVisible={showCommissionUpdateModal}
         onClose={onCloseCommissionUpdateModal}
+      />
+      <UpdateSessionKeyModal
+        onCancel={onCloseSessionKeyUpdateModal}
+        onConfirm={onConfirmSessionKeyUpdate}
+        isVisible={showSessionKeyUpdateModal}
+        onClose={onCloseSessionKeyUpdateModal}
+      />
+      <UndelegationModal
+        delegation={delegateToUpdate.current}
+        onCancel={onCloseUndelegateModal}
+        onConfirm={onConfirmUndelegation}
+        isVisible={showUndelegateModal}
+        onClose={onCloseUndelegateModal}
       />
     </div>
   );
@@ -603,6 +763,7 @@ const BondDepositModal = ({
 
   useEffect(() => {
     setSelectedDeposit([]);
+    setLoading(false);
     let deposits = [];
     if (type === "bondMore") {
       /* filter out all deposits that have already been bonded, only take the unbonded deposits */
@@ -631,12 +792,16 @@ const BondDepositModal = ({
     setSelectedDeposit(allItems);
   };
 
+  const onConfirmUndelegate = () => {
+    onConfirm();
+  };
+
   return (
     <ModalEnhanced
       modalTitle={type === "bondMore" ? t(localeKeys.bondMoreDeposits) : t(localeKeys.unbondDeposits)}
       cancelText={t(localeKeys.cancel)}
       confirmText={type === "bondMore" ? t(localeKeys.bond) : t(localeKeys.unbond)}
-      onConfirm={onConfirm}
+      onConfirm={onConfirmUndelegate}
       confirmLoading={isLoading}
       isVisible={isVisible}
       onClose={onClose}
@@ -731,6 +896,113 @@ const UpdateCommissionModal = ({ isVisible, onClose, onConfirm, onCancel }: Comm
             placeholder={t(localeKeys.commission)}
           />
         </div>
+      </div>
+    </ModalEnhanced>
+  );
+};
+
+interface SessionKeyProps {
+  isVisible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+/*update session key*/
+const UpdateSessionKeyModal = ({ isVisible, onClose, onConfirm, onCancel }: SessionKeyProps) => {
+  const { t } = useAppTranslation();
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
+
+  useEffect(() => {
+    setValue("");
+    setLoading(false);
+    setHasError(false);
+  }, [isVisible]);
+
+  const onInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setHasError(false);
+    setValue(event.target.value);
+  };
+
+  const onConfirmUpdate = () => {
+    const sessionKey = value.trim();
+    if (sessionKey.length === 0) {
+      setHasError(true);
+      return;
+    }
+
+    console.log(sessionKey);
+    setLoading(true);
+    // onConfirm();
+  };
+
+  return (
+    <ModalEnhanced
+      modalTitle={t(localeKeys.updateSessionKey)}
+      cancelText={t(localeKeys.cancel)}
+      confirmText={t(localeKeys.update)}
+      onConfirm={onConfirmUpdate}
+      isLoading={isLoading}
+      isVisible={isVisible}
+      onClose={onClose}
+      onCancel={onCancel}
+      className={"!max-w-[400px]"}
+    >
+      <div className={"divider border-b pb-[20px]"}>
+        <div className={"flex flex-col gap-[10px]"}>
+          <div className={"flex items-center gap-[10px]"}>
+            <div className={"text-12-bold"}>{t(localeKeys.sessionKey)}</div>
+          </div>
+          <textarea
+            value={value}
+            placeholder={t(localeKeys.sessionKey)}
+            onChange={onInputChange}
+            className={`bg-blackSecondary resize-none ${
+              hasError ? "border-[red]" : "border-white"
+            } border h-[180px] py-[2px] px-[10px]`}
+          />
+        </div>
+      </div>
+    </ModalEnhanced>
+  );
+};
+
+interface UndelegationProps {
+  isVisible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+  delegation: Delegate | null;
+}
+
+/*Bond more or less deposits*/
+const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel }: UndelegationProps) => {
+  const { t } = useAppTranslation();
+  const [isLoading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [isVisible]);
+
+  const onConfirmUndelegation = () => {
+    onConfirm();
+  };
+
+  return (
+    <ModalEnhanced
+      modalTitle={t(localeKeys.sureToUndelegate)}
+      cancelText={t(localeKeys.cancel)}
+      confirmText={t(localeKeys.undelegate)}
+      onConfirm={onConfirmUndelegation}
+      confirmLoading={isLoading}
+      isVisible={isVisible}
+      onClose={onClose}
+      onCancel={onCancel}
+      className={"!max-w-[400px]"}
+    >
+      <div className={"pb-[20px] divider border-b text-12"}>
+        {t(localeKeys.undelegationConfirmInfo, { unbondingTime: "14 days" })}
       </div>
     </ModalEnhanced>
   );
