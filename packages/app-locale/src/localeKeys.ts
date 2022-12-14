@@ -58,4 +58,12 @@ export const localeKeys = {
   updateSessionKey: "updateSessionKey",
   sureToUndelegate: "sureToUndelegate",
   undelegationConfirmInfo: "undelegationConfirmInfo",
+  tokensToBeReleased: "tokensToBeReleased",
+  cancelUnbonding: "cancelUnbonding",
+  tokensReadyToRelease: "tokensReadyToRelease",
+  releaseNow: "releaseNow",
+  depositsToBeReleased: "depositsToBeReleased",
+  depositsReadyToRelease: "depositsReadyToRelease",
+  toTermDeposit: "toTermDeposit",
+  releaseThem: "releaseThem",
 };
