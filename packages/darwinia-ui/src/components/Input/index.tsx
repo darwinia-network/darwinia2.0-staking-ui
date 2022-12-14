@@ -10,6 +10,7 @@ export interface InputProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLIn
   onClear?: () => void;
   rightSlot?: JSX.Element;
   error?: JSX.Element | null;
+  hasErrorMessage?: boolean;
   bottomTip?: JSX.Element | null;
 }
 
@@ -25,6 +26,7 @@ const Input = ({
   type = "text",
   error,
   bottomTip,
+  hasErrorMessage = true,
   ...rest
 }: InputProps) => {
   const hasCustomLeftIcon = typeof leftIcon !== "undefined";
@@ -76,7 +78,7 @@ const Input = ({
           </div>
         )}
       </div>
-      {error && <div className={"dw-bottom-tip error"}>{error}</div>}
+      {error && hasErrorMessage && <div className={"dw-bottom-tip error"}>{error}</div>}
       {bottomTip && <div className={"dw-bottom-tip"}>{bottomTip}</div>}
     </div>
   );

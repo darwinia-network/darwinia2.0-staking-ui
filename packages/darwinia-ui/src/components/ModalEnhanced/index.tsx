@@ -30,6 +30,7 @@ export interface ModalEnhancedProps extends DetailedHTMLProps<HTMLAttributes<HTM
   confirmLoading?: boolean;
   confirmDisabled?: boolean;
   isLoading?: boolean;
+  spinnerText?: string;
 }
 
 /**
@@ -54,6 +55,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
       confirmLoading = false,
       confirmDisabled = false,
       isLoading = false,
+      spinnerText,
     },
     ref
   ) => {
@@ -118,6 +120,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
           <Spinner
             maskClassName={"dw-enhanced-mask"}
             isLoading={isLoading}
+            spinnerText={spinnerText}
             className={`dw-modal-enhanced-content ${contentClassName}`}
           >
             <>

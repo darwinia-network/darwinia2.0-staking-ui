@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@darwinia/app-types": "^1.0.0",
     "@darwinia/app-utils": "^1.0.0",
     "@darwinia/app-wallet": "^1.0.0",
     "@darwinia/ui": "^0.0.1",
