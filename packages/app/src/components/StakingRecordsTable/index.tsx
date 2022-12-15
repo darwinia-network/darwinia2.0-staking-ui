@@ -882,7 +882,7 @@ const UpdateCommissionModal = ({ isVisible, onClose, onConfirm, onCancel }: Comm
       <div className={"divider border-b pb-[20px]"}>
         <div className={"flex flex-col gap-[10px]"}>
           <div className={"flex items-center gap-[10px]"}>
-            <div className={"text-12-bold"}>{t(localeKeys.commission)}</div>
+            <div className={"text-12-bold"}>{t(localeKeys.commission)} (%)</div>
             <Tooltip message={t(localeKeys.commissionPercentInfo)}>
               <img className={"w-[16px]"} src={helpIcon} alt="image" />
             </Tooltip>
@@ -894,6 +894,7 @@ const UpdateCommissionModal = ({ isVisible, onClose, onConfirm, onCancel }: Comm
             error={getErrorJSX()}
             leftIcon={null}
             placeholder={t(localeKeys.commission)}
+            rightSlot={<div className={"flex items-center px-[10px]"}>%</div>}
           />
         </div>
       </div>

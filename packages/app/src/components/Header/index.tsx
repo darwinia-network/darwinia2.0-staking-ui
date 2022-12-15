@@ -90,7 +90,7 @@ const Header = () => {
                 <div className={"border-primary border px-[15px] py-[5px]"}>
                   <div className={"flex items-center gap-[10px]"}>
                     <JazzIcon size={20} address={ethers.utils.getAddress(selectedAccount)} />
-                    <div>{toShortAddress(ethers.utils.getAddress(selectedAccount))}</div>
+                    <div className={"select-none"}>{toShortAddress(ethers.utils.getAddress(selectedAccount))}</div>
                   </div>
                 </div>
               ) : (

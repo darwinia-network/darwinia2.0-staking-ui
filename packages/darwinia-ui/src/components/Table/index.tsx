@@ -26,6 +26,7 @@ export interface TableProps<T> {
   dataSource: T[];
   columns: Column<T>[];
   minWidth?: string;
+  maxHeight?: string;
   onSort?: (sortEvent: SortEvent<T>) => void;
   headerSlot?: JSX.Element;
   footerSlot?: JSX.Element;
@@ -33,6 +34,7 @@ export interface TableProps<T> {
   noDataText?: string;
   isLoading?: boolean;
   spinnerText?: string;
+  className?: string;
 }
 
 export interface TableRow extends Object {
@@ -44,10 +46,12 @@ export interface TableRow extends Object {
  */
 
 const Table = <T extends TableRow>({
+  className = "",
   dataSource = [],
   columns = [],
   onSort: onTableSort,
   minWidth = "1100px",
+  maxHeight,
   headerSlot,
   footerSlot,
   pagination,
@@ -77,10 +81,10 @@ const Table = <T extends TableRow>({
   };
   return (
     <Spinner spinnerText={spinnerText} isLoading={isLoading}>
-      <div className={"dw-table"}>
+      <div className={`dw-table ${className}`}>
         {headerSlot}
         <div className={"dw-table-scrollview dw-custom-scrollbar"}>
-          <div style={{ minWidth: minWidth }}>
+          <div style={{ minWidth: minWidth, maxHeight: maxHeight }}>
             {/*Table header*/}
             <div className={"dw-table-header"}>
               {columns.map((column) => {

@@ -32,3 +32,13 @@ export const toShortAddress = (accountAddress: string) => {
 export const parseNumber = (value: string): number | undefined => {
   return value.trim().length === 0 ? undefined : Number(value);
 };
+
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return Promise.resolve(true);
+  } catch (e) {
+    return Promise.resolve(false);
+    //ignore
+  }
+};

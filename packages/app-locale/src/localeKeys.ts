@@ -66,4 +66,11 @@ export const localeKeys = {
   depositsReadyToRelease: "depositsReadyToRelease",
   toTermDeposit: "toTermDeposit",
   releaseThem: "releaseThem",
+  activePool: "activePool",
+  waitingPool: "waitingPool",
+  joinCollator: "joinCollator",
+  activePoolInfo: "activePoolInfo",
+  searchForCollator: "searchForCollator",
+  blocksLastSession: "blocksLastSession",
+  totalStaked: "totalStaked",
 };

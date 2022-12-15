@@ -7,13 +7,21 @@ import caretDownIcon from "../../assets/images/caret-down.svg";
 import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";
 import StakingRecordsTable from "../StakingRecordsTable";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";
+import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork, selectedAccount } = useWallet();
   const [selectedDeposits, setSelectedDeposits] = useState<Deposit[]>([]);
+  const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
+
+  const onSelectCollator = () => {
+    if (selectCollatorModalRef.current) {
+      selectCollatorModalRef.current.toggle();
+    }
+  };
 
   const depositList: Deposit[] = [
     {
@@ -83,9 +91,16 @@ const StakingOverview = () => {
           {t(localeKeys.stakingBasicInfo, { sessionTime: "24 hours", unbondTime: "14 days" })}
         </div>
         <div className={"flex flex-col gap-[10px]"}>
-          <Button className={"w-full"} btnType={"secondary"}>
+          <Button
+            onClick={() => {
+              onSelectCollator();
+            }}
+            className={"w-full"}
+            btnType={"secondary"}
+          >
             {t(localeKeys.selectCollator)}
           </Button>
+          <SelectCollatorModal ref={selectCollatorModalRef} type={""} />
           {/*Selected collator*/}
           <div className={"flex items-center gap-[10px] px-[15px] lg:px-[25px] lg:py-[20px] border border-primary"}>
             <div className={"shrink-0"}>
