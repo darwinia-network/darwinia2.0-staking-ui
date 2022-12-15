@@ -8,7 +8,7 @@ import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";
 import StakingRecordsTable from "../StakingRecordsTable";
 import { useRef, useState } from "react";
-import { Deposit } from "@darwinia/app-types";
+import { Deposit, Collator } from "@darwinia/app-types";
 import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
 
 const StakingOverview = () => {
@@ -16,6 +16,7 @@ const StakingOverview = () => {
   const { selectedNetwork, selectedAccount } = useWallet();
   const [selectedDeposits, setSelectedDeposits] = useState<Deposit[]>([]);
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
+  const [selectedCollator, setSelectedCollator] = useState<Collator>();
 
   const onSelectCollator = () => {
     if (selectCollatorModalRef.current) {
@@ -59,6 +60,10 @@ const StakingOverview = () => {
     setSelectedDeposits(allItems);
   };
 
+  const onCollatorSelected = (collator: Collator) => {
+    setSelectedCollator(collator);
+  };
+
   const getDepositsDropdown = () => {
     if (depositList.length === 0) {
       return (
@@ -91,31 +96,40 @@ const StakingOverview = () => {
           {t(localeKeys.stakingBasicInfo, { sessionTime: "24 hours", unbondTime: "14 days" })}
         </div>
         <div className={"flex flex-col gap-[10px]"}>
-          <Button
-            onClick={() => {
-              onSelectCollator();
-            }}
-            className={"w-full"}
-            btnType={"secondary"}
-          >
-            {t(localeKeys.selectCollator)}
-          </Button>
-          <SelectCollatorModal ref={selectCollatorModalRef} type={""} />
+          {!selectedCollator && (
+            <Button
+              onClick={() => {
+                onSelectCollator();
+              }}
+              className={"w-full"}
+              btnType={"secondary"}
+            >
+              {t(localeKeys.selectCollator)}
+            </Button>
+          )}
+          <SelectCollatorModal ref={selectCollatorModalRef} onCollatorSelected={onCollatorSelected} type={"set"} />
           {/*Selected collator*/}
-          <div className={"flex items-center gap-[10px] px-[15px] lg:px-[25px] lg:py-[20px] border border-primary"}>
-            <div className={"shrink-0"}>
-              <JazzIcon size={30} address={selectedAccount ?? ""} />
-            </div>
-            <div className={"lg:flex lg:gap-[10px] min-w-0"}>
-              <div>darwinia</div>
-              <div>
-                <div className={"break-words"}>{selectedAccount}</div>
+          {selectedCollator && (
+            <div className={"flex items-center gap-[10px] px-[15px] lg:px-[25px] lg:py-[20px] border border-primary"}>
+              <div className={"shrink-0"}>
+                <JazzIcon size={30} address={selectedCollator.accountAddress ?? ""} />
+              </div>
+              <div className={"lg:flex lg:gap-[10px] min-w-0"}>
+                <div>{selectedCollator.accountName}</div>
+                <div>
+                  <div className={"break-words"}>{selectedCollator.accountAddress}</div>
+                </div>
+              </div>
+              <div
+                onClick={() => {
+                  onSelectCollator();
+                }}
+                className={"shrink-0"}
+              >
+                <img className={"w-[24px] clickable"} src={switchIcon} alt="image" />
               </div>
             </div>
-            <div className={"shrink-0"}>
-              <img className={"w-[24px] clickable"} src={switchIcon} alt="image" />
-            </div>
-          </div>
+          )}
           <div className={"flex flex-col lg:flex-row gap-[10px] divider border-b pb-[10px]"}>
             <div className={"flex-1"}>
               <Input
