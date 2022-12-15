@@ -15,37 +15,36 @@
 html {
   @apply bg-black;
 }
-/*
-!*Custom scrollbar starts here*!
+/*Custom scrollbar starts here*/
 @media (min-width: 1024px) {
-  !*Works on Mozilla*!
+  /*Works on Mozilla*/
   body {
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.7) rgba(255,255,255,0.2);
   }
-  !*Works on Chrome, Safari, Opera and others with webkit kernel*!
-  !* width *!
+  /*Works on Chrome, Safari, Opera and others with webkit kernel*/
+  /* width */
   body::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
 
-  !* Track *!
+  /* Track */
   body::-webkit-scrollbar-track {
     background: rgba(255,255,255,0.2);
     border-radius: 8px;
   }
 
-  !* Handle *!
+  /* Handle */
   body::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,0.7);
     border-radius: 8px;
   }
-  !* Handle on hover *!
+  /* Handle on hover */
   body::-webkit-scrollbar-thumb:hover {
     background: rgba(255,255,255,1);
   }
-}*/
+}
 
 * {
   -webkit-tap-highlight-color: rgb(255 255 255 / 0%);

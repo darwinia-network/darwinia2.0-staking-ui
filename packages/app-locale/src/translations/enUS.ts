@@ -66,6 +66,14 @@ const enUs = {
   [localeKeys.depositsReadyToRelease]: `{{amount}} has complete the unbonding exit delay period.`,
   [localeKeys.releaseThem]: "Release them",
   [localeKeys.toTermDeposit]: "to term deposit.",
+  [localeKeys.activePool]: "Active pool",
+  [localeKeys.activePool]: "Active pool",
+  [localeKeys.waitingPool]: "Waiting pool",
+  [localeKeys.joinCollator]: "Join collator",
+  [localeKeys.activePoolInfo]: "These candidates are in the active collator pool of the current Session.",
+  [localeKeys.searchForCollator]: "Search for a collator",
+  [localeKeys.blocksLastSession]: `Blocks <div>last session</div>`,
+  [localeKeys.totalStaked]: "Total-staked (Power)",
 };
 
 export default enUs;
