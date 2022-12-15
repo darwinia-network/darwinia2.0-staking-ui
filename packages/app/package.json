@@ -17,7 +17,6 @@
     "bignumber.js": "^9.1.1",
     "ethers": "^5.7.2",
     "react": "^18.2.0",
-    "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^18.2.0",
     "react-jazzicon": "^1.0.4",
     "react-router-dom": "^6.4.0",
@@ -26,7 +25,6 @@
   "devDependencies": {
     "@types/node": "^18.7.18",
     "@types/react": "^18.0.17",
-    "@types/react-custom-scrollbars": "^4.0.10",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.1.0",
     "autoprefixer": "^10.4.11",

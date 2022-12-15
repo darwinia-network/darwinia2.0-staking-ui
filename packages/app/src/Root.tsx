@@ -1,10 +1,9 @@
-import { Outlet, useLocation, useNavigate, useNavigation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
 import { useWallet } from "@darwinia/app-wallet";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { Scrollbars } from "react-custom-scrollbars";
 import { getStore, setStore } from "@darwinia/app-utils";
 
 const Root = () => {
@@ -59,20 +58,17 @@ const Root = () => {
 
   return (
     <Spinner isLoading={loading}>
-      <div className={"flex flex-col h-screen justify-center flex-1"}>
-        <div className={"flex flex-1 flex-col"}>
-          <Header />
-          {/*Main Content*/}
-          <Scrollbars className={"flex flex-1"}>
-            <div className={"flex flex-1 flex-col h-full pt-[15px] lg:pt-[30px]"}>
-              <div className={"flex flex-1 flex-col wrapper-padding items-center"}>
-                <div className={"flex flex-col flex-1 app-container w-full"}>
-                  <Outlet />
-                </div>
-              </div>
-              <Footer />
+      <div className={"w-full"}>
+        <Header />
+        <div className={"flex flex-col min-h-screen justify-center flex-1 pt-[80px] lg:pt-[90px]"}>
+          {/*apply padding*/}
+          <div className={"flex flex-1 flex-col wrapper-padding items-center"}>
+            {/*apply max-width*/}
+            <div className={"flex flex-col flex-1 app-container w-full"}>
+              <Outlet />
             </div>
-          </Scrollbars>
+          </div>
+          <Footer />
         </div>
       </div>
     </Spinner>
