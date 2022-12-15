@@ -4,7 +4,7 @@ import menuToggleIcon from "../../assets/images/menu-toggle.svg";
 import closeIcon from "../../assets/images/close.svg";
 import { useEffect, useState } from "react";
 import { Button, Drawer } from "@darwinia/ui";
-import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { useAppTranslation, localeKeys } from "@darwinia/app-locale";
 import { useWallet } from "@darwinia/app-wallet";
 import { supportedNetworks } from "@darwinia/app-config";
 import { ChainConfig } from "@darwinia/app-types";

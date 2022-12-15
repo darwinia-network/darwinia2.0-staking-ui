@@ -1,4 +1,4 @@
-import { localeKeys, useAppTranslation } from "@package/app-locale";
+import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, CheckboxGroup, Dropdown, Input } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";

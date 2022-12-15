@@ -1,5 +1,5 @@
 import { Button, Column, Table, Tooltip, TableRow, Popover, ModalEnhanced, Input, CheckboxGroup } from "@darwinia/ui";
-import { localeKeys, useAppTranslation } from "@package/app-locale";
+import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { useWallet } from "@darwinia/app-wallet";
 import JazzIcon from "../JazzIcon";
 import warningIcon from "../../assets/images/warning.svg";

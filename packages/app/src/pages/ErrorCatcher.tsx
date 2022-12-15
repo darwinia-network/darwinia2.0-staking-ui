@@ -2,7 +2,7 @@ import { ReactNode, useCallback, useEffect } from "react";
 import { useRouteError, useNavigate } from "react-router-dom";
 import { Button } from "@darwinia/ui";
 import errorIcon from "../assets/images/not-found.png";
-import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { useAppTranslation, localeKeys } from "@darwinia/app-locale";
 
 interface Props {
   title?: ReactNode;

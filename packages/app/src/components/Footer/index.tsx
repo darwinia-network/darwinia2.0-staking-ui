@@ -1,4 +1,4 @@
-import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { useAppTranslation, localeKeys } from "@darwinia/app-locale";
 import twitter from "../../assets/images/twitter.svg";
 import telegram from "../../assets/images/telegram.svg";
 import discord from "../../assets/images/discord.svg";

@@ -1,6 +1,6 @@
 import Root from "./Root";
 import { WalletProvider } from "@darwinia/app-wallet";
-import { i18nTranslationInit } from "@package/app-locale";
+import { i18nTranslationInit } from "@darwinia/app-locale";
 
 i18nTranslationInit();
 

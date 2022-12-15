@@ -1,5 +1,5 @@
 import powerIcon from "../../assets/images/power.svg";
-import { localeKeys, useAppTranslation } from "@package/app-locale";
+import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import BigNumber from "bignumber.js";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
