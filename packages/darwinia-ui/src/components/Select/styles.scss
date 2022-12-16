@@ -26,6 +26,9 @@ $opacityDuration: 300ms;
       flex: 1;
 
       @include ellipsis;
+      * {
+        @include ellipsis;
+      }
 
       &.dw-multi-selections {
         display: flex;

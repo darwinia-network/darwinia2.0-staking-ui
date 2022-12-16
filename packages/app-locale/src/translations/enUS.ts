@@ -74,6 +74,28 @@ const enUs = {
   [localeKeys.searchForCollator]: "Search for a collator",
   [localeKeys.blocksLastSession]: `Blocks <div>last session</div>`,
   [localeKeys.totalStaked]: "Total-staked (Power)",
+  [localeKeys.howToJoinCollator]: `You need to <a target="_blank" href={{url}} class="link">[Run A Node]</a> first and get the session key of your running node.`,
+  [localeKeys.termDeposit]: "Term Deposit",
+  [localeKeys.depositInfo]:
+    "Deposit {{ringSymbol}} for a fixed term and earn {{ktonSymbol}}, and the {{ringSymbol}} in deposit can used in Staking as Well. Note that if you withdraw the funds before the term ends, you have to pay 3 times the reward as a penalty.",
+  [localeKeys.depositTerm]: "Deposit Term",
+  [localeKeys.rewardYouReceive]: `Reward You'll Receive`,
+  [localeKeys.activeDepositRecords]: "Active Deposit Records",
+  [localeKeys.noDepositRecords]: "No Active Deposit Records",
+  [localeKeys.month]: "{{number}} month",
+  [localeKeys.months]: "{{number}} months",
+  [localeKeys.noFixedTerm]: "No fixed term",
+  [localeKeys.stakingDelegations]: "Staking Delegations",
+  [localeKeys.withdrawEarlier]: "Withdraw Earlier",
+  [localeKeys.withdraw]: "Withdraw",
+  [localeKeys.sureToWithdraw]: "Sure to withdraw now?",
+  [localeKeys.payAmount]: "Pay {{amount}}",
+  [localeKeys.earlyWithdrawInfo]:
+    "Since the deposit term doesn’t end yet, you’ll be charged a penalty of 3 times the {{ktonSymbol}} reward if you try to withdraw the {{ringSymbol}}s in advance.",
+  [localeKeys.serialNumber]: "No.",
+  [localeKeys.duration]: "Duration",
+  [localeKeys.reward]: "Reward",
+  [localeKeys.action]: "Action",
 };
 
 export default enUs;

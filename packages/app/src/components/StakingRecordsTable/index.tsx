@@ -594,7 +594,12 @@ const StakingRecordsTable = () => {
   return (
     <div className={"flex flex-col"}>
       <div className={"flex flex-col mt-[20px]"}>
-        <Table noDataText={t(localeKeys.noDelegations)} dataSource={dataSource} columns={columns} />
+        <Table
+          headerSlot={<div className={"text-14-bold pb-[10px]"}>{t(localeKeys.stakingDelegations)}</div>}
+          noDataText={t(localeKeys.noDelegations)}
+          dataSource={dataSource}
+          columns={columns}
+        />
       </div>
       <BondTokenModal
         symbol={tokenSymbolToUpdate}
