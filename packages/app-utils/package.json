@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@darwinia/app-config": "^1.0.0",
-    "@darwinia/app-types": "^1.0.0"
+    "@darwinia/app-types": "^1.0.0",
+    "moment": "^2.29.4"
   }
 }

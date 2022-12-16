@@ -1,16 +1,10 @@
 import powerIcon from "../../assets/images/power.svg";
-import { localeKeys, useAppTranslation } from "@package/app-locale";
+import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import BigNumber from "bignumber.js";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useWallet } from "@darwinia/app-wallet";
-
-interface Reward {
-  id: string;
-  amount: BigNumber;
-  time: string;
-  symbol: string;
-}
+import { Reward } from "@darwinia/app-types";
 
 const AccountOverview = () => {
   const { t } = useAppTranslation();
@@ -72,7 +66,7 @@ const AccountOverview = () => {
         <div className={"flex lg:justify-center text-12 gap-[8px]"}>
           <div className={"text-halfWhite"}>{t(localeKeys.seeDetailed)}</div>
           <a className={"clickable underline"} target="_blank" href="#">
-            subscan→
+            Subscan→
           </a>
         </div>
       </div>

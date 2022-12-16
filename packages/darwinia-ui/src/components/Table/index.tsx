@@ -35,6 +35,9 @@ export interface TableProps<T> {
   isLoading?: boolean;
   spinnerText?: string;
   className?: string;
+  selectedRowsIds?: string[];
+  selectedRowClass?: string;
+  onRowClick?: (row: T) => void;
 }
 
 export interface TableRow extends Object {
@@ -58,6 +61,9 @@ const Table = <T extends TableRow>({
   noDataText,
   isLoading = false,
   spinnerText,
+  selectedRowsIds = [],
+  selectedRowClass = "",
+  onRowClick,
 }: TableProps<T>) => {
   const [sortKey, setSortKey] = useState<keyof T | undefined>();
   const [sortOrder, setSortOrder] = useState<Order | undefined>();
@@ -108,8 +114,18 @@ const Table = <T extends TableRow>({
             <div className={"dw-table-body"}>
               {dataSource.map((row, index) => {
                 const rowKey = row.id ?? index;
+                const isRowSelected = selectedRowsIds?.includes(row.id);
+                const rowClass = isRowSelected ? selectedRowClass : "";
                 return (
-                  <div className={"dw-table-row"} key={rowKey}>
+                  <div
+                    onClick={() => {
+                      if (onRowClick) {
+                        onRowClick(row);
+                      }
+                    }}
+                    className={`dw-table-row ${rowClass}`}
+                    key={rowKey}
+                  >
                     {columns.map((column) => {
                       return getColumn({
                         isHeader: false,

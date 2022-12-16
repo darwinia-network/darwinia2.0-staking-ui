@@ -1,7 +1,7 @@
 import AccountOverview from "../components/AccountOverview";
 import { Tab, Tabs } from "@darwinia/ui";
 import { useState } from "react";
-import { localeKeys, useAppTranslation } from "@package/app-locale";
+import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import StakingOverview from "../components/StakingOverview";
 import DepositOverview from "../components/DepositOverview";
 import { CSSTransition } from "react-transition-group";

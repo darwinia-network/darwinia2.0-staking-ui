@@ -1,10 +1,9 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import logoIcon from "../../assets/images/logo.png";
-import menuToggleIcon from "../../assets/images/menu-toggle.svg";
-import closeIcon from "../../assets/images/close.svg";
+import caretIcon from "../../assets/images/caret-down.svg";
 import { useEffect, useState } from "react";
-import { Button, Drawer } from "@darwinia/ui";
-import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { Button, Popover } from "@darwinia/ui";
+import { useAppTranslation, localeKeys } from "@darwinia/app-locale";
 import { useWallet } from "@darwinia/app-wallet";
 import { supportedNetworks } from "@darwinia/app-config";
 import { ChainConfig } from "@darwinia/app-types";
@@ -13,7 +12,7 @@ import JazzIcon from "../JazzIcon";
 import { ethers } from "ethers";
 
 const Header = () => {
-  const [isDrawerVisible, setDrawerVisibility] = useState(false);
+  const [networkOptionsTrigger, setNetworkOptionsTrigger] = useState<HTMLDivElement | null>(null);
   const { t } = useAppTranslation();
   const { selectedNetwork, changeSelectedNetwork, selectedAccount, connectWallet } = useWallet();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -47,27 +46,44 @@ const Header = () => {
     setSearchParams(searchParams);
   }, [selectedNetwork]);
 
-  const toggleMobileNavigation = () => {
-    setDrawerVisibility((isVisible) => !isVisible);
-  };
-
   const changeConnectedNetwork = (network: ChainConfig) => {
+    //close any popover
+    document.body.click();
     changeSelectedNetwork(network);
   };
 
-  const onDrawerClosed = () => {
-    setDrawerVisibility(false);
-  };
   return (
     <div className={`shrink-0 h-[66px] lg:h-[60px] w-full fixed top-0 left-0 right-0 z-[10] bg-black`}>
       <div className={"justify-center flex h-full wrapper-padding"}>
         <div className={"app-container w-full"}>
           <div className={"flex flex-1 h-full shrink-0 items-center justify-between"}>
             {/*Logo*/}
-            <div className={"shrink-0 h-full"}>
+            {/*Logo will only show on the PC*/}
+            <div className={"shrink-0 h-full hidden lg:flex"}>
               <Link className={"h-full flex"} to={`/staking${location.search}`}>
                 <img className={"self-center w-[146px]"} src={logoIcon} alt="image" />
               </Link>
+            </div>
+            {/*This connect wallet button / selected account info will only be shown on mobile phones*/}
+            <div className={"shrink-0 h-full flex items-center lg:hidden"}>
+              {selectedAccount ? (
+                <div className={"border-primary border px-[15px] py-[7px]"}>
+                  <div className={"flex items-center gap-[10px]"}>
+                    <JazzIcon size={20} address={ethers.utils.getAddress(selectedAccount)} />
+                    <div className={"select-none"}>{toShortAddress(ethers.utils.getAddress(selectedAccount))}</div>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    connectWallet();
+                  }}
+                  className={"!px-[15px]"}
+                  btnType={"secondary"}
+                >
+                  {t(localeKeys.connectWallet)}
+                </Button>
+              )}
             </div>
             {/*PC network switch and wallet connection*/}
             <div className={"hidden lg:flex items-center gap-[40px]"}>
@@ -107,43 +123,35 @@ const Header = () => {
             </div>
             {/*network switch toggle*/}
             <div
-              onClick={() => {
-                toggleMobileNavigation();
-              }}
-              className={"shrink-0 h-full flex pr-[0.625rem] pl-[1.2rem] lg:hidden"}
+              ref={setNetworkOptionsTrigger}
+              className={"shrink-0 h-full items-center flex pr-[0.625rem] pl-[1.2rem] lg:hidden"}
             >
-              <img className={"self-center w-[1rem] h-[0.875rem]"} src={menuToggleIcon} alt="image" />
+              <div className={"border-primary border px-[15px] py-[7px]"}>
+                <div className={"flex items-center gap-[10px]"}>
+                  <div>{selectedNetwork?.displayName}</div>
+                  <img src={caretIcon} alt="image" />
+                </div>
+              </div>
             </div>
+            <Popover offset={[-10, -7]} triggerElementState={networkOptionsTrigger} triggerEvent={"click"}>
+              <div className={"border border-primary p-[15px] flex flex-col gap-[15px] bg-black"}>
+                {supportedNetworks.map((network) => {
+                  return (
+                    <div
+                      onClick={() => {
+                        changeConnectedNetwork(network);
+                      }}
+                      key={`${network.name}-${network.displayName}`}
+                    >
+                      {network.displayName}
+                    </div>
+                  );
+                })}
+              </div>
+            </Popover>
           </div>
         </div>
       </div>
-
-      {/*Navigation drawer only shows on mobile devices*/}
-      <Drawer
-        onClose={() => {
-          onDrawerClosed();
-        }}
-        isVisible={isDrawerVisible}
-      >
-        <div className={"flex flex-col h-full"}>
-          {/*Nav header*/}
-          <div className={"h-[3.125rem] p-[0.9375rem] pr-0 bg-black flex justify-between items-center shrink-0"}>
-            <div className={"shrink-0 text-18-bold uppercase"}>{t(localeKeys.menu)}</div>
-            <div
-              onClick={() => {
-                toggleMobileNavigation();
-              }}
-              className={"shrink-0 pr-[0.625rem]"}
-            >
-              <img className={"w-[2.125rem] h-[2.125rem]"} src={closeIcon} alt="" />
-            </div>
-          </div>
-          {/*Menu, this menu will only be visible on mobile phones,no need to use
-            the custom scrollbar since the mobile phone scrollbar is nice by default*/}
-          <div className={"flex-1 overflow-auto"}>Some Menu</div>
-          {/*Nav footer*/}
-        </div>
-      </Drawer>
     </div>
   );
 };

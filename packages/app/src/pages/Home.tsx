@@ -1,6 +1,6 @@
 import metamaskLogo from "../assets/images/metamask-logo.svg";
 import { Button } from "@darwinia/ui";
-import { useAppTranslation, localeKeys } from "@package/app-locale";
+import { useAppTranslation, localeKeys } from "@darwinia/app-locale";
 import { useWallet } from "@darwinia/app-wallet";
 
 const Home = () => {
