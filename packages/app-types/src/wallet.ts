@@ -7,10 +7,21 @@ export type SupportedBrowser = "Chrome" | "Firefox" | "Brave" | "Edge" | "Opera"
 export type ChainName = "Crab" | "Pangolin" | "Darwinia" | "Pangoro";
 
 export interface Token {
-  address: string;
+  name?: string;
+  address?: string;
   symbol: string;
   decimals: number;
   logo?: string;
+}
+
+export interface ContractAddress {
+  staking: string;
+  deposit: string;
+}
+
+export interface ContractABI {
+  staking: ContractInterface;
+  deposit: ContractInterface;
 }
 
 export interface ChainConfig {
@@ -21,8 +32,8 @@ export interface ChainConfig {
   kton: Token;
   explorerURL: [string];
   rpcURL: [string];
-  contractInterface: ContractInterface;
-  contractAddress: string;
+  contractInterface: ContractABI;
+  contractAddresses: ContractAddress;
 }
 
 export interface WalletExtension {
@@ -44,7 +55,8 @@ export interface WalletError {
 export interface WalletCtx {
   provider: Web3Provider | undefined;
   signer: JsonRpcSigner | undefined;
-  contract: Contract | undefined;
+  depositContract: Contract | undefined;
+  stakingContract: Contract | undefined;
   isRequestingWalletConnection: boolean;
   isWalletConnected: boolean;
   connectWallet: () => void;

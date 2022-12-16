@@ -96,6 +96,7 @@ const enUs = {
   [localeKeys.duration]: "Duration",
   [localeKeys.reward]: "Reward",
   [localeKeys.action]: "Action",
+  [localeKeys.earlyWithdrawMessage]: "Early withdraw message",
 };
 
 export default enUs;

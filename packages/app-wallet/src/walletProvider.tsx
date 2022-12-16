@@ -12,7 +12,8 @@ const initialState: WalletCtx = {
   isWalletConnected: false,
   error: undefined,
   selectedAccount: undefined,
-  contract: undefined,
+  depositContract: undefined,
+  stakingContract: undefined,
   selectedNetwork: undefined,
   changeSelectedNetwork: () => {
     // do nothing
@@ -30,7 +31,8 @@ const WalletContext = createContext<WalletCtx>(initialState);
 export const WalletProvider = ({ children }: PropsWithChildren) => {
   const [provider, setProvider] = useState<Web3Provider>();
   const [signer, setSigner] = useState<JsonRpcSigner>();
-  const [contract, setContract] = useState<Contract>();
+  const [depositContract, setDepositContract] = useState<Contract>();
+  const [stakingContract, setStakingContract] = useState<Contract>();
   const [isRequestingWalletConnection, setRequestingWalletConnection] = useState<boolean>(false);
   const [isWalletConnected, setWalletConnected] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>();
@@ -64,6 +66,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     };
 
     const onChainChanged = () => {
+      setWalletConnected(false);
       /*Metamask recommends reloading the whole page ref: https://docs.metamask.io/guide/ethereum-provider.html#events */
       window.location.reload();
     };
@@ -116,6 +119,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       return;
     }
     try {
+      // setWalletConnected(false);
       if (!isWalletInstalled()) {
         setError({
           code: 0,
@@ -224,10 +228,20 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     //refresh the page with the newly selected account
     const newProvider = new ethers.providers.Web3Provider(window.ethereum);
     const newSigner = newProvider.getSigner();
-    const newContract = new ethers.Contract(selectedNetwork.contractAddress, selectedNetwork.contractInterface, signer);
+    const newStakingContract = new ethers.Contract(
+      selectedNetwork.contractAddresses.staking,
+      selectedNetwork.contractInterface.staking,
+      signer
+    );
+    /*const newDepositContract = new ethers.Contract(
+      selectedNetwork.contractAddresses.deposit,
+      selectedNetwork.contractInterface.deposit,
+      signer
+    );*/
     setProvider(newProvider);
     setSigner(newSigner);
-    setContract(newContract);
+    setStakingContract(newStakingContract);
+    // setDepositContract(newDepositContract);
   }, [selectedAccount, isWalletConnected, selectedNetwork]);
 
   return (
@@ -235,7 +249,8 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       value={{
         provider,
         isWalletConnected,
-        contract,
+        depositContract,
+        stakingContract,
         signer,
         selectedAccount,
         isRequestingWalletConnection,

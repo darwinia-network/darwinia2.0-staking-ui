@@ -154,7 +154,7 @@ const DepositRecordsTable = () => {
             >
               {t(localeKeys.withdrawEarlier)}
             </Button>
-            <Tooltip message={"withdraw message"}>
+            <Tooltip message={t(localeKeys.earlyWithdrawMessage)}>
               <img className={"w-[16px]"} src={helpIcon} alt="image" />
             </Tooltip>
           </div>

@@ -33,8 +33,8 @@ const Header = () => {
         }
       }
     }
-    /* use the first network by default */
-    changeConnectedNetwork(supportedNetworks[0]);
+    /* use test network by default */
+    changeConnectedNetwork(supportedNetworks[2]);
   }, []);
 
   useEffect(() => {

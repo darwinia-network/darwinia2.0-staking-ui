@@ -93,4 +93,5 @@ export const localeKeys = {
   duration: "duration",
   reward: "reward",
   action: "action",
+  earlyWithdrawMessage: "earlyWithdrawMessage",
 };
