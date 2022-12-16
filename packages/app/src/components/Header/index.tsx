@@ -34,7 +34,8 @@ const Header = () => {
       }
     }
     /* use test network by default */
-    changeConnectedNetwork(supportedNetworks[2]);
+    const index = supportedNetworks.findIndex((network) => network.name === "Pangolin");
+    changeConnectedNetwork(supportedNetworks[index]);
   }, []);
 
   useEffect(() => {

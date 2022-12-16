@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { dAppSupportedWallets, supportedNetworks } from "@darwinia/app-config";
+import { dAppSupportedWallets } from "@darwinia/app-config";
 import { ChainConfig, WalletCtx, WalletError, SupportedWallet, WalletConfig } from "@darwinia/app-types";
 import { Contract, ethers } from "ethers";
 import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
@@ -19,6 +19,9 @@ const initialState: WalletCtx = {
     // do nothing
   },
   connectWallet: () => {
+    //do nothing
+  },
+  disconnectWallet: () => {
     //do nothing
   },
   addKTONtoWallet: () => {
@@ -113,13 +116,21 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     }
   }, [selectedNetwork]);
 
+  const disconnectWallet = useCallback(() => {
+    setSelectedAccount(undefined);
+    setProvider(undefined);
+    setDepositContract(undefined);
+    setStakingContract(undefined);
+    setWalletConnected(false);
+  }, []);
+
   /*Connect to MetaMask*/
   const connectWallet = useCallback(async () => {
     if (!selectedNetwork) {
       return;
     }
     try {
-      // setWalletConnected(false);
+      setWalletConnected(false);
       if (!isWalletInstalled()) {
         setError({
           code: 0,
@@ -206,10 +217,17 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       }
       setRequestingWalletConnection(false);
       setWalletConnected(false);
-      setError({
-        code: 4,
-        message: "Something else happened",
-      });
+      if ((e as { code: number }).code === 4001) {
+        setError({
+          code: 4,
+          message: "Account access permission rejected",
+        });
+      } else {
+        setError({
+          code: 5,
+          message: "Something else happened",
+        });
+      }
     }
   }, [isWalletInstalled, selectedNetwork]);
 
@@ -233,20 +251,21 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       selectedNetwork.contractInterface.staking,
       signer
     );
-    /*const newDepositContract = new ethers.Contract(
+    const newDepositContract = new ethers.Contract(
       selectedNetwork.contractAddresses.deposit,
       selectedNetwork.contractInterface.deposit,
       signer
-    );*/
+    );
     setProvider(newProvider);
     setSigner(newSigner);
     setStakingContract(newStakingContract);
-    // setDepositContract(newDepositContract);
+    setDepositContract(newDepositContract);
   }, [selectedAccount, isWalletConnected, selectedNetwork]);
 
   return (
     <WalletContext.Provider
       value={{
+        disconnectWallet,
         provider,
         isWalletConnected,
         depositContract,

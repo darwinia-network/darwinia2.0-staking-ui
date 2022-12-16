@@ -60,6 +60,7 @@ export interface WalletCtx {
   isRequestingWalletConnection: boolean;
   isWalletConnected: boolean;
   connectWallet: () => void;
+  disconnectWallet: () => void;
   addKTONtoWallet: () => void;
   changeSelectedNetwork: (network: ChainConfig) => void;
   selectedNetwork: ChainConfig | undefined;

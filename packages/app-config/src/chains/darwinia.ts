@@ -25,5 +25,5 @@ export const darwinia: ChainConfig = {
     staking: stakingABI,
     deposit: depositABI,
   },
-  chainId: 43,
+  chainId: 46,
 };
