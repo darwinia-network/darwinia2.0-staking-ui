@@ -2,7 +2,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, CheckboxGroup, Dropdown, Input } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
-import { useWallet } from "@darwinia/app-wallet";
+import { useWallet } from "@darwinia/app-providers";
 import caretDownIcon from "../../assets/images/caret-down.svg";
 import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";

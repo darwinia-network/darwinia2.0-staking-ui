@@ -1,5 +1,5 @@
 import Root from "./Root";
-import { WalletProvider } from "@darwinia/app-wallet";
+import { WalletProvider, StorageProvider } from "@darwinia/app-providers";
 import { i18nTranslationInit } from "@darwinia/app-locale";
 
 i18nTranslationInit();
@@ -7,7 +7,9 @@ i18nTranslationInit();
 const App = () => {
   return (
     <WalletProvider>
-      <Root />
+      <StorageProvider>
+        <Root />
+      </StorageProvider>
     </WalletProvider>
   );
 };

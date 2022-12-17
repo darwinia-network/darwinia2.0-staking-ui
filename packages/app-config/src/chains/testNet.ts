@@ -6,9 +6,9 @@ import depositABI from "../abi/testNet/deposit.json";
 export const testNet: ChainConfig = {
   name: "Pangolin",
   displayName: "TestNet",
-  explorerURL: ["https://pangolin.subscan.io/"],
-  // rpcURL: ["ws://g1.dev.darwinia.network:20000"],
-  rpcURL: ["https://pangolin-rpc.darwinia.network/"],
+  explorerURLs: ["https://pangolin.subscan.io/"],
+  // httpsURLs: ["ws://g1.dev.darwinia.network:20000"],
+  httpsURLs: ["https://pangolin-rpc.darwinia.network/"],
   kton: {
     address: "0x0000000000000000000000000000000000000402",
     symbol: "PKTON",
@@ -28,4 +28,9 @@ export const testNet: ChainConfig = {
     deposit: depositABI,
   },
   chainId: 43,
+  substrate: {
+    graphQlURL: "https://subql.darwinia.network/subql-apps-pangolin/",
+    wssURL: "wss://pangolin-rpc.darwinia.network/",
+    httpsURL: "https://pangolin-rpc.darwinia.network",
+  },
 };

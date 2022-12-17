@@ -5,8 +5,8 @@ import depositABI from "../abi/testNet/deposit.json";
 export const crab: ChainConfig = {
   name: "Crab",
   displayName: "Crab",
-  explorerURL: ["https://pangolin.subscan.io/"],
-  rpcURL: ["https://pangolin-rpc.darwinia.network/"],
+  explorerURLs: ["https://crab.subscan.io/"],
+  httpsURLs: ["https://crab-rpc.darwinia.network"],
   kton: {
     address: "0x0000000000000000000000000000000000000402",
     symbol: "CKTON",
@@ -26,4 +26,9 @@ export const crab: ChainConfig = {
     deposit: depositABI,
   },
   chainId: 44,
+  substrate: {
+    graphQlURL: "https://subql.darwinia.network/subql-apps-crab/",
+    wssURL: "wss://crab-rpc.darwinia.network",
+    httpsURL: "https://crab-rpc.darwinia.network",
+  },
 };

@@ -1,7 +1,7 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
-import { useWallet } from "@darwinia/app-wallet";
+import { useWallet } from "@darwinia/app-providers";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { getStore, setStore } from "@darwinia/app-utils";

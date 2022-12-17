@@ -24,16 +24,24 @@ export interface ContractABI {
   deposit: ContractInterface;
 }
 
+export interface Substrate {
+  wssURL: string;
+  httpsURL: string;
+  metadata?: string;
+  graphQlURL: string;
+}
+
 export interface ChainConfig {
   name: ChainName; // this name is used to set the chain name in MetaMask, the user will later see this name on Metamask
   displayName: string; // This name is used on the dApp just for the user to see
   chainId: number;
   ring: Token;
   kton: Token;
-  explorerURL: [string];
-  rpcURL: [string];
+  httpsURLs: string[];
+  explorerURLs: string[];
   contractInterface: ContractABI;
   contractAddresses: ContractAddress;
+  substrate: Substrate;
 }
 
 export interface WalletExtension {

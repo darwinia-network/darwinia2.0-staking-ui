@@ -1,6 +1,6 @@
-import { Button, Column, Table, Tooltip, TableRow, Popover, ModalEnhanced, Input, CheckboxGroup } from "@darwinia/ui";
+import { Button, Column, Table, Tooltip, ModalEnhanced } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
-import { useWallet } from "@darwinia/app-wallet";
+import { useWallet } from "@darwinia/app-providers";
 import helpIcon from "../../assets/images/help.svg";
 import { useEffect, useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";

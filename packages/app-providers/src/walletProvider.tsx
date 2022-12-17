@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { dAppSupportedWallets } from "@darwinia/app-config";
 import { ChainConfig, WalletCtx, WalletError, SupportedWallet, WalletConfig } from "@darwinia/app-types";
 import { Contract, ethers } from "ethers";
@@ -58,6 +58,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   /* Listen to metamask account changes */
   useEffect(() => {
     if (!isWalletInstalled() || !isWalletConnected) {
+      setSelectedAccount(undefined);
       return;
     }
 
@@ -180,8 +181,8 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
                 nativeCurrency: {
                   ...selectedNetwork.ring,
                 },
-                rpcUrls: [...selectedNetwork.rpcURL],
-                blockExplorerUrls: [...selectedNetwork.explorerURL],
+                rpcUrls: [...selectedNetwork.httpsURLs],
+                blockExplorerUrls: [...selectedNetwork.explorerURLs],
               },
             ],
           });

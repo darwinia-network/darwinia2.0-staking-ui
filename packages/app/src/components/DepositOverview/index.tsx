@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, Input, OptionProps, Select } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
-import { useWallet } from "@darwinia/app-wallet";
+import { useWallet } from "@darwinia/app-providers";
 import { parseNumber } from "@darwinia/app-utils";
 import DepositRecordsTable from "../DepositRecordsTable";
 

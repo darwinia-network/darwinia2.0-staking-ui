@@ -3,12 +3,14 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import BigNumber from "bignumber.js";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
-import { useWallet } from "@darwinia/app-wallet";
+import { useStorage, useWallet } from "@darwinia/app-providers";
 import { Reward } from "@darwinia/app-types";
+import { prettifyNumber } from "@darwinia/app-utils";
 
 const AccountOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
+  const { power, asset } = useStorage();
   const rewards: Reward[] = [
     {
       id: "1",
@@ -38,7 +40,7 @@ const AccountOverview = () => {
             <img className={"w-[30px] lg:w-[44px]"} src={powerIcon} alt="image" />
             <div className={"text-24-bold text-[30px]"}>{t(localeKeys.power)}</div>
           </div>
-          <div className={"text-24-bold text-[30px]"}>94261823</div>
+          <div className={"text-24-bold text-[30px]"}>{prettifyNumber(power ?? BigNumber(0))}</div>
         </div>
         <div className={"card"}>
           <div className={"flex gap-[10px] flex-col"}>
@@ -83,11 +85,11 @@ const AccountOverview = () => {
             <div className={"flex flex-col gap-[2px]"}>
               <div className={"flex justify-between"}>
                 <div>{t(localeKeys.bonded)}</div>
-                <div>0</div>
+                <div>{prettifyNumber(asset?.ring.bonded ?? BigNumber(0), 3)}</div>
               </div>
               <div className={"flex justify-between"}>
                 <div>{t(localeKeys.inDeposit)}</div>
-                <div>0</div>
+                <div>{prettifyNumber(asset?.ring.locked ?? BigNumber(0), 3)}</div>
               </div>
             </div>
           </div>
@@ -100,7 +102,7 @@ const AccountOverview = () => {
             <div className={"flex flex-col gap-[2px]"}>
               <div className={"flex justify-between"}>
                 <div>{t(localeKeys.bonded)}</div>
-                <div>0</div>
+                <div>{prettifyNumber(asset?.kton.bonded ?? BigNumber(0), 3)}</div>
               </div>
             </div>
           </div>

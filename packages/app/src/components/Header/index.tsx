@@ -4,7 +4,7 @@ import caretIcon from "../../assets/images/caret-down.svg";
 import { useEffect, useState } from "react";
 import { Button, Popover } from "@darwinia/ui";
 import { useAppTranslation, localeKeys } from "@darwinia/app-locale";
-import { useWallet } from "@darwinia/app-wallet";
+import { useWallet } from "@darwinia/app-providers";
 import { supportedNetworks } from "@darwinia/app-config";
 import { ChainConfig } from "@darwinia/app-types";
 import { toShortAddress } from "@darwinia/app-utils";
