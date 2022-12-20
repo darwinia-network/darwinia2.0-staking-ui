@@ -21,7 +21,17 @@ export interface Collator {
 
 export interface Reward {
   id: string;
-  amount: BigNumber;
-  time: string;
-  symbol: string;
+  amount: string;
+  blockNumber: number;
+  blockTime: string;
+}
+
+export interface RewardedNode {
+  nodes: Reward[];
+}
+
+export interface StakingStash {
+  id: string; //accountId
+  totalRewarded: string; //RING/PRING,etc amount in string
+  rewardeds: RewardedNode;
 }

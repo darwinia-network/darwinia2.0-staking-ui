@@ -4,33 +4,33 @@ import BigNumber from "bignumber.js";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useStorage, useWallet } from "@darwinia/app-providers";
-import { Reward } from "@darwinia/app-types";
-import { prettifyNumber } from "@darwinia/app-utils";
+import { StakingStash } from "@darwinia/app-types";
+import { formatToEther, prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
+import { useQuery } from "@apollo/client";
+import { GET_LATEST_STAKING_REWARDS } from "@darwinia/app-config";
+import { Spinner } from "@darwinia/ui";
+
+interface StakingStashQuery {
+  accountAddress: string;
+  itemsCount: number;
+}
 
 const AccountOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
   const { power, asset } = useStorage();
-  const rewards: Reward[] = [
-    {
-      id: "1",
-      amount: new BigNumber("34341.345"),
-      time: "1 day ago",
-      symbol: selectedNetwork?.ring.symbol ?? "RING",
+  const {
+    loading: isLoadingStakingData,
+    data: stakingData,
+    error,
+  } = useQuery<{ stakingStash: StakingStash }, StakingStashQuery>(GET_LATEST_STAKING_REWARDS, {
+    variables: {
+      accountAddress: "5C4yTgZHMFLrv1YMkKvUAtP8WhENvNBNiXKZPa1aA7ka4fnS",
+      itemsCount: 3,
     },
-    {
-      id: "2",
-      amount: new BigNumber("34341.345"),
-      time: "1 day ago",
-      symbol: selectedNetwork?.ring.symbol ?? "RING",
-    },
-    {
-      id: "3",
-      amount: new BigNumber("34341.345"),
-      time: "1 day ago",
-      symbol: selectedNetwork?.ring.symbol ?? "RING",
-    },
-  ];
+  });
+  console.log(stakingData);
+
   return (
     <div className={"flex gap-[20px] lg:gap-0 justify-between flex-col lg:flex-row"}>
       {/*Power Card*/}
@@ -42,19 +42,19 @@ const AccountOverview = () => {
           </div>
           <div className={"text-24-bold text-[30px]"}>{prettifyNumber(power ?? BigNumber(0))}</div>
         </div>
-        <div className={"card"}>
+        <Spinner isLoading={isLoadingStakingData} size={"small"} className={"card"}>
           <div className={"flex gap-[10px] flex-col"}>
             <div className={"border-b divider pb-[10px] text-14-bold"}>{t(localeKeys.latestStakingRewards)}</div>
             <div className={"min-h-[90px] flex flex-col text-14-bold"}>
-              {rewards.length > 0 ? (
+              {stakingData?.stakingStash && stakingData?.stakingStash.rewardeds.nodes.length > 0 ? (
                 <div className={"flex flex-col gap-[10px]"}>
-                  {rewards.map((item) => {
+                  {stakingData.stakingStash.rewardeds.nodes.map((item) => {
                     return (
                       <div className={"flex justify-between"} key={item.id}>
                         <div>
-                          {item.amount.toString()} {item.symbol}
+                          {prettifyNumber(BigNumber(formatToEther(item.amount)))} {selectedNetwork?.ring.symbol}
                         </div>
-                        <div>{item.time}</div>
+                        <div>{toTimeAgo(item.blockTime)}</div>
                       </div>
                     );
                   })}
@@ -64,10 +64,15 @@ const AccountOverview = () => {
               )}
             </div>
           </div>
-        </div>
+        </Spinner>
         <div className={"flex lg:justify-center text-12 gap-[8px]"}>
           <div className={"text-halfWhite"}>{t(localeKeys.seeDetailed)}</div>
-          <a className={"clickable underline"} target="_blank" href="#">
+          <a
+            className={"clickable underline"}
+            target="_blank"
+            href={`${selectedNetwork?.explorerURLs[0]}`}
+            rel="noreferrer"
+          >
             Subscan→
           </a>
         </div>

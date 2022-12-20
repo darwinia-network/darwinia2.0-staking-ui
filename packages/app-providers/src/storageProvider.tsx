@@ -129,7 +129,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     const getBalance = async () => {
       try {
         const res = await apiPromise?.query.system.account(account, (accountInfo: FrameSystemAccountInfo) => {
-          console.log("accountInfo", accountInfo.toJSON());
+          console.log("Account Balance Info======", accountInfo.toJSON());
         });
         unsubscription = res as unknown as UnSubscription;
       } catch (e) {
