@@ -19,13 +19,14 @@ const AccountOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
   const { power, asset } = useStorage();
+  const account = "5C4yTgZHMFLrv1YMkKvUAtP8WhENvNBNiXKZPa1aA7ka4fnS";
   const {
     loading: isLoadingStakingData,
     data: stakingData,
     error,
   } = useQuery<{ stakingStash: StakingStash }, StakingStashQuery>(GET_LATEST_STAKING_REWARDS, {
     variables: {
-      accountAddress: "5C4yTgZHMFLrv1YMkKvUAtP8WhENvNBNiXKZPa1aA7ka4fnS",
+      accountAddress: account,
       itemsCount: 3,
     },
   });

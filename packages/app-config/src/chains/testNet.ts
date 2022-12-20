@@ -7,7 +7,7 @@ export const testNet: ChainConfig = {
   name: "Pangolin",
   displayName: "TestNet",
   explorerURLs: ["https://pangolin.subscan.io/"],
-  httpsURLs: ["https://pangolin-rpc.darwinia.network/"],
+  httpsURLs: ["https://cors.kahub.in/http://g1.dev.darwinia.network:10000"],
   kton: {
     address: "0x0000000000000000000000000000000000000402",
     symbol: "PKTON",
@@ -29,7 +29,7 @@ export const testNet: ChainConfig = {
   chainId: 43,
   substrate: {
     graphQlURL: "https://subql.darwinia.network/subql-apps-crab/",
-    wssURL: "wss://pangolin-rpc.darwinia.network/",
+    wssURL: "ws://g1.dev.darwinia.network:20000",
     httpsURL: "https://pangolin-rpc.darwinia.network",
   },
 };

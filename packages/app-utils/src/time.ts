@@ -1,5 +1,6 @@
 import moment from "moment";
 
+/*Use this to format the time ago to your own needs*/
 /*moment.updateLocale("en", {
   relativeTime: {
     d: "%d day",

@@ -32,9 +32,9 @@ export const calculateKtonFromRingDeposit = (
   depositMonths: number,
   decimalPrecision = 9,
   round = BigNumber.ROUND_DOWN
-) => {
-  if (depositMonths === 0) {
-    return BigNumber(0);
+): string => {
+  if (depositMonths === 0 || ringAmount.isEqualTo(0)) {
+    return BigNumber(0).toString();
   }
 
   const n = BigNumber(67).pow(depositMonths);

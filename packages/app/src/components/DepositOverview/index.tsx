@@ -1,10 +1,11 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, Input, OptionProps, Select } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import { useWallet } from "@darwinia/app-providers";
-import { parseNumber } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, parseNumber, prettifyNumber } from "@darwinia/app-utils";
 import DepositRecordsTable from "../DepositRecordsTable";
+import BigNumber from "bignumber.js";
 
 const DepositOverview = () => {
   const { t } = useAppTranslation();
@@ -12,6 +13,7 @@ const DepositOverview = () => {
   const [depositTerm, setDepositTerm] = useState<string>("0");
   const [amount, setAmount] = useState<string>("");
   const [amountHasError, setAmountHasError] = useState<boolean>(false);
+  const [rewardedKTON, setRewardedKTON] = useState<string>("0");
 
   useEffect(() => {
     setDepositTerm("0");
@@ -43,6 +45,12 @@ const DepositOverview = () => {
   const getAmountErrorJSX = () => {
     return amountHasError ? <div /> : null;
   };
+
+  useEffect(() => {
+    const amountValue = parseNumber(amount);
+    const kton = calculateKtonFromRingDeposit(BigNumber(amountValue ? amount : 0), Number(depositTerm));
+    setRewardedKTON(kton);
+  }, [depositTerm, amount]);
 
   const onDepositTermChanged = (value: string) => {
     setDepositTerm(value);
@@ -105,7 +113,7 @@ const DepositOverview = () => {
             <div className={"flex-1 flex flex-col gap-[10px] shrink-0"}>
               <div className={"text-12"}>{t(localeKeys.rewardYouReceive)}</div>
               <div className={"h-[40px] px-[10px] bg-primary border-primary border flex items-center justify-between"}>
-                <div>0</div>
+                <div>{rewardedKTON}</div>
                 <div className={"uppercase"}>{selectedNetwork?.kton.symbol}</div>
               </div>
             </div>

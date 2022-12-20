@@ -60,7 +60,7 @@ export const prettifyNumber = (
 };
 
 export const formatToEther = (value: string): string => {
-  return ethers.utils.formatUnits(value, 9);
+  return ethers.utils.formatEther(value);
 };
 
 export const formatToWei = (value: string) => {
