@@ -5,7 +5,7 @@ import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useStorage, useWallet } from "@darwinia/app-providers";
 import { StakingStash } from "@darwinia/app-types";
-import { formatToEther, prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, formatToEther, prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
 import { useQuery } from "@apollo/client";
 import { GET_LATEST_STAKING_REWARDS } from "@darwinia/app-config";
 import { Spinner } from "@darwinia/ui";
@@ -29,7 +29,6 @@ const AccountOverview = () => {
       itemsCount: 3,
     },
   });
-  console.log(stakingData);
 
   return (
     <div className={"flex gap-[20px] lg:gap-0 justify-between flex-col lg:flex-row"}>
@@ -46,7 +45,7 @@ const AccountOverview = () => {
           <div className={"flex gap-[10px] flex-col"}>
             <div className={"border-b divider pb-[10px] text-14-bold"}>{t(localeKeys.latestStakingRewards)}</div>
             <div className={"min-h-[90px] flex flex-col text-14-bold"}>
-              {stakingData?.stakingStash && stakingData?.stakingStash.rewardeds.nodes.length > 0 ? (
+              {!error && stakingData?.stakingStash && stakingData?.stakingStash.rewardeds.nodes.length > 0 ? (
                 <div className={"flex flex-col gap-[10px]"}>
                   {stakingData.stakingStash.rewardeds.nodes.map((item) => {
                     return (

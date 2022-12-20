@@ -38,7 +38,7 @@ const Header = () => {
       }
     } else {
       /* use test network by default */
-      const index = supportedNetworks.findIndex((network) => network.name === "Crab");
+      const index = supportedNetworks.findIndex((network) => network.name === "Pangolin");
       changeConnectedNetwork(supportedNetworks[index]);
     }
   }, []);
