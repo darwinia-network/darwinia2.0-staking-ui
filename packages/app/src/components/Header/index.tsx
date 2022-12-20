@@ -14,7 +14,8 @@ import { ethers } from "ethers";
 const Header = () => {
   const [networkOptionsTrigger, setNetworkOptionsTrigger] = useState<HTMLDivElement | null>(null);
   const { t } = useAppTranslation();
-  const { selectedNetwork, changeSelectedNetwork, selectedAccount, connectWallet } = useWallet();
+  const { selectedNetwork, changeSelectedNetwork, selectedAccount, connectWallet, forceSetAccountAddress } =
+    useWallet();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
@@ -24,18 +25,22 @@ const Header = () => {
     if (searchString) {
       const searchParams = new URLSearchParams(searchString);
       const network = searchParams.get("network");
+      const account = searchParams.get("account");
       if (network) {
         // the URL contains the network param
         const foundNetwork = supportedNetworks.find((item) => item.name.toLowerCase() === network.toLowerCase());
         if (foundNetwork) {
           changeConnectedNetwork(foundNetwork);
-          return;
         }
       }
+      if (account) {
+        // forceSetAccountAddress(account);
+      }
+    } else {
+      /* use test network by default */
+      const index = supportedNetworks.findIndex((network) => network.name === "Pangolin");
+      changeConnectedNetwork(supportedNetworks[index]);
     }
-    /* use test network by default */
-    const index = supportedNetworks.findIndex((network) => network.name === "Pangolin");
-    changeConnectedNetwork(supportedNetworks[index]);
   }, []);
 
   useEffect(() => {

@@ -70,6 +70,7 @@ export interface WalletCtx {
   connectWallet: () => void;
   disconnectWallet: () => void;
   addKTONtoWallet: () => void;
+  forceSetAccountAddress: (accountAddress: string) => void;
   changeSelectedNetwork: (network: ChainConfig) => void;
   selectedNetwork: ChainConfig | undefined;
   error: WalletError | undefined;

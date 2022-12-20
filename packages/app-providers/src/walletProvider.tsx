@@ -27,6 +27,9 @@ const initialState: WalletCtx = {
   addKTONtoWallet: () => {
     //do nothing
   },
+  forceSetAccountAddress: (address: string) => {
+    //do nothing
+  },
 };
 
 const WalletContext = createContext<WalletCtx>(initialState);
@@ -39,6 +42,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   const [isRequestingWalletConnection, setRequestingWalletConnection] = useState<boolean>(false);
   const [isWalletConnected, setWalletConnected] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string>();
+  const forcedAccountAddress = useRef<string>();
   const [error, setError] = useState<WalletError | undefined>(undefined);
   const [selectedNetwork, setSelectedNetwork] = useState<ChainConfig>();
   const [selectedWallet] = useState<SupportedWallet>("MetaMask");
@@ -64,7 +68,8 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
 
     const onAccountsChanged = (accounts: string[]) => {
       if (accounts.length > 0) {
-        setSelectedAccount(accounts[0]);
+        const account = forcedAccountAddress.current ? forcedAccountAddress.current : accounts[0];
+        setSelectedAccount(account);
       }
       console.log("account changed=====", accounts);
     };
@@ -155,7 +160,8 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
             method: "eth_requestAccounts",
           });
           if (accounts && Array.isArray(accounts) && accounts.length > 0) {
-            setSelectedAccount(accounts[0]);
+            const account = forcedAccountAddress.current ? forcedAccountAddress.current : accounts[0];
+            setSelectedAccount(account);
             setRequestingWalletConnection(false);
             setWalletConnected(true);
           }
@@ -193,7 +199,8 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
                 method: "eth_requestAccounts",
               });
               if (accounts && Array.isArray(accounts) && accounts.length > 0) {
-                setSelectedAccount(accounts[0]);
+                const account = forcedAccountAddress.current ? forcedAccountAddress.current : accounts[0];
+                setSelectedAccount(account);
                 setRequestingWalletConnection(false);
                 setWalletConnected(true);
               }
@@ -263,6 +270,12 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     setDepositContract(newDepositContract);
   }, [selectedAccount, isWalletConnected, selectedNetwork]);
 
+  const forceSetAccountAddress = useCallback((accountAddress: string) => {
+    forcedAccountAddress.current = accountAddress;
+    console.log("here====");
+    console.log(forcedAccountAddress.current);
+  }, []);
+
   return (
     <WalletContext.Provider
       value={{
@@ -279,6 +292,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         error,
         changeSelectedNetwork,
         selectedNetwork,
+        forceSetAccountAddress,
       }}
     >
       {children}
