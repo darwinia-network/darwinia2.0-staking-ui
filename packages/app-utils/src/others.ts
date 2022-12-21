@@ -45,12 +45,18 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   }
 };
 
-export const prettifyNumber = (
-  number: BigNumber,
+interface PrettyNumberInput {
+  number: BigNumber;
+  precision?: number;
+  round?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  keepTrailingZeros?: boolean;
+}
+export const prettifyNumber = ({
+  number,
   precision = 0,
   round = BigNumber.ROUND_DOWN,
-  keepTrailingZeros = true
-) => {
+  keepTrailingZeros = true,
+}: PrettyNumberInput) => {
   if (keepTrailingZeros) {
     // will return a number like 12,345.506000
     return number.toFormat(precision, round);

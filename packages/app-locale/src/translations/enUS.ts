@@ -97,6 +97,7 @@ const enUs = {
   [localeKeys.reward]: "Reward",
   [localeKeys.action]: "Action",
   [localeKeys.earlyWithdrawMessage]: "Early withdraw message",
+  [localeKeys.depositAmountValueFormatError]: "Amount value must be a valid number",
 };
 
 export default enUs;

@@ -1,9 +1,9 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
-import { Button, Input, OptionProps, Select } from "@darwinia/ui";
+import { Button, Input, OptionProps, Select, notification } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import { useWallet } from "@darwinia/app-providers";
-import { calculateKtonFromRingDeposit, parseNumber, prettifyNumber } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, parseNumber } from "@darwinia/app-utils";
 import DepositRecordsTable from "../DepositRecordsTable";
 import BigNumber from "bignumber.js";
 
@@ -48,7 +48,11 @@ const DepositOverview = () => {
 
   useEffect(() => {
     const amountValue = parseNumber(amount);
-    const kton = calculateKtonFromRingDeposit(BigNumber(amountValue ? amount : 0), Number(depositTerm));
+
+    const kton = calculateKtonFromRingDeposit({
+      ringAmount: BigNumber(amountValue ? amount : 0),
+      depositMonths: Number(depositTerm),
+    });
     setRewardedKTON(kton);
   }, [depositTerm, amount]);
 
@@ -65,6 +69,9 @@ const DepositOverview = () => {
     const amountValue = parseNumber(amount);
     if (!amountValue) {
       setAmountHasError(true);
+      notification.error({
+        message: <div>{t(localeKeys.depositAmountValueFormatError)}</div>,
+      });
       return;
     }
     console.log("Make a deposit now====", amountValue, depositTerm);
@@ -121,6 +128,7 @@ const DepositOverview = () => {
         </div>
         <div className={"w-full flex flex-col lg:flex-row gap-[10px]"}>
           <Button
+            disabled={amount.length === 0}
             onClick={() => {
               onDeposit();
             }}

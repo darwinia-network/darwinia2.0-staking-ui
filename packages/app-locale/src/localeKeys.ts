@@ -94,4 +94,5 @@ export const localeKeys = {
   reward: "reward",
   action: "action",
   earlyWithdrawMessage: "earlyWithdrawMessage",
+  depositAmountValueFormatError: "depositAmountValueFormatError",
 };

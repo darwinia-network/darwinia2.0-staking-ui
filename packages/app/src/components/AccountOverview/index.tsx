@@ -5,7 +5,7 @@ import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useStorage, useWallet } from "@darwinia/app-providers";
 import { StakingStash } from "@darwinia/app-types";
-import { calculateKtonFromRingDeposit, formatToEther, prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
+import { formatToEther, prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
 import { useQuery } from "@apollo/client";
 import { GET_LATEST_STAKING_REWARDS } from "@darwinia/app-config";
 import { Spinner } from "@darwinia/ui";
@@ -40,7 +40,11 @@ const AccountOverview = () => {
             <img className={"w-[30px] lg:w-[44px]"} src={powerIcon} alt="image" />
             <div className={"text-24-bold text-[30px]"}>{t(localeKeys.power)}</div>
           </div>
-          <div className={"text-24-bold text-[30px]"}>{prettifyNumber(power ?? BigNumber(0))}</div>
+          <div className={"text-24-bold text-[30px]"}>
+            {prettifyNumber({
+              number: power ?? BigNumber(0),
+            })}
+          </div>
         </div>
         <Spinner isLoading={isLoadingStakingData} size={"small"} className={"card"}>
           <div className={"flex gap-[10px] flex-col"}>
@@ -52,7 +56,10 @@ const AccountOverview = () => {
                     return (
                       <div className={"flex justify-between"} key={item.id}>
                         <div>
-                          {prettifyNumber(BigNumber(formatToEther(item.amount)))} {selectedNetwork?.ring.symbol}
+                          {prettifyNumber({
+                            number: BigNumber(formatToEther(item.amount)),
+                          })}{" "}
+                          {selectedNetwork?.ring.symbol}
                         </div>
                         <div>{toTimeAgo(item.blockTime)}</div>
                       </div>
@@ -90,11 +97,21 @@ const AccountOverview = () => {
             <div className={"flex flex-col gap-[2px]"}>
               <div className={"flex justify-between"}>
                 <div>{t(localeKeys.bonded)}</div>
-                <div>{prettifyNumber(asset?.ring.bonded ?? BigNumber(0), 3)}</div>
+                <div>
+                  {prettifyNumber({
+                    number: asset?.ring.bonded ?? BigNumber(0),
+                    precision: 3,
+                  })}
+                </div>
               </div>
               <div className={"flex justify-between"}>
                 <div>{t(localeKeys.inDeposit)}</div>
-                <div>{prettifyNumber(asset?.ring.locked ?? BigNumber(0), 3)}</div>
+                <div>
+                  {prettifyNumber({
+                    number: asset?.ring.locked ?? BigNumber(0),
+                    precision: 3,
+                  })}
+                </div>
               </div>
             </div>
           </div>
@@ -107,7 +124,12 @@ const AccountOverview = () => {
             <div className={"flex flex-col gap-[2px]"}>
               <div className={"flex justify-between"}>
                 <div>{t(localeKeys.bonded)}</div>
-                <div>{prettifyNumber(asset?.kton.bonded ?? BigNumber(0), 3)}</div>
+                <div>
+                  {prettifyNumber({
+                    number: asset?.kton.bonded ?? BigNumber(0),
+                    precision: 3,
+                  })}
+                </div>
               </div>
             </div>
           </div>
