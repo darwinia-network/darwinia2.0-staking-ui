@@ -10,6 +10,7 @@ import StakingRecordsTable from "../StakingRecordsTable";
 import { useRef, useState } from "react";
 import { Deposit, Collator } from "@darwinia/app-types";
 import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
+import { prettifyNumber } from "@darwinia/app-utils";
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
@@ -24,34 +25,18 @@ const StakingOverview = () => {
     }
   };
 
-  const depositList: Deposit[] = [
-    {
-      id: "1",
-      amount: "1,200",
-    },
-    {
-      id: "2",
-      amount: "1,300",
-    },
-    {
-      id: "3",
-      amount: "1,400",
-    },
-    {
-      id: "4",
-      amount: "1,500",
-    },
-    {
-      id: "5",
-      amount: "1,600",
-    },
-  ];
+  const depositList: Deposit[] = [];
 
   const depositRenderer = (option: Deposit) => {
     return (
       <div className={"flex justify-between"}>
         <div>ID#{option.id}</div>
-        <div>{option.amount}</div>
+        <div>
+          {prettifyNumber({
+            number: option.value,
+            precision: 3,
+          })}
+        </div>
       </div>
     );
   };
