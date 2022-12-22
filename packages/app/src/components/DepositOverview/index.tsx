@@ -1,15 +1,17 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, Input, OptionProps, Select, notification } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import { useWallet } from "@darwinia/app-providers";
-import { calculateKtonFromRingDeposit, parseNumber } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, parseNumber, formatToWei } from "@darwinia/app-utils";
 import DepositRecordsTable from "../DepositRecordsTable";
 import BigNumber from "bignumber.js";
+import { BigNumber as EthersBigNumber } from "ethers";
+import { TransactionResponse } from "@ethersproject/providers";
 
 const DepositOverview = () => {
   const { t } = useAppTranslation();
-  const { selectedNetwork } = useWallet();
+  const { selectedNetwork, depositContract, setTransactionStatus } = useWallet();
   const [depositTerm, setDepositTerm] = useState<string>("0");
   const [amount, setAmount] = useState<string>("");
   const [amountHasError, setAmountHasError] = useState<boolean>(false);
@@ -65,7 +67,7 @@ const DepositOverview = () => {
     setAmount(event.target.value);
   };
 
-  const onDeposit = () => {
+  const onDeposit = async () => {
     const amountValue = parseNumber(amount);
     if (!amountValue) {
       setAmountHasError(true);
@@ -74,7 +76,27 @@ const DepositOverview = () => {
       });
       return;
     }
-    console.log("Make a deposit now====", amountValue, depositTerm);
+    try {
+      const amountInWei = formatToWei(amountValue.toString());
+      setTransactionStatus(true);
+      const response = (await depositContract?.lock(
+        EthersBigNumber.from(amountInWei.toString()),
+        EthersBigNumber.from(depositTerm)
+      )) as TransactionResponse;
+      await response.wait(1);
+      setTransactionStatus(false);
+      setDepositTerm("0");
+      setAmount("");
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setTransactionStatus(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
   };
 
   return (

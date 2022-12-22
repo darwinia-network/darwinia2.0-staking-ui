@@ -16,6 +16,7 @@
     "@darwinia/app-types": "^1.0.0",
     "@darwinia/app-utils": "^1.0.0",
     "@darwinia/ui": "^0.0.1",
+    "@ethersproject/providers": "^5.7.2",
     "@types/react-transition-group": "^4.4.5",
     "bignumber.js": "^9.1.1",
     "ethers": "^5.7.2",

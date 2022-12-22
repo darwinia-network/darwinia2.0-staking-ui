@@ -7,14 +7,21 @@ import Footer from "./components/Footer";
 import { getStore, setStore } from "@darwinia/app-utils";
 
 const Root = () => {
-  const { isRequestingWalletConnection, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
-  const [loading, setLoading] = useState(false);
+  const {
+    isRequestingWalletConnection,
+    error,
+    connectWallet,
+    isWalletConnected,
+    selectedNetwork,
+    isLoadingTransaction,
+  } = useWallet();
+  const [loading, setLoading] = useState<boolean | undefined>(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    setLoading(isRequestingWalletConnection);
-  }, [isRequestingWalletConnection, isWalletConnected]);
+    setLoading(isRequestingWalletConnection || isLoadingTransaction);
+  }, [isRequestingWalletConnection, isWalletConnected, isLoadingTransaction]);
 
   const redirect = useCallback(() => {
     setStore("isConnectedToWallet", true);
@@ -54,7 +61,7 @@ const Root = () => {
   }, [selectedNetwork]);
 
   return (
-    <Spinner isLoading={loading} maskClassName={"!fixed !z-[99]"}>
+    <Spinner isLoading={!!loading} maskClassName={"!fixed !z-[99]"}>
       <div className={"w-full"}>
         <Header />
         <div className={"flex flex-col min-h-screen justify-center flex-1 pt-[80px] lg:pt-[90px]"}>

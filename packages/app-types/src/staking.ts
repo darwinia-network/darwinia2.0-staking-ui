@@ -1,5 +1,6 @@
 import { u128, Struct } from "@polkadot/types";
 import type { AccountId, BlockNumber } from "@polkadot/types/interfaces/runtime";
+import BigNumber from "bignumber.js";
 
 export interface Deposit {
   id: string;
@@ -38,9 +39,33 @@ export interface StakingStash {
 }
 
 /*Staking types start here*/
-export interface DarwiniaStakingLedger extends Struct {
+export interface DarwiniaStakingLedgerEncoded extends Struct {
   stakedRing: u128;
   stakedKton: u128;
-  // unstakingRing: [];
+  stakedDeposits?: Uint8Array;
+}
+
+export interface DarwiniaStakingLedger {
+  stakedRing: BigNumber;
+  stakedKton: BigNumber;
+  stakedDeposits?: number[];
+  unstakingDeposits?: [number, number][];
+  unstakingRing?: [number, number][];
+  unstakingKton?: [number, number][];
+}
+
+export interface DepositEncoded extends Struct {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  id: u128;
+  value: u128;
+  expiredTime: u128;
+}
+
+export interface DepositChain {
+  id: number;
+  value: BigNumber;
+  expiredTime: number;
+  inUse: boolean;
 }
 /*Staking types end here*/

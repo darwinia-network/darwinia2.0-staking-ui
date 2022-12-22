@@ -34,7 +34,7 @@ const Header = () => {
         }
       }
       if (account) {
-        // forceSetAccountAddress(account);
+        forceSetAccountAddress(account);
       }
     } else {
       /* use test network by default */

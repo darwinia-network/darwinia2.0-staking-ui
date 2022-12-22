@@ -15,6 +15,7 @@ const initialState: WalletCtx = {
   depositContract: undefined,
   stakingContract: undefined,
   selectedNetwork: undefined,
+  isLoadingTransaction: undefined,
   changeSelectedNetwork: () => {
     // do nothing
   },
@@ -28,6 +29,9 @@ const initialState: WalletCtx = {
     //do nothing
   },
   forceSetAccountAddress: (address: string) => {
+    //do nothing
+  },
+  setTransactionStatus: (isLoading: boolean) => {
     //do nothing
   },
 };
@@ -47,6 +51,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   const [selectedNetwork, setSelectedNetwork] = useState<ChainConfig>();
   const [selectedWallet] = useState<SupportedWallet>("MetaMask");
   const [walletConfig, setWalletConfig] = useState<WalletConfig>();
+  const [isLoadingTransaction, setLoadingTransaction] = useState<boolean>(false);
 
   const isWalletInstalled = () => {
     return !!window.ethereum;
@@ -257,12 +262,12 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
     const newStakingContract = new ethers.Contract(
       selectedNetwork.contractAddresses.staking,
       selectedNetwork.contractInterface.staking,
-      signer
+      newSigner
     );
     const newDepositContract = new ethers.Contract(
       selectedNetwork.contractAddresses.deposit,
       selectedNetwork.contractInterface.deposit,
-      signer
+      newSigner
     );
     setProvider(newProvider);
     setSigner(newSigner);
@@ -272,13 +277,18 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
 
   const forceSetAccountAddress = useCallback((accountAddress: string) => {
     forcedAccountAddress.current = accountAddress;
-    console.log("here====");
-    console.log(forcedAccountAddress.current);
+  }, []);
+
+  const setTransactionStatus = useCallback((isLoading: boolean) => {
+    console.log("here========");
+    setLoadingTransaction(isLoading);
   }, []);
 
   return (
     <WalletContext.Provider
       value={{
+        isLoadingTransaction,
+        setTransactionStatus,
         disconnectWallet,
         provider,
         isWalletConnected,

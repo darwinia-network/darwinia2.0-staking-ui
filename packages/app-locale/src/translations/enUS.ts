@@ -98,6 +98,8 @@ const enUs = {
   [localeKeys.action]: "Action",
   [localeKeys.earlyWithdrawMessage]: "Early withdraw message",
   [localeKeys.depositAmountValueFormatError]: "Amount value must be a valid number",
+  [localeKeys.somethingWrongHappened]: "Something wrong happened",
+  [localeKeys.operationSuccessful]: "Operation successful",
 };
 
 export default enUs;

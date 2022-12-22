@@ -194,13 +194,25 @@ interface EarlyWithdrawProps {
   deposit: Deposit | null;
 }
 
-const EarlyWithdrawModal = ({ isVisible, onClose, onConfirm, onCancel }: EarlyWithdrawProps) => {
+const EarlyWithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit }: EarlyWithdrawProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
-  const { selectedNetwork } = useWallet();
+  const { selectedNetwork, depositContract } = useWallet();
 
   useEffect(() => {
     setLoading(false);
+
+    const estimateGas = async () => {
+      const gasFee = await depositContract?.estimateGas.claim();
+      console.log("gasFee=====", gasFee);
+    };
+
+    if (isVisible) {
+      // estimate gas fee
+      estimateGas().catch((e) => {
+        console.log(e);
+      });
+    }
   }, [isVisible]);
 
   const onConfirmWithdraw = () => {

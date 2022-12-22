@@ -75,4 +75,6 @@ export interface WalletCtx {
   selectedNetwork: ChainConfig | undefined;
   error: WalletError | undefined;
   selectedAccount: string | undefined;
+  setTransactionStatus: (value: boolean) => void;
+  isLoadingTransaction: boolean | undefined;
 }

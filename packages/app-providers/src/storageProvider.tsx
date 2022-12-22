@@ -1,17 +1,21 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { StorageCtx, Asset, DarwiniaStakingLedger } from "@darwinia/app-types";
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  StorageCtx,
+  Asset,
+  DarwiniaStakingLedger,
+  DarwiniaStakingLedgerEncoded,
+  DepositChain,
+  DepositEncoded,
+} from "@darwinia/app-types";
 import BigNumber from "bignumber.js";
 import { useWallet } from "./walletProvider";
 import { WsProvider, ApiPromise } from "@polkadot/api";
 import { FrameSystemAccountInfo } from "@darwinia/api-derive/accounts/types";
-import { Option } from "@polkadot/types";
-import { DarwiniaStakingStructsStakingLedger } from "@darwinia/api-derive/darwiniaStaking/types";
+import { Option, Vec } from "@polkadot/types";
 import { convertAssetToPower, formatToEther } from "@darwinia/app-utils";
-import { combineLatest, from, Subscription, switchMap } from "rxjs";
+import { combineLatest, Subscription } from "rxjs";
 
 const initialState: StorageCtx = {
-  lockedKTON: undefined,
-  lockedRING: undefined,
   power: undefined,
   asset: undefined,
   refresh: () => {
@@ -33,8 +37,6 @@ interface ActiveAsset {
 const StorageContext = createContext(initialState);
 
 export const StorageProvider = ({ children }: PropsWithChildren) => {
-  const [lockedRING, setLockedRING] = useState<BigNumber>(BigNumber(0));
-  const [lockedKTON, setLockedKTON] = useState<BigNumber>(BigNumber(0));
   const [power, setPower] = useState<BigNumber>(BigNumber(0));
   const { selectedNetwork, selectedAccount } = useWallet();
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
@@ -43,7 +45,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
    * the total power that he has*/
   const [activeAsset, setActiveAsset] = useState<ActiveAsset>({ ring: BigNumber(0), kton: BigNumber(0) });
   const [asset, setAsset] = useState<Asset>();
-  const account = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+  const [deposits, setDeposits] = useState<DepositChain[]>([]);
 
   const initNetworkStorage = async (rpcURL: string) => {
     try {
@@ -73,29 +75,79 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     setPower(power);
   }, [pool, activeAsset]);
 
-  /*Get staking ledger*/
+  /*Get staking ledger. The data that comes back from the server needs a lot of decoding */
   useEffect(() => {
     let subscription: Subscription | undefined;
     const getStakingLedger = async () => {
-      const ledger = apiPromise?.query.staking.ledgers(account);
-      if (!ledger) {
+      if (!selectedAccount || !apiPromise) {
         return;
       }
-      subscription = combineLatest([ledger]).subscribe(([ledgers]) => {
+      const ledger = apiPromise?.query.staking.ledgers(selectedAccount);
+      const userDeposits = apiPromise?.query.deposit.deposits(selectedAccount);
+      if (!ledger || !userDeposits) {
+        return;
+      }
+      subscription = combineLatest([ledger, userDeposits]).subscribe(([ledgers, deposits]) => {
+        const depositsList: DepositChain[] = [];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const ledgerOption = ledgers as unknown as Option<DarwiniaStakingLedger>;
+        const depositsOption = deposits as unknown as Option<Vec<DepositEncoded>>;
+        if (depositsOption.isSome) {
+          const unwrappedDeposits = depositsOption.unwrap();
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const depositsData = unwrappedDeposits.toHuman() as DepositChain[];
+          /*depositsData here is not a real DepositChain[], it's just a casting hack */
+          depositsData.forEach((item) => {
+            depositsList.push({
+              id: Number(item.id.toString().replaceAll(",", "")),
+              expiredTime: Number(item.expiredTime.toString().replaceAll(",", "")),
+              inUse: item.inUse,
+              value: BigNumber(item.value.toString().replaceAll(",", "")),
+            });
+          });
+        }
+        setDeposits(depositsList);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const ledgerOption = ledgers as unknown as Option<DarwiniaStakingLedgerEncoded>;
         if (ledgerOption.isSome) {
           const unwrappedLedger = ledgerOption.unwrap();
-          console.log(unwrappedLedger);
+          /*ledgerData here is not a real DarwiniaStakingLedger, it's just a casting hack */
+          const ledgerData = unwrappedLedger.toHuman() as unknown as DarwiniaStakingLedger;
 
+          /*These are the IDs of the deposits that have been used in staking*/
+          const depositsIds: number[] = [];
+          unwrappedLedger.stakedDeposits?.forEach((item) => {
+            depositsIds.push(Number(item.toString()));
+          });
+
+          ledgerData.stakedRing = BigNumber(ledgerData.stakedRing.toString().replaceAll(",", ""));
+          ledgerData.stakedKton = BigNumber(ledgerData.stakedKton.toString().replaceAll(",", ""));
+          ledgerData.stakedDeposits = [...depositsIds];
+          ledgerData.unstakingDeposits =
+            ledgerData.unstakingDeposits?.map((item) => {
+              return [Number(item[0].toString().replaceAll(",", "")), Number(item[1].toString().replaceAll(",", ""))];
+            }) ?? [];
+          ledgerData.unstakingRing =
+            ledgerData.unstakingRing?.map((item) => {
+              return [Number(item[0].toString().replaceAll(",", "")), Number(item[1].toString().replaceAll(",", ""))];
+            }) ?? [];
+          ledgerData.unstakingKton =
+            ledgerData.unstakingKton?.map((item) => {
+              return [Number(item[0].toString().replaceAll(",", "")), Number(item[1].toString().replaceAll(",", ""))];
+            }) ?? [];
+
+          // find deposits that have been used in staking by their IDs
+          const stakedDepositsList = depositsList.filter((deposit) => depositsIds.includes(deposit.id));
+          const totalStakedRing = stakedDepositsList.reduce((acc, deposit) => acc.plus(deposit.value), BigNumber(0));
           setAsset({
             ring: {
-              locked: BigNumber(formatToEther(unwrappedLedger.stakedRing.toString())),
-              bonded: BigNumber(formatToEther(unwrappedLedger.stakedRing.toString())),
+              bonded: BigNumber(formatToEther(ledgerData.stakedRing.toString())),
+              totalStakingDeposit: BigNumber(formatToEther(totalStakedRing.toString())),
             },
             kton: {
-              bonded: BigNumber(formatToEther(unwrappedLedger.stakedKton.toString())),
+              bonded: BigNumber(formatToEther(ledgerData.stakedKton.toString())),
             },
           });
 
@@ -110,6 +162,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         const lockedRing = unwrappedLedger.activeDepositRing;
         const bondedRing = activeRing.toBn().sub(lockedRing.toBn());
         const bondedKton = activeKton;
+        // activeRing = lockedRing + bondedRing;
         setAsset({
           ring: {
             locked: BigNumber(formatToEther(unwrappedLedger.activeDepositRing.toString())),
@@ -128,7 +181,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       });
     };
     getStakingLedger().catch((e) => {
-      console.log(e);
+      // console.log(e);
       //ignore
     });
 
@@ -137,7 +190,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         subscription.unsubscribe();
       }
     };
-  }, [apiPromise]);
+  }, [apiPromise, selectedAccount]);
 
   // fetch data from kton and ring pool
   useEffect(() => {
@@ -159,8 +212,11 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     let unsubscription: UnSubscription | undefined;
     const getBalance = async () => {
+      if (!selectedAccount || !apiPromise) {
+        return;
+      }
       try {
-        const res = await apiPromise?.query.system.account(account, (accountInfo: FrameSystemAccountInfo) => {
+        const res = await apiPromise?.query.system.account(selectedAccount, (accountInfo: FrameSystemAccountInfo) => {
           console.log("Account Balance Info======", accountInfo.data.free);
         });
         unsubscription = res as unknown as UnSubscription;
@@ -178,7 +234,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         unsubscription();
       }
     };
-  }, [apiPromise]);
+  }, [apiPromise, selectedAccount]);
 
   useEffect(() => {
     if (!selectedNetwork) {
@@ -194,8 +250,6 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
   return (
     <StorageContext.Provider
       value={{
-        lockedKTON,
-        lockedRING,
         power,
         refresh,
         asset,

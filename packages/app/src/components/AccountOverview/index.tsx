@@ -49,7 +49,7 @@ const AccountOverview = () => {
         <Spinner isLoading={isLoadingStakingData} size={"small"} className={"card"}>
           <div className={"flex gap-[10px] flex-col"}>
             <div className={"border-b divider pb-[10px] text-14-bold"}>{t(localeKeys.latestStakingRewards)}</div>
-            <div className={"min-h-[90px] flex flex-col text-14-bold"}>
+            <div className={"min-h-[92px] flex flex-col text-14-bold"}>
               {!error && stakingData?.stakingStash && stakingData?.stakingStash.rewardeds.nodes.length > 0 ? (
                 <div className={"flex flex-col gap-[10px]"}>
                   {stakingData.stakingStash.rewardeds.nodes.map((item) => {
@@ -108,7 +108,7 @@ const AccountOverview = () => {
                 <div>{t(localeKeys.inDeposit)}</div>
                 <div>
                   {prettifyNumber({
-                    number: asset?.ring.locked ?? BigNumber(0),
+                    number: asset?.ring.totalStakingDeposit ?? BigNumber(0),
                     precision: 3,
                   })}
                 </div>
