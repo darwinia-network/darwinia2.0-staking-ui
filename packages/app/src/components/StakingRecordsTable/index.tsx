@@ -9,7 +9,7 @@ import helpIcon from "../../assets/images/help.svg";
 import reloadIcon from "../../assets/images/reload.svg";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";
-import { parseNumber } from "@darwinia/app-utils";
+import { parseNumber, prettifyNumber } from "@darwinia/app-utils";
 
 interface Bond {
   amount: string;
@@ -30,28 +30,7 @@ interface Delegate extends TableRow {
   canChangeCollator?: boolean;
 }
 
-const allDeposits: Deposit[] = [
-  {
-    id: "1",
-    amount: "1,200",
-  },
-  {
-    id: "2",
-    amount: "1,300",
-  },
-  {
-    id: "3",
-    amount: "1,400",
-  },
-  {
-    id: "4",
-    amount: "1,500",
-  },
-  {
-    id: "5",
-    amount: "1,600",
-  },
-];
+const allDeposits: Deposit[] = [];
 
 const StakingRecordsTable = () => {
   const { t } = useAppTranslation();
@@ -64,16 +43,7 @@ const StakingRecordsTable = () => {
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
   const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
   const delegateToUpdate = useRef<Delegate | null>(null);
-  const [bondedDeposits, setBondedDeposit] = useState<Deposit[]>([
-    {
-      id: "2",
-      amount: "1,300",
-    },
-    {
-      id: "3",
-      amount: "1,400",
-    },
-  ]);
+  const [bondedDeposits, setBondedDeposit] = useState<Deposit[]>([]);
 
   const onCloseBondTokenModal = () => {
     delegateToUpdate.current = null;
@@ -788,7 +758,12 @@ const BondDepositModal = ({
     return (
       <div className={"flex justify-between"}>
         <div>ID#{option.id}</div>
-        <div>{option.amount}</div>
+        <div>
+          {prettifyNumber({
+            number: option.value,
+            precision: 3,
+          })}
+        </div>
       </div>
     );
   };
