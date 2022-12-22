@@ -5,7 +5,7 @@ import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useStorage, useWallet } from "@darwinia/app-providers";
 import { StakingStash } from "@darwinia/app-types";
-import { formatToEther, prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
+import { prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
 import { useQuery } from "@apollo/client";
 import { GET_LATEST_STAKING_REWARDS } from "@darwinia/app-config";
 import { Spinner } from "@darwinia/ui";
@@ -18,7 +18,7 @@ interface StakingStashQuery {
 const AccountOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
-  const { power, asset } = useStorage();
+  const { power, asset, isLoadingLedger } = useStorage();
   const account = "5C4yTgZHMFLrv1YMkKvUAtP8WhENvNBNiXKZPa1aA7ka4fnS";
   const {
     loading: isLoadingStakingData,
@@ -57,7 +57,7 @@ const AccountOverview = () => {
                       <div className={"flex justify-between"} key={item.id}>
                         <div>
                           {prettifyNumber({
-                            number: BigNumber(formatToEther(item.amount)),
+                            number: BigNumber(item.amount),
                           })}{" "}
                           {selectedNetwork?.ring.symbol}
                         </div>
@@ -85,56 +85,62 @@ const AccountOverview = () => {
         </div>
       </div>
       {/*Staking reserve*/}
-      <div className={"card flex flex-col justify-center lg:w-[32.25%] shrink-0"}>
-        <div className={"divider border-b pb-[20px]"}>{t(localeKeys.reservedInStaking)}</div>
-        <div className={"flex flex-col gap-[20px] mt-[20px]"}>
-          {/*RING*/}
-          <div className={"divider border-b pb-[20px] gap-[20px] flex flex-col"}>
-            <div className={"flex gap-[5px] items-center"}>
-              <img className={"w-[30px]"} src={ringIcon} alt="image" />
-              <div className={"uppercase text-18-bold"}>{selectedNetwork?.ring.symbol ?? "RING"}</div>
-            </div>
-            <div className={"flex flex-col gap-[2px]"}>
-              <div className={"flex justify-between"}>
-                <div>{t(localeKeys.bonded)}</div>
-                <div>
-                  {prettifyNumber({
-                    number: asset?.ring.bonded ?? BigNumber(0),
-                    precision: 3,
-                  })}
+      <Spinner
+        size={"small"}
+        className={"card flex flex-col justify-center lg:w-[32.25%] shrink-0"}
+        isLoading={!!isLoadingLedger}
+      >
+        <div>
+          <div className={"divider border-b pb-[20px]"}>{t(localeKeys.reservedInStaking)}</div>
+          <div className={"flex flex-col gap-[20px] mt-[20px]"}>
+            {/*RING*/}
+            <div className={"divider border-b pb-[20px] gap-[20px] flex flex-col"}>
+              <div className={"flex gap-[5px] items-center"}>
+                <img className={"w-[30px]"} src={ringIcon} alt="image" />
+                <div className={"uppercase text-18-bold"}>{selectedNetwork?.ring.symbol ?? "RING"}</div>
+              </div>
+              <div className={"flex flex-col gap-[2px]"}>
+                <div className={"flex justify-between"}>
+                  <div>{t(localeKeys.bonded)}</div>
+                  <div>
+                    {prettifyNumber({
+                      number: asset?.ring.bonded ?? BigNumber(0),
+                      precision: 3,
+                    })}
+                  </div>
+                </div>
+                <div className={"flex justify-between"}>
+                  <div>{t(localeKeys.inDeposit)}</div>
+                  <div>
+                    {prettifyNumber({
+                      number: asset?.ring.totalStakingDeposit ?? BigNumber(0),
+                      precision: 3,
+                    })}
+                  </div>
                 </div>
               </div>
-              <div className={"flex justify-between"}>
-                <div>{t(localeKeys.inDeposit)}</div>
-                <div>
-                  {prettifyNumber({
-                    number: asset?.ring.totalStakingDeposit ?? BigNumber(0),
-                    precision: 3,
-                  })}
-                </div>
+            </div>
+            {/*KTON*/}
+            <div className={"gap-[20px] flex flex-col"}>
+              <div className={"flex gap-[5px] items-center"}>
+                <img className={"w-[30px]"} src={ktonIcon} alt="image" />
+                <div className={"uppercase text-18-bold"}>{selectedNetwork?.kton.symbol ?? "KTON"}</div>
               </div>
-            </div>
-          </div>
-          {/*KTON*/}
-          <div className={"gap-[20px] flex flex-col"}>
-            <div className={"flex gap-[5px] items-center"}>
-              <img className={"w-[30px]"} src={ktonIcon} alt="image" />
-              <div className={"uppercase text-18-bold"}>{selectedNetwork?.kton.symbol ?? "KTON"}</div>
-            </div>
-            <div className={"flex flex-col gap-[2px]"}>
-              <div className={"flex justify-between"}>
-                <div>{t(localeKeys.bonded)}</div>
-                <div>
-                  {prettifyNumber({
-                    number: asset?.kton.bonded ?? BigNumber(0),
-                    precision: 3,
-                  })}
+              <div className={"flex flex-col gap-[2px]"}>
+                <div className={"flex justify-between"}>
+                  <div>{t(localeKeys.bonded)}</div>
+                  <div>
+                    {prettifyNumber({
+                      number: asset?.kton.bonded ?? BigNumber(0),
+                      precision: 3,
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Spinner>
     </div>
   );
 };

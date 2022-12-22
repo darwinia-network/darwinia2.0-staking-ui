@@ -2,15 +2,6 @@ import { u128, Struct } from "@polkadot/types";
 import type { AccountId, BlockNumber } from "@polkadot/types/interfaces/runtime";
 import BigNumber from "bignumber.js";
 
-export interface Deposit {
-  id: string;
-  amount: string;
-  reward?: string;
-  startTime?: string;
-  endTime?: string;
-  isTimeOver?: boolean;
-}
-
 export interface Collator {
   id: string;
   accountAddress: string;
@@ -62,10 +53,17 @@ export interface DepositEncoded extends Struct {
   expiredTime: u128;
 }
 
-export interface DepositChain {
+export interface Deposit {
   id: number;
+  accountId: string;
   value: BigNumber;
+  reward: BigNumber;
+  startTime: number;
   expiredTime: number;
   inUse: boolean;
+  canRegularWithdraw: boolean;
+  isRegularWithdrawn: boolean;
+  canEarlyWithdraw: boolean;
+  isEarlyWithdrawn: boolean;
 }
 /*Staking types end here*/

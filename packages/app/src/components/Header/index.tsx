@@ -59,7 +59,7 @@ const Header = () => {
   };
 
   return (
-    <div className={`shrink-0 h-[66px] lg:h-[60px] w-full fixed top-0 left-0 right-0 z-[10] bg-black`}>
+    <div className={`shrink-0 h-[66px] lg:h-[60px] w-full fixed top-0 left-0 right-0 z-[30] bg-black`}>
       <div className={"justify-center flex h-full wrapper-padding"}>
         <div className={"app-container w-full"}>
           <div className={"flex flex-1 h-full shrink-0 items-center justify-between"}>

@@ -1,76 +1,39 @@
 import { Button, Column, Table, Tooltip, ModalEnhanced } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
-import { useWallet } from "@darwinia/app-providers";
+import { useStorage, useWallet } from "@darwinia/app-providers";
 import helpIcon from "../../assets/images/help.svg";
 import { useEffect, useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";
-import { formatDate } from "@darwinia/app-utils";
+import { formatDate, prettifyNumber } from "@darwinia/app-utils";
+import BigNumber from "bignumber.js";
 
 const DepositRecordsTable = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
-  const [showEarlyWithdrawModal, setShowEarlyWithdrawModal] = useState<boolean>(false);
+  /*All deposits list are available in the ledger, so listening to isLoadingLedger will
+   * allow adding the loading listener */
+  const { deposits, isLoadingLedger } = useStorage();
+  const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false);
   const depositToWithdraw = useRef<Deposit | null>(null);
+  const withdrawType = useRef<WithdrawModalType>("early");
+  const precision = 3;
 
-  const onCloseEarlyWithdrawModal = () => {
-    setShowEarlyWithdrawModal(false);
+  const onCloseWithdrawModal = () => {
+    setShowWithdrawModal(false);
   };
 
-  const onShowEarlyWithdrawModal = (deposit: Deposit) => {
+  const onShowWithdrawModal = (deposit: Deposit, type: WithdrawModalType) => {
     depositToWithdraw.current = deposit;
-    setShowEarlyWithdrawModal(true);
+    withdrawType.current = type;
+    setShowWithdrawModal(true);
   };
 
   const onConfirmWithdraw = () => {
-    console.log("confirm withdraw======");
-  };
-
-  const onConfirmEarlyWithdraw = () => {
+    setShowWithdrawModal(false);
     console.log("confirm early withdraw======");
   };
 
-  const dataSource: Deposit[] = [
-    {
-      id: "1",
-      amount: "200",
-      endTime: "1671926400000",
-      startTime: "1669852800000",
-      reward: "1234",
-      isTimeOver: false,
-    },
-    {
-      id: "2",
-      amount: "200",
-      endTime: "1671926400000",
-      startTime: "1669852800000",
-      reward: "1234",
-      isTimeOver: false,
-    },
-    {
-      id: "3",
-      amount: "200",
-      endTime: "1671926400000",
-      startTime: "1669852800000",
-      reward: "1234",
-      isTimeOver: false,
-    },
-    {
-      id: "4",
-      amount: "200",
-      endTime: "1671926400000",
-      startTime: "1669852800000",
-      reward: "1234",
-      isTimeOver: false,
-    },
-    {
-      id: "5",
-      amount: "200",
-      endTime: "1671926400000",
-      startTime: "1669852800000",
-      reward: "1234",
-      isTimeOver: false,
-    },
-  ];
+  const dataSource: Deposit[] = deposits ?? [];
 
   const columns: Column<Deposit>[] = [
     {
@@ -78,24 +41,20 @@ const DepositRecordsTable = () => {
       title: <div>{t(localeKeys.serialNumber)}</div>,
       key: "id",
       render: (row) => {
-        return (
-          <a target={"_blank"} className={"text-primary"} href="#">
-            ID# {row.id}
-          </a>
-        );
+        return <div className={"text-primary"}>ID# {row.id}</div>;
       },
       width: "150px",
     },
     {
       id: "2",
       title: <div>{t(localeKeys.duration)}</div>,
-      key: "startTime",
+      key: "expiredTime",
       width: "350px",
       render: (row) => {
-        const startDate = formatDate(Number(row.startTime));
-        const endDate = formatDate(Number(row.endTime));
-        const totalTimeRange = Number(row.endTime) - Number(row.startTime);
-        const timeRangeSoFar = new Date().getTime() - Number(row.startTime);
+        const startDate = formatDate(row.startTime);
+        const endDate = formatDate(row.expiredTime);
+        const totalTimeRange = row.expiredTime - row.startTime;
+        const timeRangeSoFar = new Date().getTime() - row.startTime;
         const percentage = (timeRangeSoFar / totalTimeRange) * 100;
 
         return (
@@ -116,11 +75,15 @@ const DepositRecordsTable = () => {
     {
       id: "3",
       title: <div>{t(localeKeys.amount)}</div>,
-      key: "amount",
+      key: "value",
       render: (row) => {
         return (
           <div>
-            {row.amount} {selectedNetwork?.ring.symbol.toUpperCase()}
+            {prettifyNumber({
+              number: row.value,
+              precision,
+            })}{" "}
+            {selectedNetwork?.ring.symbol.toUpperCase()}
           </div>
         );
       },
@@ -128,11 +91,15 @@ const DepositRecordsTable = () => {
     {
       id: "4",
       title: <div>{t(localeKeys.reward)}</div>,
-      key: "reward",
+      key: "value",
       render: (row) => {
         return (
           <div>
-            {row.reward} {selectedNetwork?.kton.symbol.toUpperCase()}
+            {prettifyNumber({
+              number: row.reward,
+              precision,
+            })}{" "}
+            {selectedNetwork?.kton.symbol.toUpperCase()}
           </div>
         );
       },
@@ -140,25 +107,63 @@ const DepositRecordsTable = () => {
     {
       id: "5",
       title: <div>{t(localeKeys.action)}</div>,
-      key: "reward",
+      key: "value",
       width: "240px",
       render: (row) => {
-        return (
-          <div className={"flex items-center gap-[10px]"}>
-            <Button
-              onClick={() => {
-                onShowEarlyWithdrawModal(row);
-              }}
-              btnType={"secondary"}
-              className={"!h-[30px]"}
-            >
-              {t(localeKeys.withdrawEarlier)}
-            </Button>
-            <Tooltip message={t(localeKeys.earlyWithdrawMessage)}>
-              <img className={"w-[16px]"} src={helpIcon} alt="image" />
-            </Tooltip>
-          </div>
-        );
+        let actionButton: JSX.Element;
+        if (row.isEarlyWithdrawn) {
+          actionButton = (
+            <>
+              <Button disabled btnType={"secondary"} className={"!h-[30px]"}>
+                {t(localeKeys.withdrawEarlier)}
+              </Button>
+              <Tooltip message={t(localeKeys.earlyWithdrawMessage)}>
+                <img className={"w-[16px]"} src={helpIcon} alt="image" />
+              </Tooltip>
+            </>
+          );
+        } else if (row.isRegularWithdrawn) {
+          actionButton = (
+            <>
+              <Button disabled btnType={"secondary"} className={"!h-[30px]"}>
+                {t(localeKeys.withdraw)}
+              </Button>
+              <Tooltip message={t(localeKeys.regularWithdrawMessage)}>
+                <img className={"w-[16px]"} src={helpIcon} alt="image" />
+              </Tooltip>
+            </>
+          );
+        } else if (row.canRegularWithdraw) {
+          actionButton = (
+            <>
+              <Button
+                onClick={() => {
+                  onShowWithdrawModal(row, "regular");
+                }}
+                btnType={"secondary"}
+                className={"!h-[30px]"}
+              >
+                {t(localeKeys.withdraw)}
+              </Button>
+            </>
+          );
+        } else {
+          // these can all be withdrawn early
+          actionButton = (
+            <>
+              <Button
+                onClick={() => {
+                  onShowWithdrawModal(row, "early");
+                }}
+                btnType={"secondary"}
+                className={"!h-[30px]"}
+              >
+                {t(localeKeys.withdrawEarlier)}
+              </Button>
+            </>
+          );
+        }
+        return <div className={"flex items-center gap-[10px]"}>{actionButton}</div>;
       },
     },
   ];
@@ -167,18 +172,20 @@ const DepositRecordsTable = () => {
     <div className={"flex flex-col"}>
       <div className={"flex flex-col mt-[20px]"}>
         <Table
+          isLoading={isLoadingLedger}
           headerSlot={<div className={"text-14-bold pb-[10px]"}>{t(localeKeys.activeDepositRecords)}</div>}
           noDataText={t(localeKeys.noDepositRecords)}
           dataSource={dataSource}
           columns={columns}
         />
       </div>
-      <EarlyWithdrawModal
-        onCancel={onCloseEarlyWithdrawModal}
-        onConfirm={onConfirmEarlyWithdraw}
-        isVisible={showEarlyWithdrawModal}
-        onClose={onCloseEarlyWithdrawModal}
+      <WithdrawModal
+        onCancel={onCloseWithdrawModal}
+        onConfirm={onConfirmWithdraw}
+        isVisible={showWithdrawModal}
+        onClose={onCloseWithdrawModal}
         deposit={depositToWithdraw.current}
+        type={withdrawType.current}
       />
     </div>
   );
@@ -186,59 +193,88 @@ const DepositRecordsTable = () => {
 
 export default DepositRecordsTable;
 
-interface EarlyWithdrawProps {
+type WithdrawModalType = "early" | "regular";
+
+interface WithdrawProps {
   isVisible: boolean;
   onClose: () => void;
   onConfirm: () => void;
   onCancel: () => void;
   deposit: Deposit | null;
+  type: WithdrawModalType;
 }
 
-const EarlyWithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit }: EarlyWithdrawProps) => {
+const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type }: WithdrawProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
-  const { selectedNetwork, depositContract } = useWallet();
+  const { selectedNetwork } = useWallet();
+
+  /*You'll be charged a penalty of 3 times the rewarded Kton if you want to
+   * withdraw before the expireTime */
+  const fineAmount = deposit?.reward.times(3) ?? BigNumber(0);
+  const btnText: string =
+    type === "early"
+      ? `${t(localeKeys.payAmount, {
+          amount: `${prettifyNumber({
+            number: fineAmount,
+            precision: 3,
+          })} ${selectedNetwork?.kton.symbol.toUpperCase()}`,
+        })}  ${selectedNetwork?.kton.symbol.toUpperCase()}`
+      : `${t(localeKeys.withdraw)}`;
 
   useEffect(() => {
     setLoading(false);
 
-    const estimateGas = async () => {
+    /*const estimateGas = async () => {
+      setIsEstimatingGas(true);
       const gasFee = await depositContract?.estimateGas.claim();
-      console.log("gasFee=====", gasFee);
+      setIsEstimatingGas(false);
+      setEstimatedGasFee(BigNumber(gasFee?.toString() ?? 0));
+      console.log("gasFee=====", gasFee?.toString());
     };
 
     if (isVisible) {
       // estimate gas fee
       estimateGas().catch((e) => {
-        console.log(e);
+        setIsEstimatingGas(false);
       });
-    }
+    }*/
   }, [isVisible]);
 
   const onConfirmWithdraw = () => {
-    onConfirm();
+    setLoading(true);
+    /*simulate a request*/
+    setTimeout(() => {
+      onConfirm();
+    }, 6000);
   };
 
-  const fineAmount = 5.67;
+  const onCloseModal = () => {
+    onClose();
+  };
+
+  const modalText =
+    type === "early"
+      ? `${t(localeKeys.earlyWithdrawInfo, {
+          ktonSymbol: selectedNetwork?.kton.symbol.toUpperCase(),
+          ringSymbol: selectedNetwork?.ring.symbol.toUpperCase(),
+        })}`
+      : `${t(localeKeys.withdrawInfo)}`;
 
   return (
     <ModalEnhanced
       modalTitle={t(localeKeys.sureToWithdraw)}
       cancelText={t(localeKeys.cancel)}
-      confirmText={t(localeKeys.payAmount, { amount: `${fineAmount} ${selectedNetwork?.kton.symbol.toUpperCase()}` })}
+      confirmText={btnText}
       onConfirm={onConfirmWithdraw}
-      confirmLoading={isLoading}
       isVisible={isVisible}
-      onClose={onClose}
+      onClose={onCloseModal}
       onCancel={onCancel}
       className={"!max-w-[400px]"}
+      isLoading={isLoading}
+      isCancellable={false}
     >
-      <div className={"pb-[20px] divider border-b text-12"}>
-        {t(localeKeys.earlyWithdrawInfo, {
-          ktonSymbol: selectedNetwork?.kton.symbol.toUpperCase(),
-          ringSymbol: selectedNetwork?.ring.symbol.toUpperCase(),
-        })}
-      </div>
+      <div className={"pb-[20px] divider border-b text-12"}>{modalText}</div>
     </ModalEnhanced>
   );
 };

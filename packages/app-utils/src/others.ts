@@ -50,25 +50,36 @@ interface PrettyNumberInput {
   precision?: number;
   round?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   keepTrailingZeros?: boolean;
+  shouldFormatToEther?: boolean;
 }
 export const prettifyNumber = ({
   number,
   precision = 0,
   round = BigNumber.ROUND_DOWN,
   keepTrailingZeros = true,
+  shouldFormatToEther = true,
 }: PrettyNumberInput) => {
   if (keepTrailingZeros) {
     // will return a number like 12,345.506000
+    if (shouldFormatToEther) {
+      const numberInEther = formatToEther(number.toString());
+      return BigNumber(numberInEther).toFormat(precision, round);
+    }
     return number.toFormat(precision, round);
   }
+
   // will return a number like 12,345.506
+  if (shouldFormatToEther) {
+    const numberInEther = formatToEther(number.toString());
+    return BigNumber(numberInEther).decimalPlaces(precision, round).toFormat();
+  }
   return number.decimalPlaces(precision, round).toFormat();
 };
 
-export const formatToEther = (value: string): string => {
-  return ethers.utils.formatEther(value);
+export const formatToEther = (valueInWei: string): string => {
+  return ethers.utils.formatEther(valueInWei);
 };
 
-export const formatToWei = (value: string) => {
-  return ethers.utils.parseEther(value);
+export const formatToWei = (valueInEther: string) => {
+  return ethers.utils.parseEther(valueInEther);
 };

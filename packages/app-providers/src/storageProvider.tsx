@@ -4,7 +4,7 @@ import {
   Asset,
   DarwiniaStakingLedger,
   DarwiniaStakingLedgerEncoded,
-  DepositChain,
+  Deposit,
   DepositEncoded,
 } from "@darwinia/app-types";
 import BigNumber from "bignumber.js";
@@ -12,15 +12,19 @@ import { useWallet } from "./walletProvider";
 import { WsProvider, ApiPromise } from "@polkadot/api";
 import { FrameSystemAccountInfo } from "@darwinia/api-derive/accounts/types";
 import { Option, Vec } from "@polkadot/types";
-import { convertAssetToPower, formatToEther } from "@darwinia/app-utils";
+import { convertAssetToPower } from "@darwinia/app-utils";
 import { combineLatest, Subscription } from "rxjs";
 
 const initialState: StorageCtx = {
   power: undefined,
   asset: undefined,
+  stakedDepositsIds: undefined,
+  deposits: undefined,
   refresh: () => {
     //ignore
   },
+  isLoadingLedger: undefined,
+  isLoadingPool: undefined,
 };
 
 type UnSubscription = () => void;
@@ -45,7 +49,12 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
    * the total power that he has*/
   const [activeAsset, setActiveAsset] = useState<ActiveAsset>({ ring: BigNumber(0), kton: BigNumber(0) });
   const [asset, setAsset] = useState<Asset>();
-  const [deposits, setDeposits] = useState<DepositChain[]>([]);
+  /*These are all the deposits that have been made by the user*/
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
+  /*These are the IDs of the deposits that have been used in staking already*/
+  const [stakedDepositsIds, setStakedDepositsIds] = useState<number[]>([]);
+  const [isLoadingLedger, setLoadingLedger] = useState<boolean>(true);
+  const [isLoadingPool, setLoadingPool] = useState<boolean>(true);
 
   const initNetworkStorage = async (rpcURL: string) => {
     try {
@@ -82,13 +91,15 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       if (!selectedAccount || !apiPromise) {
         return;
       }
-      const ledger = apiPromise?.query.staking.ledgers(selectedAccount);
-      const userDeposits = apiPromise?.query.deposit.deposits(selectedAccount);
+      setLoadingLedger(true);
+      const ledger = apiPromise.query.staking.ledgers(selectedAccount);
+      const userDeposits = apiPromise.query.deposit.deposits(selectedAccount);
       if (!ledger || !userDeposits) {
+        setLoadingLedger(false);
         return;
       }
       subscription = combineLatest([ledger, userDeposits]).subscribe(([ledgers, deposits]) => {
-        const depositsList: DepositChain[] = [];
+        const depositsList: Deposit[] = [];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const depositsOption = deposits as unknown as Option<Vec<DepositEncoded>>;
@@ -96,14 +107,22 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
           const unwrappedDeposits = depositsOption.unwrap();
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          const depositsData = unwrappedDeposits.toHuman() as DepositChain[];
-          /*depositsData here is not a real DepositChain[], it's just a casting hack */
-          depositsData.forEach((item) => {
+          const depositsData = unwrappedDeposits.toHuman() as Deposit[];
+          /*depositsData here is not a real Deposit[], it's just a casting hack */
+          depositsData.forEach((item, index) => {
+            const tempStartTime = 1670601600000; //Dec 10th 2022
             depositsList.push({
               id: Number(item.id.toString().replaceAll(",", "")),
+              startTime: tempStartTime,
+              accountId: selectedAccount,
+              reward: BigNumber("5002087651239764369"),
               expiredTime: Number(item.expiredTime.toString().replaceAll(",", "")),
               inUse: item.inUse,
               value: BigNumber(item.value.toString().replaceAll(",", "")),
+              canEarlyWithdraw: index === 0,
+              isEarlyWithdrawn: index === 1,
+              canRegularWithdraw: index === 3,
+              isRegularWithdrawn: index === 4,
             });
           });
         }
@@ -117,14 +136,14 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
           const ledgerData = unwrappedLedger.toHuman() as unknown as DarwiniaStakingLedger;
 
           /*These are the IDs of the deposits that have been used in staking*/
-          const depositsIds: number[] = [];
+          const stakedDepositsIdsList: number[] = [];
           unwrappedLedger.stakedDeposits?.forEach((item) => {
-            depositsIds.push(Number(item.toString()));
+            stakedDepositsIdsList.push(Number(item.toString()));
           });
 
           ledgerData.stakedRing = BigNumber(ledgerData.stakedRing.toString().replaceAll(",", ""));
           ledgerData.stakedKton = BigNumber(ledgerData.stakedKton.toString().replaceAll(",", ""));
-          ledgerData.stakedDeposits = [...depositsIds];
+          ledgerData.stakedDeposits = [...stakedDepositsIdsList];
           ledgerData.unstakingDeposits =
             ledgerData.unstakingDeposits?.map((item) => {
               return [Number(item[0].toString().replaceAll(",", "")), Number(item[1].toString().replaceAll(",", ""))];
@@ -139,48 +158,35 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
             }) ?? [];
 
           // find deposits that have been used in staking by their IDs
-          const stakedDepositsList = depositsList.filter((deposit) => depositsIds.includes(deposit.id));
-          const totalStakedRing = stakedDepositsList.reduce((acc, deposit) => acc.plus(deposit.value), BigNumber(0));
+          const stakedDepositsList = depositsList.filter((deposit) => stakedDepositsIdsList.includes(deposit.id));
+          const totalStakingDeposit = stakedDepositsList.reduce(
+            (acc, deposit) => acc.plus(deposit.value),
+            BigNumber(0)
+          );
           setAsset({
             ring: {
-              bonded: BigNumber(formatToEther(ledgerData.stakedRing.toString())),
-              totalStakingDeposit: BigNumber(formatToEther(totalStakedRing.toString())),
+              bonded: BigNumber(ledgerData.stakedRing.toString()),
+              totalStakingDeposit: BigNumber(totalStakingDeposit.toString()),
             },
             kton: {
-              bonded: BigNumber(formatToEther(ledgerData.stakedKton.toString())),
+              bonded: BigNumber(ledgerData.stakedKton.toString()),
             },
           });
 
-          /*
-        /!*NEW API
-         * stakedRing ==== bonded
-         * stakedDeposits ==== In deposit (u8) ---> Array [depositId]
-         *
-         * *!/
-        const activeRing = unwrappedLedger.active;
-        const activeKton = unwrappedLedger.activeKton;
-        const lockedRing = unwrappedLedger.activeDepositRing;
-        const bondedRing = activeRing.toBn().sub(lockedRing.toBn());
-        const bondedKton = activeKton;
-        // activeRing = lockedRing + bondedRing;
-        setAsset({
-          ring: {
-            locked: BigNumber(formatToEther(unwrappedLedger.activeDepositRing.toString())),
-            bonded: BigNumber(formatToEther(bondedRing.toString())),
-          },
-          kton: {
-            bonded: BigNumber(formatToEther(bondedKton.toString())),
-          },
-        });
+          const totalRingInStaking = ledgerData.stakedRing.plus(totalStakingDeposit);
+          const totalKtonInStaking = ledgerData.stakedKton;
+          setActiveAsset({
+            ring: BigNumber(totalRingInStaking.toString()),
+            kton: BigNumber(totalKtonInStaking.toString()),
+          });
 
-        setActiveAsset({
-          ring: BigNumber(activeRing.toString()),
-          kton: BigNumber(activeKton.toString()),
-        });*/
+          setStakedDepositsIds(stakedDepositsIdsList);
+          setLoadingLedger(false);
         }
       });
     };
     getStakingLedger().catch((e) => {
+      setLoadingLedger(false);
       // console.log(e);
       //ignore
     });
@@ -194,18 +200,34 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
 
   // fetch data from kton and ring pool
   useEffect(() => {
+    let subscription: Subscription | undefined;
     const getPool = async () => {
-      const kton = (await apiPromise?.query.staking.ktonPool()) ?? 0;
-      const ring = (await apiPromise?.query.staking.ringPool()) ?? 0;
-      setPool({
-        kton: BigNumber(kton.toString()),
-        ring: BigNumber(ring.toString()),
+      if (!apiPromise) {
+        return;
+      }
+      setLoadingPool(true);
+      const ring = apiPromise.query.staking.ringPool();
+      const kton = apiPromise.query.staking.ktonPool();
+
+      subscription = combineLatest([ring, kton]).subscribe(([ringValue, ktonValue]) => {
+        setPool({
+          kton: BigNumber(ktonValue.toString()),
+          ring: BigNumber(ringValue.toString()),
+        });
+        setLoadingPool(false);
       });
     };
 
     getPool().catch(() => {
       //ignore
+      setLoadingPool(false);
     });
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, [apiPromise]);
 
   /*Monitor account balance*/
@@ -253,6 +275,10 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         power,
         refresh,
         asset,
+        deposits,
+        stakedDepositsIds,
+        isLoadingPool,
+        isLoadingLedger,
       }}
     >
       {children}

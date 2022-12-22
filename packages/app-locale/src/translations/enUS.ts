@@ -92,11 +92,13 @@ const enUs = {
   [localeKeys.payAmount]: "Pay {{amount}}",
   [localeKeys.earlyWithdrawInfo]:
     "Since the deposit term doesn’t end yet, you’ll be charged a penalty of 3 times the {{ktonSymbol}} reward if you try to withdraw the {{ringSymbol}}s in advance.",
+  [localeKeys.withdrawInfo]: `Withdraw at a regular time`,
   [localeKeys.serialNumber]: "No.",
   [localeKeys.duration]: "Duration",
   [localeKeys.reward]: "Reward",
   [localeKeys.action]: "Action",
   [localeKeys.earlyWithdrawMessage]: "Early withdraw message",
+  [localeKeys.regularWithdrawMessage]: "Regular withdraw message",
   [localeKeys.depositAmountValueFormatError]: "Amount value must be a valid number",
   [localeKeys.somethingWrongHappened]: "Something wrong happened",
   [localeKeys.operationSuccessful]: "Operation successful",
