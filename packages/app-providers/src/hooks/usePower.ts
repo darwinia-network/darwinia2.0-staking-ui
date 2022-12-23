@@ -1,15 +1,11 @@
 import BigNumber from "bignumber.js";
 import { ApiPromise } from "@polkadot/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { combineLatest, Subscription } from "rxjs";
-import { convertAssetToPower } from "@darwinia/app-utils";
+import { convertAssetToPower, formatToWei } from "@darwinia/app-utils";
+import { StakingAsset } from "@darwinia/app-types";
 
 interface Pool {
-  ring: BigNumber;
-  kton: BigNumber;
-}
-
-interface StakingAsset {
   ring: BigNumber;
   kton: BigNumber;
 }
@@ -66,10 +62,24 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
     setPower(power);
   }, [pool, stakingAsset]);
 
+  const calculatePower = useCallback(
+    (stakingAsset: StakingAsset) => {
+      const ktonInWei = BigNumber(formatToWei(stakingAsset.kton.toString()).toString());
+      const ringInWei = BigNumber(formatToWei(stakingAsset.ring.toString()).toString());
+      const initialBondedRing = BigNumber(0);
+      const initialBondedKton = BigNumber(0);
+      const initialPower = convertAssetToPower(initialBondedRing, initialBondedKton, pool.ring, pool.kton);
+      const accumulatedPower = convertAssetToPower(ringInWei, ktonInWei, pool.ring, pool.kton);
+      return accumulatedPower.minus(initialPower);
+    },
+    [pool]
+  );
+
   return {
     pool,
     isLoadingPool,
     power,
+    calculatePower,
   };
 };
 

@@ -6,6 +6,7 @@ import {
   DarwiniaStakingLedgerEncoded,
   Deposit,
   DepositEncoded,
+  StakingAsset,
 } from "@darwinia/app-types";
 import { Option, Vec } from "@polkadot/types";
 import BigNumber from "bignumber.js";
@@ -14,11 +15,6 @@ import { ApiPromise } from "@polkadot/api";
 interface Params {
   apiPromise: ApiPromise | undefined;
   selectedAccount: string | undefined;
-}
-
-export interface StakingAsset {
-  ring: BigNumber;
-  kton: BigNumber;
 }
 
 type UnSubscription = () => void;

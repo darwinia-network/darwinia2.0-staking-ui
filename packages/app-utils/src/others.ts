@@ -31,8 +31,13 @@ export const toShortAddress = (accountAddress: string) => {
   return `${firstPart}...${secondPart}`;
 };
 
-export const parseNumber = (value: string): number | undefined => {
-  return value.trim().length === 0 ? undefined : Number(value);
+export const isValidNumber = (value: string): boolean => {
+  if (value.trim().length === 0) {
+    return false;
+  }
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return !isNaN(value);
 };
 
 export const copyToClipboard = async (text: string): Promise<boolean> => {

@@ -4,7 +4,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
 import JazzIcon from "../JazzIcon";
 import copyIcon from "../../assets/images/copy.svg";
-import { copyToClipboard, parseNumber } from "@darwinia/app-utils";
+import { copyToClipboard, isValidNumber } from "@darwinia/app-utils";
 import helpIcon from "../../assets/images/help.svg";
 
 export interface SelectCollatorRefs {
@@ -249,8 +249,8 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
         return;
       }
 
-      const commissionValue = parseNumber(commission);
-      if (!commissionValue) {
+      const isValidCommission = isValidNumber(commission);
+      if (!isValidCommission) {
         setCommissionHasError(true);
         return;
       }

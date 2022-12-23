@@ -9,7 +9,7 @@ import helpIcon from "../../assets/images/help.svg";
 import reloadIcon from "../../assets/images/reload.svg";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";
-import { parseNumber, prettifyNumber } from "@darwinia/app-utils";
+import { isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 
 interface Bond {
   amount: string;
@@ -664,13 +664,13 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
   };
 
   const onConfirmBonding = () => {
-    const amount = parseNumber(value);
-    if (!amount) {
+    const isValidAmount = isValidNumber(value);
+    if (!isValidAmount) {
       setHasError(true);
       return;
     }
-    setValue(amount.toString());
-    console.log(amount);
+    setValue(value);
+    console.log(value);
     setLoading(true);
     // onConfirm();
   };
@@ -836,13 +836,13 @@ const UpdateCommissionModal = ({ isVisible, onClose, onConfirm, onCancel }: Comm
   };
 
   const onConfirmUpdate = () => {
-    const percentage = parseNumber(value);
-    if (!percentage) {
+    const isValidPercentage = isValidNumber(value);
+    if (!isValidPercentage) {
       setHasError(true);
       return;
     }
-    setValue(percentage.toString());
-    console.log(percentage);
+    setValue(value);
+    console.log(value);
     setLoading(true);
     // onConfirm();
   };

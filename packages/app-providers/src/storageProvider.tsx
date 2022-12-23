@@ -1,21 +1,22 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { StorageCtx } from "@darwinia/app-types";
+import { StakingAsset, StorageCtx } from "@darwinia/app-types";
 import { useWallet } from "./walletProvider";
 import { WsProvider, ApiPromise } from "@polkadot/api";
 import { FrameSystemAccountInfo } from "@darwinia/api-derive/accounts/types";
 import usePower from "./hooks/usePower";
 import useLedger from "./hooks/useLedger";
+import BigNumber from "bignumber.js";
 
 const initialState: StorageCtx = {
   power: undefined,
   assetDistribution: undefined,
   stakedDepositsIds: undefined,
   deposits: undefined,
-  refresh: () => {
-    //ignore
-  },
   isLoadingLedger: undefined,
   isLoadingPool: undefined,
+  calculatePower: (stakingAsset: StakingAsset): BigNumber => {
+    return BigNumber(0);
+  },
 };
 
 type UnSubscription = () => void;
@@ -30,7 +31,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     apiPromise,
     selectedAccount,
   });
-  const { isLoadingPool, power } = usePower({
+  const { isLoadingPool, power, calculatePower } = usePower({
     apiPromise,
     stakingAsset,
   });
@@ -100,12 +101,12 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     <StorageContext.Provider
       value={{
         power,
-        refresh,
         assetDistribution,
         deposits,
         stakedDepositsIds,
         isLoadingPool,
         isLoadingLedger,
+        calculatePower,
       }}
     >
       {children}

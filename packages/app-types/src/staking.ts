@@ -29,6 +29,11 @@ export interface StakingStash {
   rewardeds: RewardedNode;
 }
 
+export interface StakingAsset {
+  ring: BigNumber;
+  kton: BigNumber;
+}
+
 /*Staking types start here*/
 export interface DarwiniaStakingLedgerEncoded extends Struct {
   stakedRing: u128;

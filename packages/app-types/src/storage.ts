@@ -1,20 +1,20 @@
 import BigNumber from "bignumber.js";
-import { Deposit } from "./staking";
+import { Deposit, StakingAsset } from "./staking";
 
-export interface StakingAsset {
+export interface AssetDetail {
   bonded: BigNumber;
   totalStakingDeposit?: BigNumber;
 }
 
 export interface AssetDistribution {
-  ring: StakingAsset;
-  kton: StakingAsset;
+  ring: AssetDetail;
+  kton: AssetDetail;
 }
 
 export interface StorageCtx {
   power: BigNumber | undefined;
   assetDistribution: AssetDistribution | undefined;
-  refresh: () => void;
+  calculatePower: (stakingAsset: StakingAsset) => BigNumber;
   deposits: Deposit[] | undefined;
   stakedDepositsIds: number[] | undefined;
   isLoadingLedger: boolean | undefined;

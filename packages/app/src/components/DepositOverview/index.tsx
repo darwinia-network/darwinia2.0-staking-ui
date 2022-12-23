@@ -3,7 +3,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, Input, OptionProps, Select, notification } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import { useWallet } from "@darwinia/app-providers";
-import { calculateKtonFromRingDeposit, parseNumber, formatToWei } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, isValidNumber, formatToWei } from "@darwinia/app-utils";
 import DepositRecordsTable from "../DepositRecordsTable";
 import BigNumber from "bignumber.js";
 import { BigNumber as EthersBigNumber } from "ethers";
@@ -49,10 +49,10 @@ const DepositOverview = () => {
   };
 
   useEffect(() => {
-    const amountValue = parseNumber(amount);
+    const isNumber = isValidNumber(amount);
 
     const kton = calculateKtonFromRingDeposit({
-      ringAmount: BigNumber(amountValue ? amount : 0),
+      ringAmount: BigNumber(isNumber ? amount : 0),
       depositMonths: Number(depositTerm),
     });
     setRewardedKTON(kton);
@@ -68,8 +68,8 @@ const DepositOverview = () => {
   };
 
   const onDeposit = async () => {
-    const amountValue = parseNumber(amount);
-    if (!amountValue) {
+    const isValidAmount = isValidNumber(amount);
+    if (!isValidAmount) {
       setAmountHasError(true);
       notification.error({
         message: <div>{t(localeKeys.depositAmountValueFormatError)}</div>,
@@ -77,7 +77,7 @@ const DepositOverview = () => {
       return;
     }
     try {
-      const amountInWei = formatToWei(amountValue.toString());
+      const amountInWei = formatToWei(amount.toString());
       setTransactionStatus(true);
       const response = (await depositContract?.lock(
         EthersBigNumber.from(amountInWei.toString()),
