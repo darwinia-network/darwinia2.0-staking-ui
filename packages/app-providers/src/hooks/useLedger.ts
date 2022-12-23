@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { combineLatest, Subscription } from "rxjs";
+
 import {
   AssetDistribution,
   DarwiniaStakingLedger,
@@ -21,6 +21,8 @@ export interface StakingAsset {
   kton: BigNumber;
 }
 
+type UnSubscription = () => void;
+
 const useLedger = ({ apiPromise, selectedAccount }: Params) => {
   /*This is the total amount of RING and KTON that the user has invested in staking, it will be used in calculating
    * the total power that he has*/
@@ -33,25 +35,31 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
   /*staking asset distribution*/
   const [assetDistribution, setAssetDistribution] = useState<AssetDistribution>();
 
-  /*Get staking ledger. The data that comes back from the server needs a lot of decoding */
+  /*Get staking ledger and deposits. The data that comes back from the server needs a lot of decoding */
   useEffect(() => {
-    let subscription: Subscription | undefined;
-    const getStakingLedger = async () => {
+    let depositsUnsubscription: UnSubscription | undefined;
+    let ledgerUnsubscription: UnSubscription | undefined;
+    const getStakingLedgerAndDeposits = async () => {
       if (!selectedAccount || !apiPromise) {
         return;
       }
       setLoadingLedger(true);
-      const ledger = apiPromise.query.staking.ledgers(selectedAccount);
-      const userDeposits = apiPromise.query.deposit.deposits(selectedAccount);
-      if (!ledger || !userDeposits) {
-        setLoadingLedger(false);
-        return;
-      }
-      subscription = combineLatest([ledger, userDeposits]).subscribe(([ledgers, deposits]) => {
+
+      let ledgerInfo: Option<DarwiniaStakingLedgerEncoded> | undefined;
+      let depositsInfo: Option<Vec<DepositEncoded>> | undefined;
+
+      /*This method will be called every time there are changes in the deposits or ledger, it is managed by
+       * socket */
+      const parseData = (
+        ledgerOption: Option<DarwiniaStakingLedgerEncoded> | undefined,
+        depositsOption: Option<Vec<DepositEncoded>> | undefined
+      ) => {
+        if (!ledgerOption || !depositsOption) {
+          return;
+        }
+
         const depositsList: Deposit[] = [];
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const depositsOption = deposits as unknown as Option<Vec<DepositEncoded>>;
+
         if (depositsOption.isSome) {
           const unwrappedDeposits = depositsOption.unwrap();
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -77,9 +85,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           });
         }
         setDeposits(depositsList);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const ledgerOption = ledgers as unknown as Option<DarwiniaStakingLedgerEncoded>;
+
         if (ledgerOption.isSome) {
           const unwrappedLedger = ledgerOption.unwrap();
           /*ledgerData here is not a real DarwiniaStakingLedger, it's just a casting hack */
@@ -133,17 +139,36 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           setStakedDepositsIds(stakedDepositsIdsList);
           setLoadingLedger(false);
         }
-      });
+      };
+
+      ledgerUnsubscription = (await apiPromise.query.staking.ledgers(
+        selectedAccount,
+        (ledger: Option<DarwiniaStakingLedgerEncoded>) => {
+          ledgerInfo = ledger;
+          parseData(ledgerInfo, depositsInfo);
+        }
+      )) as unknown as UnSubscription;
+
+      depositsUnsubscription = (await apiPromise.query.deposit.deposits(
+        selectedAccount,
+        (deposits: Option<Vec<DepositEncoded>>) => {
+          depositsInfo = deposits;
+          parseData(ledgerInfo, depositsInfo);
+        }
+      )) as unknown as UnSubscription;
     };
-    getStakingLedger().catch((e) => {
+    getStakingLedgerAndDeposits().catch((e) => {
       setLoadingLedger(false);
       // console.log(e);
       //ignore
     });
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
+      if (ledgerUnsubscription) {
+        ledgerUnsubscription();
+      }
+      if (depositsUnsubscription) {
+        depositsUnsubscription();
       }
     };
   }, [apiPromise, selectedAccount]);
