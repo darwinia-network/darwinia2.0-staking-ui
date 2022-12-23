@@ -102,6 +102,7 @@ const enUs = {
   [localeKeys.depositAmountValueFormatError]: "Amount value must be a valid number",
   [localeKeys.somethingWrongHappened]: "Something wrong happened",
   [localeKeys.operationSuccessful]: "Operation successful",
+  [localeKeys.noActiveDeposits]: "No active deposits",
 };
 
 export default enUs;

@@ -110,6 +110,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
           const depositsData = unwrappedDeposits.toHuman() as Deposit[];
           /*depositsData here is not a real Deposit[], it's just a casting hack */
           depositsData.forEach((item, index) => {
+            // TODO remove all the fake data below
             const tempStartTime = 1670601600000; //Dec 10th 2022
             depositsList.push({
               id: Number(item.id.toString().replaceAll(",", "")),

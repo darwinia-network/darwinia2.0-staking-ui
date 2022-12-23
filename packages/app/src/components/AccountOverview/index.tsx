@@ -43,6 +43,7 @@ const AccountOverview = () => {
           <div className={"text-24-bold text-[30px]"}>
             {prettifyNumber({
               number: power ?? BigNumber(0),
+              shouldFormatToEther: false,
             })}
           </div>
         </div>

@@ -2,7 +2,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, CheckboxGroup, Dropdown, Input } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
-import { useWallet } from "@darwinia/app-providers";
+import { useStorage, useWallet } from "@darwinia/app-providers";
 import caretDownIcon from "../../assets/images/caret-down.svg";
 import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";
@@ -15,6 +15,7 @@ import { prettifyNumber } from "@darwinia/app-utils";
 const StakingOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork, selectedAccount } = useWallet();
+  const { deposits, stakedDepositsIds } = useStorage();
   const [selectedDeposits, setSelectedDeposits] = useState<Deposit[]>([]);
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const [selectedCollator, setSelectedCollator] = useState<Collator>();
@@ -53,7 +54,9 @@ const StakingOverview = () => {
     if (depositList.length === 0) {
       return (
         <div className={"w-full border border-halfWhite bg-blackSecondary border-t-0"}>
-          <div className={"bg-[rgba(255,255,255,0.2)] px-[10px] py-[6px] text-halfWhite"}>no active deposits</div>
+          <div className={"bg-[rgba(255,255,255,0.2)] px-[10px] py-[6px] text-halfWhite"}>
+            {t(localeKeys.noActiveDeposits)}
+          </div>
         </div>
       );
     }

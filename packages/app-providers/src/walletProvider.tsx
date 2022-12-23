@@ -280,7 +280,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   const setTransactionStatus = useCallback((isLoading: boolean) => {
-    console.log("here========");
     setLoadingTransaction(isLoading);
   }, []);
 
