@@ -7,7 +7,7 @@ import caretDownIcon from "../../assets/images/caret-down.svg";
 import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";
 import StakingRecordsTable from "../StakingRecordsTable";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Deposit, Collator } from "@darwinia/app-types";
 import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
 import { prettifyNumber } from "@darwinia/app-utils";
@@ -19,6 +19,7 @@ const StakingOverview = () => {
   const [selectedDeposits, setSelectedDeposits] = useState<Deposit[]>([]);
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const [selectedCollator, setSelectedCollator] = useState<Collator>();
+  const [stakeAbleDeposits, setStakeAbleDeposits] = useState<Deposit[]>([]);
 
   const onSelectCollator = () => {
     if (selectCollatorModalRef.current) {
@@ -26,7 +27,10 @@ const StakingOverview = () => {
     }
   };
 
-  const depositList: Deposit[] = [];
+  useEffect(() => {
+    const freeDeposits = deposits?.filter((deposit) => !stakedDepositsIds?.includes(deposit.id)) ?? [];
+    setStakeAbleDeposits(freeDeposits);
+  }, [deposits, stakedDepositsIds]);
 
   const depositRenderer = (option: Deposit) => {
     return (
@@ -51,7 +55,7 @@ const StakingOverview = () => {
   };
 
   const getDepositsDropdown = () => {
-    if (depositList.length === 0) {
+    if (stakeAbleDeposits.length === 0) {
       return (
         <div className={"w-full border border-halfWhite bg-blackSecondary border-t-0"}>
           <div className={"bg-[rgba(255,255,255,0.2)] px-[10px] py-[6px] text-halfWhite"}>
@@ -67,7 +71,7 @@ const StakingOverview = () => {
         }
       >
         <CheckboxGroup
-          options={depositList}
+          options={stakeAbleDeposits}
           render={depositRenderer}
           onChange={onDepositSelectionChange}
           selectedOptions={selectedDeposits}

@@ -6,14 +6,14 @@ export interface StakingAsset {
   totalStakingDeposit?: BigNumber;
 }
 
-export interface Asset {
+export interface AssetDistribution {
   ring: StakingAsset;
   kton: StakingAsset;
 }
 
 export interface StorageCtx {
   power: BigNumber | undefined;
-  asset: Asset | undefined;
+  assetDistribution: AssetDistribution | undefined;
   refresh: () => void;
   deposits: Deposit[] | undefined;
   stakedDepositsIds: number[] | undefined;
