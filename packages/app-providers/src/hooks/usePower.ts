@@ -28,6 +28,7 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
         return;
       }
       setLoadingPool(true);
+      // TODO wire ringPool and ktoPool to socket
       const ring = apiPromise.query.staking.ringPool();
       const kton = apiPromise.query.staking.ktonPool();
 

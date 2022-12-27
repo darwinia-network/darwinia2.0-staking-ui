@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { Deposit, StakingAsset } from "./staking";
+import { Collator, Deposit, StakingAsset } from "./staking";
 
 export interface AssetDetail {
   bonded: BigNumber;
@@ -19,4 +19,5 @@ export interface StorageCtx {
   stakedDepositsIds: number[] | undefined;
   isLoadingLedger: boolean | undefined;
   isLoadingPool: boolean | undefined;
+  collators: Collator[] | undefined;
 }

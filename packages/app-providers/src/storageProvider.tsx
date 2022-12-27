@@ -6,6 +6,7 @@ import { FrameSystemAccountInfo } from "@darwinia/api-derive/accounts/types";
 import usePower from "./hooks/usePower";
 import useLedger from "./hooks/useLedger";
 import BigNumber from "bignumber.js";
+import useCollators from "./hooks/useCollators";
 
 const initialState: StorageCtx = {
   power: undefined,
@@ -14,12 +15,14 @@ const initialState: StorageCtx = {
   deposits: undefined,
   isLoadingLedger: undefined,
   isLoadingPool: undefined,
+  collators: undefined,
+  // this whole function does nothing, it's just a blueprint
   calculatePower: (stakingAsset: StakingAsset): BigNumber => {
     return BigNumber(0);
   },
 };
 
-type UnSubscription = () => void;
+export type UnSubscription = () => void;
 
 const StorageContext = createContext(initialState);
 
@@ -35,6 +38,8 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     apiPromise,
     stakingAsset,
   });
+
+  const { collators } = useCollators(apiPromise);
 
   const initStorageNetwork = async (rpcURL: string) => {
     try {
@@ -107,6 +112,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         isLoadingPool,
         isLoadingLedger,
         calculatePower,
+        collators,
       }}
     >
       {children}

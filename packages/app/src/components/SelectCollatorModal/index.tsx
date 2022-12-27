@@ -4,8 +4,9 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
 import JazzIcon from "../JazzIcon";
 import copyIcon from "../../assets/images/copy.svg";
-import { copyToClipboard, isValidNumber } from "@darwinia/app-utils";
+import { copyToClipboard, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import helpIcon from "../../assets/images/help.svg";
+import { useStorage } from "@darwinia/app-providers";
 
 export interface SelectCollatorRefs {
   toggle: () => void;
@@ -16,53 +17,6 @@ interface SelectCollatorProps {
   onCollatorSelected: (collator: Collator) => void;
   selectedCollator?: Collator;
 }
-
-const collators: Collator[] = [
-  {
-    id: "0xF4b22D8a5FfCF2EdC54A9580a2BBC674839F9155",
-    accountAddress: "0xF4b22D8a5FfCF2EdC54A9580a2BBC674839F9155",
-    commission: 45,
-    totalStaked: "34678",
-    lastSessionBlocks: 67,
-    isActive: true,
-  },
-  {
-    id: "0xB4b22D8a5FfCF2EdC54A9580a2BBC674839F9156",
-    accountAddress: "0xB4b22D8a5FfCF2EdC54A9580a2BBC674839F9156",
-    commission: 55,
-    accountName: "darwinia",
-    totalStaked: "34678",
-    lastSessionBlocks: 3,
-    isActive: true,
-  },
-  {
-    id: "0xC4b22D8a5FfCF2EdC54A9580a2BBC674839F9159",
-    accountAddress: "0xC4b22D8a5FfCF2EdC54A9580a2BBC674839F9159",
-    commission: 30,
-    accountName: "🚀KUBE-VALI 8%",
-    totalStaked: "34678",
-    lastSessionBlocks: 67,
-    isActive: false,
-  },
-  {
-    id: "0xC4b22D8a5FfCF2EdC54A9580a2BBC674839F9156",
-    accountAddress: "0xC4b22D8a5FfCF2EdC54A9580a2BBC674839F9156",
-    commission: 55,
-    accountName: "The Don",
-    totalStaked: "34678",
-    lastSessionBlocks: 3,
-    isActive: true,
-  },
-  {
-    id: "0xD4b22D8a5FfCF2EdC54A9580a2BBC674839F9136",
-    accountAddress: "0xD4b22D8a5FfCF2EdC54A9580a2BBC674839F9136",
-    commission: 20,
-    accountName: "Win win 100%",
-    totalStaked: "34678",
-    lastSessionBlocks: 30,
-    isActive: false,
-  },
-];
 
 const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
   ({ type, selectedCollator, onCollatorSelected }, ref) => {
@@ -76,6 +30,7 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
     const [sessionKey, setSessionKey] = useState<string>("");
     const [sessionKeyHasError, setSessionKeyHasError] = useState<boolean>(false);
     const { t } = useAppTranslation();
+    const { collators } = useStorage();
 
     useEffect(() => {
       if (selectedCollator) {
@@ -105,24 +60,26 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
       const isActive = activeTabId === "1";
       let filteredCollators: Collator[] = [];
       if (isActive) {
-        filteredCollators = collators.filter((item) => {
-          return (
-            item.isActive &&
-            (item.accountAddress.toLowerCase().includes(keywords.toLowerCase()) ||
-              item.accountName?.toLowerCase().includes(keywords.toLowerCase()))
-          );
-        });
+        filteredCollators =
+          collators?.filter((item) => {
+            return (
+              item.isActive &&
+              (item.accountAddress.toLowerCase().includes(keywords.toLowerCase()) ||
+                item.accountName?.toLowerCase().includes(keywords.toLowerCase()))
+            );
+          }) ?? [];
       } else {
-        filteredCollators = collators.filter((item) => {
-          return (
-            !item.isActive &&
-            (item.accountAddress.toLowerCase().includes(keywords.toLowerCase()) ||
-              item.accountName?.toLowerCase().includes(keywords.toLowerCase()))
-          );
-        });
+        filteredCollators =
+          collators?.filter((item) => {
+            return (
+              !item.isActive &&
+              (item.accountAddress.toLowerCase().includes(keywords.toLowerCase()) ||
+                item.accountName?.toLowerCase().includes(keywords.toLowerCase()))
+            );
+          }) ?? [];
       }
       return filteredCollators;
-    }, [activeTabId, keywords]);
+    }, [activeTabId, keywords, collators]);
 
     useEffect(() => {
       if (activeTabId === "1" || activeTabId === "2") {
@@ -170,7 +127,15 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
         title: <div className={"w-[150px]"}>{t(localeKeys.totalStaked)}</div>,
         key: "totalStaked",
         render: (row) => {
-          return <div>{row.totalStaked}</div>;
+          return (
+            <div>
+              {prettifyNumber({
+                number: row.totalStaked,
+                shouldFormatToEther: false,
+                precision: 0,
+              })}
+            </div>
+          );
         },
         width: "190px",
       },
@@ -179,7 +144,7 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
         title: <div>{t(localeKeys.commission)}</div>,
         key: "commission",
         render: (row) => {
-          return <div>{row.commission}%</div>;
+          return <div>{row.commission}</div>;
         },
         width: "180px",
       },
@@ -188,7 +153,7 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
         title: <div className={"capitalize"} dangerouslySetInnerHTML={{ __html: t(localeKeys.blocksLastSession) }} />,
         key: "totalStaked",
         render: (row) => {
-          return <div>{row.totalStaked}</div>;
+          return <div>{row.lastSessionBlocks}</div>;
         },
         width: "150px",
       },

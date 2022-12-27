@@ -1,4 +1,4 @@
-import { Storage } from "@darwinia/app-types";
+import { PalletIdentityRegistration, Storage } from "@darwinia/app-types";
 import { STORAGE as APP_STORAGE } from "@darwinia/app-config";
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";

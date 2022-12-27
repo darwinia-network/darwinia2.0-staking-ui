@@ -1,15 +1,35 @@
-import { u128, Struct } from "@polkadot/types";
+import { u128, Struct, Vec } from "@polkadot/types";
 import type { AccountId, BlockNumber } from "@polkadot/types/interfaces/runtime";
 import BigNumber from "bignumber.js";
+import { RegistrationJudgement } from "@polkadot/types/interfaces";
+
+export interface PalletIdentityIdentityInfo extends Struct {
+  display?: string;
+  displayParent?: string;
+  email?: string;
+  image?: string;
+  legal?: string;
+  other?: Record<string, string>;
+  parent?: AccountId;
+  pgp?: string;
+  riot?: string;
+  twitter?: string;
+  web?: string;
+}
+
+export interface PalletIdentityRegistration extends Struct {
+  judgements: Vec<RegistrationJudgement>;
+  info: PalletIdentityIdentityInfo;
+}
 
 export interface Collator {
   id: string;
   accountAddress: string;
   accountName?: string;
-  totalStaked: string;
-  commission: number;
+  totalStaked: BigNumber;
+  commission: string;
   lastSessionBlocks: number;
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 export interface Reward {

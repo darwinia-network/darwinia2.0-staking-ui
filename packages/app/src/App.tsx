@@ -7,11 +7,11 @@ i18nTranslationInit();
 const App = () => {
   return (
     <WalletProvider>
-      <StorageProvider>
-        <GraphQLProvider>
+      <GraphQLProvider>
+        <StorageProvider>
           <Root />
-        </GraphQLProvider>
-      </StorageProvider>
+        </StorageProvider>
+      </GraphQLProvider>
     </WalletProvider>
   );
 };

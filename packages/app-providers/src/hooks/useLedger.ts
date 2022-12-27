@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   AssetDistribution,
@@ -11,35 +11,40 @@ import {
 import { Option, Vec } from "@polkadot/types";
 import BigNumber from "bignumber.js";
 import { ApiPromise } from "@polkadot/api";
+import { UnSubscription } from "../storageProvider";
+import useBlock from "./useBlock";
 
 interface Params {
   apiPromise: ApiPromise | undefined;
   selectedAccount: string | undefined;
 }
 
-type UnSubscription = () => void;
-
 const useLedger = ({ apiPromise, selectedAccount }: Params) => {
   /*This is the total amount of RING and KTON that the user has invested in staking, it will be used in calculating
    * the total power that he has*/
   const [stakingAsset, setStakingAsset] = useState<StakingAsset>({ ring: BigNumber(0), kton: BigNumber(0) });
   const [isLoadingLedger, setLoadingLedger] = useState<boolean>(true);
+  const isInitialLoad = useRef<boolean>(true);
   /*These are all the deposits that have been made by the user*/
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   /*These are the IDs of the deposits that have been used in staking already*/
   const [stakedDepositsIds, setStakedDepositsIds] = useState<number[]>([]);
   /*staking asset distribution*/
   const [assetDistribution, setAssetDistribution] = useState<AssetDistribution>();
+  const { currentBlock } = useBlock(apiPromise);
 
   /*Get staking ledger and deposits. The data that comes back from the server needs a lot of decoding */
   useEffect(() => {
     let depositsUnsubscription: UnSubscription | undefined;
     let ledgerUnsubscription: UnSubscription | undefined;
     const getStakingLedgerAndDeposits = async () => {
-      if (!selectedAccount || !apiPromise) {
+      if (!selectedAccount || !apiPromise || !currentBlock) {
         return;
       }
-      setLoadingLedger(true);
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        setLoadingLedger(true);
+      }
 
       let ledgerInfo: Option<DarwiniaStakingLedgerEncoded> | undefined;
       let depositsInfo: Option<Vec<DepositEncoded>> | undefined;
@@ -57,12 +62,32 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
         const depositsList: Deposit[] = [];
 
         if (depositsOption.isSome) {
+          const unstakingDeposits: { depositId: number; expireBlock: number }[] = [];
+          if (ledgerOption.isSome) {
+            const ledgerData = ledgerOption.unwrap().toHuman() as unknown as DarwiniaStakingLedger;
+            ledgerData.unstakingDeposits?.forEach((item) => {
+              unstakingDeposits.push({
+                depositId: Number(item[0]),
+                expireBlock: Number(item[1]),
+              });
+            });
+          }
+          // console.log("unstakingDeposits====", unstakingDeposits, currentBlock);
           const unwrappedDeposits = depositsOption.unwrap();
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           const depositsData = unwrappedDeposits.toHuman() as Deposit[];
           /*depositsData here is not a real Deposit[], it's just a casting hack */
           depositsData.forEach((item, index) => {
+            const expiredTime = Number(item.expiredTime.toString().replaceAll(",", ""));
+            const isEarlyWithdrawn = false;
+            const isRegularWithdrawn = false;
+            // canWithdraw (canClaim) = item.expiredTime <= now
+            const hasExpireTimeReached = currentBlock.timestamp >= expiredTime;
+            const canEarlyWithdraw = !isEarlyWithdrawn && !hasExpireTimeReached;
+            const canRegularWithdraw = !isRegularWithdrawn && hasExpireTimeReached;
+
+            // console.log("hasExpireTimeReached=====🚂", hasExpireTimeReached);
             // TODO remove all the fake data below
             const tempStartTime = 1670601600000; //Dec 10th 2022
             depositsList.push({
@@ -70,16 +95,17 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
               startTime: tempStartTime,
               accountId: selectedAccount,
               reward: BigNumber("5002087651239764369"),
-              expiredTime: Number(item.expiredTime.toString().replaceAll(",", "")),
+              expiredTime: expiredTime,
               inUse: item.inUse,
               value: BigNumber(item.value.toString().replaceAll(",", "")),
-              canEarlyWithdraw: index === 0,
-              isEarlyWithdrawn: index === 1,
-              canRegularWithdraw: index === 3,
-              isRegularWithdrawn: index === 4,
+              canEarlyWithdraw: canEarlyWithdraw,
+              isEarlyWithdrawn: isEarlyWithdrawn,
+              canRegularWithdraw: canRegularWithdraw,
+              isRegularWithdrawn: isRegularWithdrawn,
             });
           });
         }
+
         setDeposits(depositsList);
 
         if (ledgerOption.isSome) {
@@ -155,7 +181,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
     };
     getStakingLedgerAndDeposits().catch((e) => {
       setLoadingLedger(false);
-      // console.log(e);
+      console.log(e);
       //ignore
     });
 
@@ -167,7 +193,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
         depositsUnsubscription();
       }
     };
-  }, [apiPromise, selectedAccount]);
+  }, [apiPromise, selectedAccount, currentBlock]);
 
   return {
     stakingAsset,
