@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { StakingAsset, StorageCtx } from "@darwinia/app-types";
 import { useWallet } from "./walletProvider";
 import { WsProvider, ApiPromise } from "@polkadot/api";
@@ -7,6 +7,7 @@ import usePower from "./hooks/usePower";
 import useLedger from "./hooks/useLedger";
 import BigNumber from "bignumber.js";
 import useCollators from "./hooks/useCollators";
+import { keyring } from "@polkadot/ui-keyring";
 
 const initialState: StorageCtx = {
   power: undefined,
@@ -38,6 +39,23 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     apiPromise,
     stakingAsset,
   });
+
+  const isKeyringInitialized = useRef<boolean>(false);
+
+  /* This will help us to extract pretty names from the chain test accounts such as Alith,etc */
+  useEffect(() => {
+    try {
+      if (selectedNetwork && !isKeyringInitialized.current) {
+        isKeyringInitialized.current = true;
+        keyring.loadAll({
+          type: "ethereum",
+          isDevelopment: selectedNetwork?.name === "Pangolin",
+        });
+      }
+    } catch (e) {
+      //ignore
+    }
+  }, [selectedNetwork]);
 
   const { collators } = useCollators(apiPromise);
 

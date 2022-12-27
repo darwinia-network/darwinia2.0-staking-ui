@@ -75,7 +75,7 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
             lastSessionBlocks: blocksLastSession,
             commission: commission,
             totalStaked: totalStaked,
-            accountName: prettyName /*TODO needs to be re-checked*/,
+            accountName: prettyName,
           };
           allCollators.push(collator);
         }

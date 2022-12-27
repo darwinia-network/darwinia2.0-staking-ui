@@ -108,7 +108,9 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
               >
                 <JazzIcon size={20} address={row.accountAddress} />
               </div>
-              <div className={"flex-1"}>{row.accountName ? row.accountName : row.accountAddress}</div>
+              <div className={"flex-1 cursor-default clickable"}>
+                {row.accountName ? row.accountName : row.accountAddress}
+              </div>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
