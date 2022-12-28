@@ -67,7 +67,7 @@ export const prettifyNumber = ({
   if (keepTrailingZeros) {
     // will return a number like 12,345.506000
     if (shouldFormatToEther) {
-      const numberInEther = formatToEther(number.toString());
+      const numberInEther = formatToEther(number.toFixed());
       return BigNumber(numberInEther).toFormat(precision, round);
     }
     return number.toFormat(precision, round);
@@ -75,7 +75,7 @@ export const prettifyNumber = ({
 
   // will return a number like 12,345.506
   if (shouldFormatToEther) {
-    const numberInEther = formatToEther(number.toString());
+    const numberInEther = formatToEther(number.toFixed());
     return BigNumber(numberInEther).decimalPlaces(precision, round).toFormat();
   }
   return number.decimalPlaces(precision, round).toFormat();

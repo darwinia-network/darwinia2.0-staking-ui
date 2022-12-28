@@ -12,21 +12,23 @@ import { TransactionResponse } from "@ethersproject/providers";
 const DepositOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork, depositContract, setTransactionStatus } = useWallet();
-  const [depositTerm, setDepositTerm] = useState<string>("0");
+  const [depositTerm, setDepositTerm] = useState<string>("1");
   const [amount, setAmount] = useState<string>("");
   const [amountHasError, setAmountHasError] = useState<boolean>(false);
   const [rewardedKTON, setRewardedKTON] = useState<string>("0");
 
   useEffect(() => {
-    setDepositTerm("0");
+    setDepositTerm("1");
     setAmount("");
     setAmountHasError(false);
   }, []);
 
   const getDepositTerms = () => {
     const terms: OptionProps[] = [];
-    for (let i = 0; i <= 36; i++) {
+    /*Create 36 deposit terms*/
+    for (let i = 1; i <= 36; i++) {
       let label: JSX.Element | null = null;
+      /*Useless for now, but maybe useful in the future if the deposit term starts at zero*/
       if (i === 0) {
         label = <div className={"capitalize"}>{t(localeKeys.noFixedTerm)}</div>;
       } else if (i === 1) {
@@ -85,7 +87,7 @@ const DepositOverview = () => {
       )) as TransactionResponse;
       await response.wait(1);
       setTransactionStatus(false);
-      setDepositTerm("0");
+      setDepositTerm("1");
       setAmount("");
       notification.success({
         message: <div>{t(localeKeys.operationSuccessful)}</div>,

@@ -13,6 +13,7 @@ import BigNumber from "bignumber.js";
 import { ApiPromise } from "@polkadot/api";
 import { UnSubscription } from "../storageProvider";
 import useBlock from "./useBlock";
+import { calculateKtonFromRingDeposit, formatToEther, getMonthsRange } from "@darwinia/app-utils";
 
 interface Params {
   apiPromise: ApiPromise | undefined;
@@ -78,7 +79,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           // @ts-ignore
           const depositsData = unwrappedDeposits.toHuman() as Deposit[];
           /*depositsData here is not a real Deposit[], it's just a casting hack */
-          depositsData.forEach((item, index) => {
+          depositsData.forEach((item) => {
+            const startTime = Number(item.startTime.toString().replaceAll(",", ""));
             const expiredTime = Number(item.expiredTime.toString().replaceAll(",", ""));
             const isEarlyWithdrawn = false;
             const isRegularWithdrawn = false;
@@ -87,17 +89,22 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
             const canEarlyWithdraw = !isEarlyWithdrawn && !hasExpireTimeReached;
             const canRegularWithdraw = !isRegularWithdrawn && hasExpireTimeReached;
 
-            // console.log("hasExpireTimeReached=====🚂", hasExpireTimeReached);
-            // TODO remove all the fake data below
-            const tempStartTime = 1670601600000; //Dec 10th 2022
+            const ringAmount = BigNumber(item.value.toString().replaceAll(",", ""));
+
+            const reward = calculateKtonFromRingDeposit({
+              ringAmount: ringAmount,
+              depositMonths: getMonthsRange(startTime, expiredTime),
+              decimalPrecision: 0,
+            }).replaceAll(",", "");
+
             depositsList.push({
               id: Number(item.id.toString().replaceAll(",", "")),
-              startTime: tempStartTime,
+              startTime: startTime,
               accountId: selectedAccount,
-              reward: BigNumber("5002087651239764369"),
+              reward: BigNumber(reward),
               expiredTime: expiredTime,
               inUse: item.inUse,
-              value: BigNumber(item.value.toString().replaceAll(",", "")),
+              value: ringAmount,
               canEarlyWithdraw: canEarlyWithdraw,
               isEarlyWithdrawn: isEarlyWithdrawn,
               canRegularWithdraw: canRegularWithdraw,

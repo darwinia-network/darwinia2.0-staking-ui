@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";
 import { formatDate, prettifyNumber } from "@darwinia/app-utils";
 import BigNumber from "bignumber.js";
+import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
+import { TransactionResponse } from "@ethersproject/providers";
 
 const DepositRecordsTable = () => {
   const { t } = useAppTranslation();
@@ -17,6 +19,7 @@ const DepositRecordsTable = () => {
   const depositToWithdraw = useRef<Deposit | null>(null);
   const withdrawType = useRef<WithdrawModalType>("early");
   const precision = 3;
+  const rewardPrecision = 9;
 
   const onCloseWithdrawModal = () => {
     setShowWithdrawModal(false);
@@ -97,7 +100,7 @@ const DepositRecordsTable = () => {
           <div>
             {prettifyNumber({
               number: row.reward,
-              precision,
+              precision: rewardPrecision,
             })}{" "}
             {selectedNetwork?.kton.symbol.toUpperCase()}
           </div>
@@ -207,10 +210,10 @@ interface WithdrawProps {
 const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type }: WithdrawProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
-  const { selectedNetwork } = useWallet();
+  const { selectedNetwork, depositContract } = useWallet();
 
   /*You'll be charged a penalty of 3 times the rewarded Kton if you want to
-   * withdraw before the expireTime */
+   * withdraw before the expiredTime */
   const fineAmount = deposit?.reward.times(3) ?? BigNumber(0);
   const btnText: string =
     type === "early"
@@ -224,24 +227,9 @@ const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type 
 
   useEffect(() => {
     setLoading(false);
-
-    /*const estimateGas = async () => {
-      setIsEstimatingGas(true);
-      const gasFee = await depositContract?.estimateGas.claim();
-      setIsEstimatingGas(false);
-      setEstimatedGasFee(BigNumber(gasFee?.toString() ?? 0));
-      console.log("gasFee=====", gasFee?.toString());
-    };
-
-    if (isVisible) {
-      // estimate gas fee
-      estimateGas().catch((e) => {
-        setIsEstimatingGas(false);
-      });
-    }*/
   }, [isVisible]);
 
-  const onConfirmWithdraw = () => {
+  const onConfirmWithdraw = async () => {
     setLoading(true);
     /*simulate a request*/
     setTimeout(() => {

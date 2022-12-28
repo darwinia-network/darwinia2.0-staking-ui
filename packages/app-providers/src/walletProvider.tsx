@@ -137,7 +137,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
 
   /*Connect to MetaMask*/
   const connectWallet = useCallback(async () => {
-    if (!selectedNetwork) {
+    if (!selectedNetwork || isRequestingWalletConnection) {
       return;
     }
     try {
@@ -249,7 +249,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         });
       }
     }
-  }, [isWalletInstalled, selectedNetwork]);
+  }, [isWalletInstalled, selectedNetwork, isRequestingWalletConnection]);
 
   const changeSelectedNetwork = useCallback(
     (network: ChainConfig) => {

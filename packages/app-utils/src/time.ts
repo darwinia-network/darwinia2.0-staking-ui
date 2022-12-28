@@ -17,3 +17,7 @@ export const toTimeAgo = (time: string | number, format = "YYYY-MM-DDTHH:mm:ss.S
   }
   return moment(time, format).fromNow();
 };
+
+export const getMonthsRange = (startTimestamp: number, endTimestamp: number) => {
+  return Math.round(moment(endTimestamp).diff(moment(startTimestamp), "months", true));
+};

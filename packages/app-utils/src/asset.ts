@@ -36,6 +36,7 @@ interface DepositInput {
   round?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   keepTrailingZeros?: boolean;
 }
+
 export const calculateKtonFromRingDeposit = ({
   ringAmount,
   depositMonths,

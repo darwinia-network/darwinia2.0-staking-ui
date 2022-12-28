@@ -15,8 +15,8 @@ import BigNumber from "bignumber.js";
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
-  const { selectedNetwork, selectedAccount } = useWallet();
-  const { deposits, stakedDepositsIds, calculatePower } = useStorage();
+  const { selectedNetwork } = useWallet();
+  const { deposits, stakedDepositsIds, calculatePower, balance } = useStorage();
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const [selectedCollator, setSelectedCollator] = useState<Collator>();
   const [stakeAbleDeposits, setStakeAbleDeposits] = useState<Deposit[]>([]);
@@ -225,7 +225,13 @@ const StakingOverview = () => {
                     <div className={"uppercase"}>{selectedNetwork?.ring.symbol ?? "RING"}</div>
                   </div>
                 }
-                placeholder={t(localeKeys.balanceAmount, { amount: 0 })}
+                placeholder={t(localeKeys.balanceAmount, {
+                  amount: prettifyNumber({
+                    number: balance?.ring ?? BigNumber(0),
+                    shouldFormatToEther: true,
+                    precision: 3,
+                  }),
+                })}
               />
               <div className={"text-12-bold text-primary pt-[10px]"}>
                 +
@@ -250,7 +256,13 @@ const StakingOverview = () => {
                     <div className={"uppercase"}>{selectedNetwork?.kton.symbol ?? "RING"}</div>
                   </div>
                 }
-                placeholder={t(localeKeys.balanceAmount, { amount: 0 })}
+                placeholder={t(localeKeys.balanceAmount, {
+                  amount: prettifyNumber({
+                    number: balance?.kton ?? BigNumber(0),
+                    shouldFormatToEther: true,
+                    precision: 3,
+                  }),
+                })}
               />
               <div className={"text-12-bold text-primary pt-[10px]"}>
                 +

@@ -11,6 +11,11 @@ export interface AssetDistribution {
   kton: AssetDetail;
 }
 
+export interface AssetBalance {
+  ring: BigNumber;
+  kton: BigNumber;
+}
+
 export interface StorageCtx {
   power: BigNumber | undefined;
   assetDistribution: AssetDistribution | undefined;
@@ -20,4 +25,5 @@ export interface StorageCtx {
   isLoadingLedger: boolean | undefined;
   isLoadingPool: boolean | undefined;
   collators: Collator[] | undefined;
+  balance: AssetBalance | undefined;
 }

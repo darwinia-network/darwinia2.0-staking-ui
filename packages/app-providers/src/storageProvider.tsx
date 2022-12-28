@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { StakingAsset, StorageCtx } from "@darwinia/app-types";
+import { AssetBalance, StakingAsset, StorageCtx } from "@darwinia/app-types";
 import { useWallet } from "./walletProvider";
 import { WsProvider, ApiPromise } from "@polkadot/api";
 import { FrameSystemAccountInfo } from "@darwinia/api-derive/accounts/types";
@@ -17,6 +17,7 @@ const initialState: StorageCtx = {
   isLoadingLedger: undefined,
   isLoadingPool: undefined,
   collators: undefined,
+  balance: undefined,
   // this whole function does nothing, it's just a blueprint
   calculatePower: (stakingAsset: StakingAsset): BigNumber => {
     return BigNumber(0);
@@ -30,6 +31,10 @@ const StorageContext = createContext(initialState);
 export const StorageProvider = ({ children }: PropsWithChildren) => {
   const { selectedNetwork, selectedAccount } = useWallet();
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
+  const [balance, setBalance] = useState<AssetBalance>({
+    kton: BigNumber(0),
+    ring: BigNumber(0),
+  });
 
   const { stakingAsset, isLoadingLedger, deposits, stakedDepositsIds, assetDistribution } = useLedger({
     apiPromise,
@@ -90,7 +95,12 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       }
       try {
         const res = await apiPromise?.query.system.account(selectedAccount, (accountInfo: FrameSystemAccountInfo) => {
-          console.log("Account Balance Info======", accountInfo.data.free);
+          setBalance((old) => {
+            return {
+              ...old,
+              ring: BigNumber(accountInfo.data.free.toString()),
+            };
+          });
         });
         unsubscription = res as unknown as UnSubscription;
       } catch (e) {
@@ -116,13 +126,10 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     initStorageNetwork(selectedNetwork.substrate.wssURL);
   }, [selectedNetwork]);
 
-  const refresh = useCallback(() => {
-    // console.log("refresh storage====");
-  }, []);
-
   return (
     <StorageContext.Provider
       value={{
+        balance,
         power,
         assetDistribution,
         deposits,
