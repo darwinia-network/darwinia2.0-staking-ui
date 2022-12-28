@@ -31,7 +31,7 @@
     "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/transactions": "^5.7.0",
-    "@polkadot/api": "^9.10.2",
+    "@polkadot/api": "^9.10.3",
     "@polkadot/types": "^9.10.3",
     "@polkadot/ui-keyring": "^2.9.14",
     "@polkadot/util": "^10.2.1",
