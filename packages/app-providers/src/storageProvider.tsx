@@ -22,6 +22,9 @@ const initialState: StorageCtx = {
   calculatePower: (stakingAsset: StakingAsset): BigNumber => {
     return BigNumber(0);
   },
+  calculateExtraPower: (stakingAsset: StakingAsset): BigNumber => {
+    return BigNumber(0);
+  },
 };
 
 export type UnSubscription = () => void;
@@ -41,7 +44,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       apiPromise,
       selectedAccount,
     });
-  const { isLoadingPool, power, calculatePower } = usePower({
+  const { isLoadingPool, power, calculateExtraPower, calculatePower } = usePower({
     apiPromise,
     stakingAsset,
   });
@@ -146,6 +149,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         stakedDepositsIds,
         isLoadingPool,
         isLoadingLedger,
+        calculateExtraPower,
         calculatePower,
         collators,
       }}

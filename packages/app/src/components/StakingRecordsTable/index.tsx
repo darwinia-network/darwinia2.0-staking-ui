@@ -156,20 +156,15 @@ const StakingRecordsTable = () => {
     if (!selectedNetwork || !stakedAssetDistribution) {
       return;
     }
-    const powerByRing = calculatePower({
-      kton: BigNumber(0),
-      ring: BigNumber(stakedAssetDistribution.ring.bonded.toString()),
+    const stakedRing = stakedAssetDistribution.ring.bonded;
+    const stakedDeposits = stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0);
+    /* This is supposed to be the total amount of power invested in a certain collator
+     * but for now since the user can only choose one collator, here it will only show the
+     * total power that has been used in staking */
+    const totalStakedPower = calculatePower({
+      kton: stakedAssetDistribution.kton.bonded,
+      ring: stakedRing.plus(stakedDeposits),
     });
-    const powerByKton = calculatePower({
-      kton: BigNumber(stakedAssetDistribution.kton.bonded.toString()),
-      ring: BigNumber(0),
-    });
-
-    const powerByDeposits = calculatePower({
-      kton: BigNumber((stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0)).toString()),
-      ring: BigNumber(0),
-    });
-    const totalStakedPower = powerByRing.plus(powerByKton).plus(powerByDeposits);
 
     setDataSource([
       {

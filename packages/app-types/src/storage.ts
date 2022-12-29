@@ -20,6 +20,7 @@ export interface StorageCtx {
   power: BigNumber | undefined;
   stakedAssetDistribution: AssetDistribution | undefined;
   calculatePower: (stakingAsset: StakingAsset) => BigNumber;
+  calculateExtraPower: (stakingAsset: StakingAsset) => BigNumber;
   deposits: Deposit[] | undefined;
   stakedDepositsIds: number[] | undefined;
   isLoadingLedger: boolean | undefined;

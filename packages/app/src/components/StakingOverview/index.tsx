@@ -18,7 +18,7 @@ import { TransactionResponse } from "@ethersproject/providers";
 const StakingOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork, stakingContract, setTransactionStatus } = useWallet();
-  const { deposits, stakedDepositsIds, calculatePower, balance } = useStorage();
+  const { deposits, stakedDepositsIds, calculateExtraPower, balance } = useStorage();
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const [selectedCollator, setSelectedCollator] = useState<Collator>();
   const [stakeAbleDeposits, setStakeAbleDeposits] = useState<Deposit[]>([]);
@@ -53,7 +53,7 @@ const StakingOverview = () => {
     const value = event.target.value;
     const isValidAmount = isValidNumber(value);
     if (isValidAmount) {
-      const power = calculatePower({
+      const power = calculateExtraPower({
         ring: BigNumber(formatToWei(value).toString()),
         kton: BigNumber(0),
       });
@@ -69,7 +69,7 @@ const StakingOverview = () => {
     const value = event.target.value;
     const isValidAmount = isValidNumber(value);
     if (isValidAmount) {
-      const power = calculatePower({
+      const power = calculateExtraPower({
         kton: BigNumber(formatToWei(value).toString()),
         ring: BigNumber(0),
       });
@@ -108,7 +108,7 @@ const StakingOverview = () => {
   const onDepositSelectionChange = (selectedItem: Deposit, allSelectedItems: Deposit[]) => {
     /*totalSelectedRing value is already in Wei*/
     const totalSelectedRing = allSelectedItems.reduce((acc, deposit) => acc.plus(deposit.value), BigNumber(0));
-    const power = calculatePower({
+    const power = calculateExtraPower({
       kton: BigNumber(0),
       ring: BigNumber(formatToWei(totalSelectedRing.toString()).toString()),
     });

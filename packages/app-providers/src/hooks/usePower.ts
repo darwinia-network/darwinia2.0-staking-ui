@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import { ApiPromise } from "@polkadot/api";
 import { useCallback, useEffect, useState } from "react";
 import { combineLatest, Subscription } from "rxjs";
-import { convertAssetToPower, formatToWei } from "@darwinia/app-utils";
+import { convertAssetToPower } from "@darwinia/app-utils";
 import { StakingAsset } from "@darwinia/app-types";
 
 interface Pool {
@@ -63,8 +63,20 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
     setPower(power);
   }, [pool, stakingAsset]);
 
-  /*StakingAsset values should be in Wei*/
+  /*This method is used to convert assets to power, simply knowing
+   * how much power is a certain asset taking in the total power. NOT adding extra power,
+   * NOTE: stakingAsset values must be in Wei */
   const calculatePower = useCallback(
+    (stakingAsset: StakingAsset) => {
+      return convertAssetToPower(stakingAsset.ring, stakingAsset.kton, pool.ring, pool.kton);
+    },
+    [pool]
+  );
+
+  /* This method is used to calculate the amount of power that you'll get after adding a certain
+   * amount if RING or KTON in the pool */
+  /*StakingAsset values should be in Wei*/
+  const calculateExtraPower = useCallback(
     (stakingAsset: StakingAsset) => {
       const initialBondedRing = BigNumber(0);
       const initialBondedKton = BigNumber(0);
@@ -84,6 +96,7 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
     pool,
     isLoadingPool,
     power,
+    calculateExtraPower,
     calculatePower,
   };
 };
