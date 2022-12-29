@@ -100,4 +100,7 @@ export const localeKeys = {
   somethingWrongHappened: "somethingWrongHappened",
   operationSuccessful: "operationSuccessful",
   noActiveDeposits: "noActiveDeposits",
+  amountGreaterThanRingBalance: "amountGreaterThanRingBalance",
+  amountGreaterThanKtonBalance: "amountGreaterThanKtonBalance",
+  leaveSomeGasFeeRing: "leaveSomeGasFeeRing",
 };

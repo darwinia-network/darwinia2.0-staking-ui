@@ -12,15 +12,17 @@ import { Deposit, Collator } from "@darwinia/app-types";
 import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
 import { formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import BigNumber from "bignumber.js";
+import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
+import { TransactionResponse } from "@ethersproject/providers";
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
-  const { selectedNetwork } = useWallet();
+  const { selectedNetwork, stakingContract, setTransactionStatus } = useWallet();
   const { deposits, stakedDepositsIds, calculatePower, balance } = useStorage();
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const [selectedCollator, setSelectedCollator] = useState<Collator>();
   const [stakeAbleDeposits, setStakeAbleDeposits] = useState<Deposit[]>([]);
-  const [depositsToStake, setDepositsToState] = useState<Deposit[]>([]);
+  const [depositsToStake, setDepositsToStake] = useState<Deposit[]>([]);
   const [ringToStake, setRingToStake] = useState<string>("");
   const [ktonToStake, setKtonToStake] = useState<string>("");
   const [ringHasError, setRingHasError] = useState<boolean>(false);
@@ -28,6 +30,9 @@ const StakingOverview = () => {
   const [powerByRing, setPowerByRing] = useState(BigNumber(0));
   const [powerByKton, setPowerByKton] = useState(BigNumber(0));
   const [powerByDeposits, setPowerByDeposits] = useState(BigNumber(0));
+  /*This is the minimum Ring balance that should be left on the account
+   * for gas fee */
+  const minimumRingBalance = 2;
 
   const getRingValueErrorJSX = () => {
     return ringHasError ? <div /> : null;
@@ -108,14 +113,14 @@ const StakingOverview = () => {
       ring: BigNumber(formatToWei(totalSelectedRing.toString()).toString()),
     });
     setPowerByDeposits(power);
-    setDepositsToState(allSelectedItems);
+    setDepositsToStake(allSelectedItems);
   };
 
   const onCollatorSelected = (collator: Collator) => {
     setSelectedCollator(collator);
   };
 
-  const onStartStaking = () => {
+  const onStartStaking = async () => {
     /*const isValidRing = isValidNumber(ringToStake);
     const isValidKton = isValidNumber(ktonToStake);*/
     if (ringToStake.length > 0) {
@@ -140,7 +145,74 @@ const StakingOverview = () => {
         return;
       }
     }
-    console.log("Form can be submitted now");
+
+    /*Check if the balances are enough*/
+    const ringBigNumber =
+      ringToStake.trim().length > 0 ? BigNumber(formatToWei(ringToStake.trim()).toString()) : BigNumber(0);
+    const ktonBigNumber =
+      ktonToStake.trim().length > 0 ? BigNumber(formatToWei(ktonToStake.trim()).toString()) : BigNumber(0);
+    const ringThresholdBigNumber = BigNumber(formatToWei(minimumRingBalance.toString()).toString());
+
+    if (!balance) {
+      return;
+    }
+
+    if (ringBigNumber.gt(balance.ring)) {
+      setRingHasError(true);
+      notification.error({
+        message: <div>{t(localeKeys.amountGreaterThanRingBalance, { ringSymbol: selectedNetwork?.ring.symbol })}</div>,
+      });
+      return;
+    }
+
+    /*The user MUST leave some RING that he'll use for the gas fee */
+    if (balance.ring.minus(ringBigNumber).lt(ringThresholdBigNumber)) {
+      setRingHasError(true);
+      notification.error({
+        message: (
+          <div>
+            {t(localeKeys.leaveSomeGasFeeRing, {
+              amount: minimumRingBalance,
+              ringSymbol: selectedNetwork?.ring.symbol,
+            })}
+          </div>
+        ),
+      });
+      return;
+    }
+
+    if (ktonBigNumber.gt(balance.kton)) {
+      setKtonHasError(true);
+      notification.error({
+        message: <div>{t(localeKeys.amountGreaterThanKtonBalance, { ktonSymbol: selectedNetwork?.kton.symbol })}</div>,
+      });
+      return;
+    }
+
+    const ring =
+      ringToStake.trim().length > 0 ? EthersBigNumber.from(formatToWei(ringToStake.trim())) : EthersBigNumber.from(0);
+    const kton =
+      ktonToStake.trim().length > 0 ? EthersBigNumber.from(formatToWei(ktonToStake.trim())) : EthersBigNumber.from(0);
+
+    try {
+      const depositsIds = depositsToStake.map((item) => EthersBigNumber.from(item.id));
+      setTransactionStatus(true);
+      const response = (await stakingContract?.stake(ring, kton, depositsIds)) as TransactionResponse;
+      await response.wait(1);
+      setDepositsToStake([]);
+      setRingToStake("");
+      setKtonToStake("");
+      setTransactionStatus(false);
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setTransactionStatus(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
   };
 
   const getDepositsDropdown = () => {

@@ -106,7 +106,7 @@ const AccountOverview = () => {
                   <div>
                     {prettifyNumber({
                       number: assetDistribution?.ring.bonded ?? BigNumber(0),
-                      precision: 3,
+                      precision: 4,
                     })}
                   </div>
                 </div>
@@ -115,7 +115,7 @@ const AccountOverview = () => {
                   <div>
                     {prettifyNumber({
                       number: assetDistribution?.ring.totalStakingDeposit ?? BigNumber(0),
-                      precision: 3,
+                      precision: 4,
                     })}
                   </div>
                 </div>
@@ -133,7 +133,7 @@ const AccountOverview = () => {
                   <div>
                     {prettifyNumber({
                       number: assetDistribution?.kton.bonded ?? BigNumber(0),
-                      precision: 3,
+                      precision: 4,
                     })}
                   </div>
                 </div>

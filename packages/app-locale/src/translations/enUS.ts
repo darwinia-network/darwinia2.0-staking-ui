@@ -103,6 +103,9 @@ const enUs = {
   [localeKeys.somethingWrongHappened]: "Something wrong happened",
   [localeKeys.operationSuccessful]: "Operation successful",
   [localeKeys.noActiveDeposits]: "No active deposits",
+  [localeKeys.amountGreaterThanRingBalance]: `You can't stake more than your available {{ringSymbol}} balance`,
+  [localeKeys.amountGreaterThanKtonBalance]: `You can't stake more than your available {{ktonSymbol}} balance`,
+  [localeKeys.leaveSomeGasFeeRing]: `You should leave at least {{amount}} {{ringSymbol}} for gas fee`,
 };
 
 export default enUs;

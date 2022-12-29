@@ -61,7 +61,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           return;
         }
 
-        let totalKtonReward = BigNumber(0);
+        let totalKtonRewarded = BigNumber(0);
+        let totalStakedKton = BigNumber(0);
 
         const depositsList: Deposit[] = [];
 
@@ -100,7 +101,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
               decimalPrecision: 0,
             }).replaceAll(",", "");
 
-            totalKtonReward = totalKtonReward.plus(BigNumber(reward));
+            totalKtonRewarded = totalKtonRewarded.plus(BigNumber(reward));
 
             depositsList.push({
               id: Number(item.id.toString().replaceAll(",", "")),
@@ -165,6 +166,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
 
           const totalRingInStaking = ledgerData.stakedRing.plus(totalStakingDeposit);
           const totalKtonInStaking = ledgerData.stakedKton;
+          totalStakedKton = ledgerData.stakedKton;
           setStakingAsset({
             ring: BigNumber(totalRingInStaking.toString()),
             kton: BigNumber(totalKtonInStaking.toString()),
@@ -174,7 +176,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           setLoadingLedger(false);
         }
 
-        setKtonBalance(totalKtonReward);
+        const usableKton = totalKtonRewarded.minus(totalStakedKton);
+        setKtonBalance(usableKton);
       };
 
       ledgerUnsubscription = (await apiPromise.query.staking.ledgers(
