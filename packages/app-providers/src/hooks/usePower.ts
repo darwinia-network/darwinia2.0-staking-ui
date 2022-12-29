@@ -63,14 +63,13 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
     setPower(power);
   }, [pool, stakingAsset]);
 
+  /*StakingAsset values should be in Wei*/
   const calculatePower = useCallback(
     (stakingAsset: StakingAsset) => {
-      const ktonInWei = BigNumber(formatToWei(stakingAsset.kton.toString()).toString());
-      const ringInWei = BigNumber(formatToWei(stakingAsset.ring.toString()).toString());
       const initialBondedRing = BigNumber(0);
       const initialBondedKton = BigNumber(0);
       const initialPower = convertAssetToPower(initialBondedRing, initialBondedKton, pool.ring, pool.kton);
-      const accumulatedPower = convertAssetToPower(ringInWei, ktonInWei, pool.ring, pool.kton);
+      const accumulatedPower = convertAssetToPower(stakingAsset.ring, stakingAsset.kton, pool.ring, pool.kton);
       return accumulatedPower.minus(initialPower);
     },
     [pool]

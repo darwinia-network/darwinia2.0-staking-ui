@@ -36,7 +36,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     ring: BigNumber(0),
   });
 
-  const { stakingAsset, isLoadingLedger, deposits, stakedDepositsIds, assetDistribution } = useLedger({
+  const { stakingAsset, isLoadingLedger, deposits, stakedDepositsIds, assetDistribution, ktonBalance } = useLedger({
     apiPromise,
     selectedAccount,
   });
@@ -46,6 +46,15 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
   });
 
   const isKeyringInitialized = useRef<boolean>(false);
+
+  useEffect(() => {
+    setBalance((old) => {
+      return {
+        ...old,
+        kton: ktonBalance,
+      };
+    });
+  }, [ktonBalance]);
 
   /* This will help us to extract pretty names from the chain test accounts such as Alith,etc */
   useEffect(() => {

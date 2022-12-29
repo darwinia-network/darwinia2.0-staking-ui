@@ -105,7 +105,7 @@ const StakingOverview = () => {
     const totalSelectedRing = allSelectedItems.reduce((acc, deposit) => acc.plus(deposit.value), BigNumber(0));
     const power = calculatePower({
       kton: BigNumber(0),
-      ring: totalSelectedRing,
+      ring: BigNumber(formatToWei(totalSelectedRing.toString()).toString()),
     });
     setPowerByDeposits(power);
     setDepositsToState(allSelectedItems);
@@ -212,7 +212,7 @@ const StakingOverview = () => {
             </div>
           )}
           <div className={"flex flex-col lg:flex-row gap-[10px] divider border-b pb-[10px]"}>
-            <div className={"flex-1"}>
+            <div className={"flex-1 shrink-0"}>
               <Input
                 leftIcon={null}
                 value={ringToStake}
@@ -243,7 +243,7 @@ const StakingOverview = () => {
                 {t(localeKeys.power)}
               </div>
             </div>
-            <div className={"flex-1"}>
+            <div className={"flex-1 shrink-0"}>
               <Input
                 leftIcon={null}
                 value={ktonToStake}
@@ -260,7 +260,7 @@ const StakingOverview = () => {
                   amount: prettifyNumber({
                     number: balance?.kton ?? BigNumber(0),
                     shouldFormatToEther: true,
-                    precision: 3,
+                    precision: 9,
                   }),
                 })}
               />
@@ -279,7 +279,7 @@ const StakingOverview = () => {
               closeOnInteraction={false}
               overlay={getDepositsDropdown()}
               triggerEvent={"click"}
-              className={"flex-1"}
+              className={"flex-1 shrink-0"}
               dropdownClassName={"w-full top-[40px]"}
             >
               <div>

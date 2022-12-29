@@ -13,7 +13,7 @@ import BigNumber from "bignumber.js";
 import { ApiPromise } from "@polkadot/api";
 import { UnSubscription } from "../storageProvider";
 import useBlock from "./useBlock";
-import { calculateKtonFromRingDeposit, formatToEther, getMonthsRange } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, getMonthsRange } from "@darwinia/app-utils";
 
 interface Params {
   apiPromise: ApiPromise | undefined;
@@ -32,6 +32,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
   const [stakedDepositsIds, setStakedDepositsIds] = useState<number[]>([]);
   /*staking asset distribution*/
   const [assetDistribution, setAssetDistribution] = useState<AssetDistribution>();
+  const [ktonBalance, setKtonBalance] = useState<BigNumber>(BigNumber(0));
   const { currentBlock } = useBlock(apiPromise);
 
   /*Get staking ledger and deposits. The data that comes back from the server needs a lot of decoding */
@@ -59,6 +60,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
         if (!ledgerOption || !depositsOption) {
           return;
         }
+
+        let totalKtonReward = BigNumber(0);
 
         const depositsList: Deposit[] = [];
 
@@ -96,6 +99,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
               depositMonths: getMonthsRange(startTime, expiredTime),
               decimalPrecision: 0,
             }).replaceAll(",", "");
+
+            totalKtonReward = totalKtonReward.plus(BigNumber(reward));
 
             depositsList.push({
               id: Number(item.id.toString().replaceAll(",", "")),
@@ -168,6 +173,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           setStakedDepositsIds(stakedDepositsIdsList);
           setLoadingLedger(false);
         }
+
+        setKtonBalance(totalKtonReward);
       };
 
       ledgerUnsubscription = (await apiPromise.query.staking.ledgers(
@@ -208,6 +215,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
     deposits,
     stakedDepositsIds,
     assetDistribution,
+    ktonBalance,
   };
 };
 
