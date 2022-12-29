@@ -106,6 +106,8 @@ const enUs = {
   [localeKeys.amountGreaterThanRingBalance]: `You can't stake more than your available {{ringSymbol}} balance`,
   [localeKeys.amountGreaterThanKtonBalance]: `You can't stake more than your available {{ktonSymbol}} balance`,
   [localeKeys.leaveSomeGasFeeRing]: `You should leave at least {{amount}} {{ringSymbol}} for gas fee`,
+  [localeKeys.invalidRingAmount]: "invalid {{ringSymbol}} amount",
+  [localeKeys.invalidKtonAmount]: "invalid {{ktonSymbol}} amount",
 };
 
 export default enUs;

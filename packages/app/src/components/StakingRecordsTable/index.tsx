@@ -1,6 +1,17 @@
-import { Button, Column, Table, Tooltip, TableRow, Popover, ModalEnhanced, Input, CheckboxGroup } from "@darwinia/ui";
+import {
+  Button,
+  Column,
+  Table,
+  Tooltip,
+  TableRow,
+  Popover,
+  ModalEnhanced,
+  Input,
+  CheckboxGroup,
+  notification,
+} from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
-import { useWallet } from "@darwinia/app-providers";
+import { useStorage, useWallet } from "@darwinia/app-providers";
 import JazzIcon from "../JazzIcon";
 import warningIcon from "../../assets/images/warning.svg";
 import plusIcon from "../../assets/images/plus-square.svg";
@@ -9,10 +20,11 @@ import helpIcon from "../../assets/images/help.svg";
 import reloadIcon from "../../assets/images/reload.svg";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Deposit } from "@darwinia/app-types";
-import { isValidNumber, prettifyNumber } from "@darwinia/app-utils";
+import { formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
+import BigNumber from "bignumber.js";
 
 interface Bond {
-  amount: string;
+  amount: BigNumber;
   symbol: string;
   isDeposit: boolean;
 }
@@ -20,7 +32,7 @@ interface Bond {
 interface Delegate extends TableRow {
   collator?: string;
   previousReward?: string;
-  staked: string;
+  staked: BigNumber;
   bondedTokens: Bond[];
   isActive?: boolean;
   isMigrated?: boolean;
@@ -30,11 +42,10 @@ interface Delegate extends TableRow {
   canChangeCollator?: boolean;
 }
 
-const allDeposits: Deposit[] = [];
-
 const StakingRecordsTable = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
+  const { stakedAssetDistribution } = useStorage();
   const [showBondTokenModal, setShowBondTokenModal] = useState<boolean>(false);
   const [showCommissionUpdateModal, setShowCommissionUpdateModal] = useState<boolean>(false);
   const [showSessionKeyUpdateModal, setShowSessionKeyUpdateModal] = useState<boolean>(false);
@@ -43,7 +54,8 @@ const StakingRecordsTable = () => {
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
   const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
   const delegateToUpdate = useRef<Delegate | null>(null);
-  const [bondedDeposits, setBondedDeposit] = useState<Deposit[]>([]);
+  const { deposits, stakedDepositsIds, calculatePower, balance } = useStorage();
+  const [dataSource, setDataSource] = useState<Delegate[]>([]);
 
   const onCloseBondTokenModal = () => {
     delegateToUpdate.current = null;
@@ -140,155 +152,175 @@ const StakingRecordsTable = () => {
     console.log("release token=====");
   };
 
-  const dataSource: Delegate[] = [
-    {
-      id: "1",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      bondedTokens: [
-        {
-          amount: "12,983",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: false,
-        },
-        {
-          amount: "10,000",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: true,
-        },
-        {
-          amount: "9,899",
-          symbol: selectedNetwork?.kton.symbol ?? "",
-          isDeposit: false,
-        },
-      ],
-      isMigrated: true,
-    },
-    {
-      id: "2",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      isActive: true,
-      bondedTokens: [
-        {
-          amount: "12,983",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: false,
-        },
-        {
-          amount: "10,000",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: true,
-        },
-        {
-          amount: "9,899",
-          symbol: selectedNetwork?.kton.symbol ?? "",
-          isDeposit: false,
-        },
-      ],
-    },
-    {
-      id: "21",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      isActive: true,
-      canChangeCollator: true,
-      bondedTokens: [
-        {
-          amount: "12,983",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: false,
-        },
-        {
-          amount: "10,000",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: true,
-        },
-        {
-          amount: "9,899",
-          symbol: selectedNetwork?.kton.symbol ?? "",
-          isDeposit: false,
-        },
-      ],
-    },
-    {
-      id: "3",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      isActive: true,
-      isLoading: true,
-      bondedTokens: [
-        {
-          amount: "12,983",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: false,
-        },
-        {
-          amount: "10,000",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: true,
-        },
-        {
-          amount: "9,899",
-          symbol: selectedNetwork?.kton.symbol ?? "",
-          isDeposit: false,
-        },
-      ],
-    },
-    {
-      id: "4",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      isUndelegating: true,
-      bondedTokens: [
-        {
-          amount: "12,983",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: false,
-        },
-        {
-          amount: "10,000",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: true,
-        },
-        {
-          amount: "9,899",
-          symbol: selectedNetwork?.kton.symbol ?? "",
-          isDeposit: false,
-        },
-      ],
-    },
-    {
-      id: "5",
-      collator: "chchainkoney.com",
-      previousReward: "0/0",
-      staked: "9,863",
-      canUndelegate: true,
-      isActive: true,
-      bondedTokens: [
-        {
-          amount: "12,983",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: false,
-        },
-        {
-          amount: "10,000",
-          symbol: selectedNetwork?.ring.symbol ?? "",
-          isDeposit: true,
-        },
-        {
-          amount: "9,899",
-          symbol: selectedNetwork?.kton.symbol ?? "",
-          isDeposit: false,
-        },
-      ],
-    },
-  ];
+  useEffect(() => {
+    if (!selectedNetwork || !stakedAssetDistribution) {
+      return;
+    }
+    const powerByRing = calculatePower({
+      kton: BigNumber(0),
+      ring: BigNumber(stakedAssetDistribution.ring.bonded.toString()),
+    });
+    const powerByKton = calculatePower({
+      kton: BigNumber(stakedAssetDistribution.kton.bonded.toString()),
+      ring: BigNumber(0),
+    });
+
+    const powerByDeposits = calculatePower({
+      kton: BigNumber((stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0)).toString()),
+      ring: BigNumber(0),
+    });
+    const totalStakedPower = powerByRing.plus(powerByKton).plus(powerByDeposits);
+
+    setDataSource([
+      {
+        id: "1",
+        collator: "chchainkoney.com",
+        previousReward: "0/0",
+        staked: totalStakedPower,
+        bondedTokens: [
+          {
+            amount: stakedAssetDistribution.ring.bonded,
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: false,
+          },
+          {
+            amount: stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0),
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: true,
+          },
+          {
+            amount: stakedAssetDistribution.kton.bonded,
+            symbol: selectedNetwork?.kton.symbol ?? "",
+            isDeposit: false,
+          },
+        ],
+        isMigrated: false,
+      },
+      /*{
+        id: "2",
+        collator: "chchainkoney.com",
+        previousReward: "0/0",
+        staked: "9,863",
+        isActive: true,
+        bondedTokens: [
+          {
+            amount: "12,983",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: false,
+          },
+          {
+            amount: "10,000",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: true,
+          },
+          {
+            amount: "9,899",
+            symbol: selectedNetwork?.kton.symbol ?? "",
+            isDeposit: false,
+          },
+        ],
+      },
+      {
+        id: "21",
+        collator: "chchainkoney.com",
+        previousReward: "0/0",
+        staked: "9,863",
+        isActive: true,
+        canChangeCollator: true,
+        bondedTokens: [
+          {
+            amount: "12,983",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: false,
+          },
+          {
+            amount: "10,000",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: true,
+          },
+          {
+            amount: "9,899",
+            symbol: selectedNetwork?.kton.symbol ?? "",
+            isDeposit: false,
+          },
+        ],
+      },
+      {
+        id: "3",
+        collator: "chchainkoney.com",
+        previousReward: "0/0",
+        staked: "9,863",
+        isActive: true,
+        isLoading: true,
+        bondedTokens: [
+          {
+            amount: "12,983",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: false,
+          },
+          {
+            amount: "10,000",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: true,
+          },
+          {
+            amount: "9,899",
+            symbol: selectedNetwork?.kton.symbol ?? "",
+            isDeposit: false,
+          },
+        ],
+      },
+      {
+        id: "4",
+        collator: "chchainkoney.com",
+        previousReward: "0/0",
+        staked: "9,863",
+        isUndelegating: true,
+        bondedTokens: [
+          {
+            amount: "12,983",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: false,
+          },
+          {
+            amount: "10,000",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: true,
+          },
+          {
+            amount: "9,899",
+            symbol: selectedNetwork?.kton.symbol ?? "",
+            isDeposit: false,
+          },
+        ],
+      },
+      {
+        id: "5",
+        collator: "chchainkoney.com",
+        previousReward: "0/0",
+        staked: "9,863",
+        canUndelegate: true,
+        isActive: true,
+        bondedTokens: [
+          {
+            amount: "12,983",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: false,
+          },
+          {
+            amount: "10,000",
+            symbol: selectedNetwork?.ring.symbol ?? "",
+            isDeposit: true,
+          },
+          {
+            amount: "9,899",
+            symbol: selectedNetwork?.kton.symbol ?? "",
+            isDeposit: false,
+          },
+        ],
+      },*/
+    ]);
+  }, [selectedNetwork, stakedAssetDistribution]);
 
   const columns: Column<Delegate>[] = [
     {
@@ -331,7 +363,13 @@ const StakingRecordsTable = () => {
         if (row.isMigrated) {
           return (
             <div className={"flex items-center gap-[10px]"}>
-              <div className={"text-halfWhite"}>{row.staked}</div>
+              <div className={"text-halfWhite"}>
+                {prettifyNumber({
+                  number: row.staked,
+                  precision: 0,
+                  shouldFormatToEther: false,
+                })}
+              </div>
               <Tooltip message={t(localeKeys.powerNotWorking)}>
                 <img className={"w-[20px]"} src={helpIcon} alt="image" />
               </Tooltip>
@@ -339,7 +377,15 @@ const StakingRecordsTable = () => {
           );
         }
 
-        return <div>{row.staked}</div>;
+        return (
+          <div>
+            {prettifyNumber({
+              number: row.staked,
+              precision: 0,
+              shouldFormatToEther: false,
+            })}
+          </div>
+        );
       },
     },
     {
@@ -412,7 +458,14 @@ const StakingRecordsTable = () => {
               const bondJSX = (
                 <div className={"flex gap-[5px]"}>
                   <div>
-                    {item.amount} {item.isDeposit ? t(localeKeys.deposit) : ""} {item.symbol.toUpperCase()}
+                    <>
+                      {prettifyNumber({
+                        number: item.amount,
+                        precision: 6,
+                        shouldFormatToEther: true,
+                      })}{" "}
+                      {item.isDeposit ? t(localeKeys.deposit) : ""} {item.symbol.toUpperCase()}
+                    </>
                   </div>
                   {row.isMigrated ? null : (
                     <div>
@@ -580,8 +633,8 @@ const StakingRecordsTable = () => {
         onClose={onCloseBondTokenModal}
       />
       <BondDepositModal
-        bondedDeposits={bondedDeposits}
-        allDeposits={allDeposits}
+        bondedDeposits={stakedDepositsIds ?? []}
+        allDeposits={deposits ?? []}
         onCancel={onCloseBondDepositModal}
         onConfirm={onConfirmBondDeposit}
         type={bondModalType}
@@ -648,24 +701,52 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
   const [hasError, setHasError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
+  const { balance, calculatePower } = useStorage();
+  const { selectedNetwork } = useWallet();
+  const [power, setPower] = useState<BigNumber>(BigNumber(0));
+  const isRing = symbol.toLowerCase().includes("ring");
+
   const getErrorJSX = () => {
     return hasError ? <div /> : null;
   };
 
   useEffect(() => {
     setValue("");
+    setPower(BigNumber(0));
     setLoading(false);
     setHasError(false);
   }, [isVisible]);
 
   const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setHasError(false);
+    const value = event.target.value;
+    const isValidAmount = isValidNumber(value);
+    if (isValidAmount) {
+      const ringAmount = isRing ? BigNumber(formatToWei(value).toString()) : BigNumber(0);
+      const ktonAmount = isRing ? BigNumber(0) : BigNumber(formatToWei(value).toString());
+      const power = calculatePower({
+        ring: ringAmount,
+        kton: ktonAmount,
+      });
+      setPower(power);
+    } else {
+      setPower(BigNumber(0));
+    }
     setValue(event.target.value);
   };
 
   const onConfirmBonding = () => {
     const isValidAmount = isValidNumber(value);
     if (!isValidAmount) {
+      if (isRing) {
+        notification.error({
+          message: <div>{t(localeKeys.invalidRingAmount, { ringSymbol: selectedNetwork?.ring.symbol })}</div>,
+        });
+      } else {
+        notification.error({
+          message: <div>{t(localeKeys.invalidKtonAmount, { ktonSymbol: selectedNetwork?.kton.symbol })}</div>,
+        });
+      }
       setHasError(true);
       return;
     }
@@ -674,6 +755,8 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
     setLoading(true);
     // onConfirm();
   };
+
+  const balanceAmount = isRing ? balance?.ring ?? BigNumber(0) : balance?.kton ?? BigNumber(0);
 
   return (
     <ModalEnhanced
@@ -686,6 +769,7 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
       onClose={onClose}
       onCancel={onCancel}
       className={"!max-w-[400px]"}
+      confirmDisabled={value === ""}
     >
       <div className={"divider border-b pb-[15px]"}>
         {type === "unbond" && (
@@ -700,9 +784,25 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
             onChange={onInputChange}
             hasErrorMessage={false}
             error={getErrorJSX()}
-            bottomTip={<div className={"text-primary"}>+0 {t(localeKeys.power)}</div>}
+            bottomTip={
+              <div className={"text-primary"}>
+                {type === "bondMore" ? "+" : "-"}
+                {prettifyNumber({
+                  number: power,
+                  precision: 0,
+                  shouldFormatToEther: false,
+                })}{" "}
+                {t(localeKeys.power)}
+              </div>
+            }
             leftIcon={null}
-            placeholder={t(localeKeys.balanceAmount, { amount: 0 })}
+            placeholder={t(localeKeys.balanceAmount, {
+              amount: prettifyNumber({
+                number: balanceAmount,
+                precision: 6,
+                shouldFormatToEther: true,
+              }),
+            })}
             rightSlot={<div className={"flex items-center px-[10px]"}>{symbol}</div>}
           />
         </div>
@@ -718,7 +818,7 @@ interface BondDepositProps {
   onConfirm: () => void;
   onCancel: () => void;
   allDeposits: Deposit[];
-  bondedDeposits: Deposit[];
+  bondedDeposits: number[];
 }
 
 /*Bond more or less deposits*/
@@ -739,17 +839,18 @@ const BondDepositModal = ({
   useEffect(() => {
     setSelectedDeposit([]);
     setLoading(false);
-    let deposits = [];
+    let deposits: Deposit[] = [];
     if (type === "bondMore") {
       /* filter out all deposits that have already been bonded, only take the unbonded deposits */
       deposits = allDeposits.filter((item) => {
-        const foundItem = bondedDeposits.find((deposit) => deposit.id === item.id);
         /* only take the deposit if it is not bonded yet */
-        return !foundItem;
+        return !bondedDeposits.includes(item.id);
       });
     } else {
-      /*show bonded deposits so that the user can check thm to unbond them*/
-      deposits = bondedDeposits;
+      /*show bonded deposits so that the user can check them to unbond them*/
+      deposits = allDeposits.filter((item) => {
+        return bondedDeposits.includes(item.id);
+      });
     }
     setRenderDeposits(deposits);
   }, [isVisible]);

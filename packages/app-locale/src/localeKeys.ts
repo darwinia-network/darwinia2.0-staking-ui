@@ -103,4 +103,6 @@ export const localeKeys = {
   amountGreaterThanRingBalance: "amountGreaterThanRingBalance",
   amountGreaterThanKtonBalance: "amountGreaterThanKtonBalance",
   leaveSomeGasFeeRing: "leaveSomeGasFeeRing",
+  invalidRingAmount: "invalidRingAmount",
+  invalidKtonAmount: "invalidKtonAmount",
 };

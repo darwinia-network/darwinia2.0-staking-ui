@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, Input, OptionProps, Select, notification } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";

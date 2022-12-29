@@ -18,7 +18,7 @@ interface StakingStashQuery {
 const AccountOverview = () => {
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
-  const { power, assetDistribution, isLoadingLedger } = useStorage();
+  const { power, stakedAssetDistribution, isLoadingLedger } = useStorage();
   const account = "5C4yTgZHMFLrv1YMkKvUAtP8WhENvNBNiXKZPa1aA7ka4fnS";
   const {
     loading: isLoadingStakingData,
@@ -105,7 +105,7 @@ const AccountOverview = () => {
                   <div>{t(localeKeys.bonded)}</div>
                   <div>
                     {prettifyNumber({
-                      number: assetDistribution?.ring.bonded ?? BigNumber(0),
+                      number: stakedAssetDistribution?.ring.bonded ?? BigNumber(0),
                       precision: 4,
                     })}
                   </div>
@@ -114,7 +114,7 @@ const AccountOverview = () => {
                   <div>{t(localeKeys.inDeposit)}</div>
                   <div>
                     {prettifyNumber({
-                      number: assetDistribution?.ring.totalStakingDeposit ?? BigNumber(0),
+                      number: stakedAssetDistribution?.ring.totalStakingDeposit ?? BigNumber(0),
                       precision: 4,
                     })}
                   </div>
@@ -132,7 +132,7 @@ const AccountOverview = () => {
                   <div>{t(localeKeys.bonded)}</div>
                   <div>
                     {prettifyNumber({
-                      number: assetDistribution?.kton.bonded ?? BigNumber(0),
+                      number: stakedAssetDistribution?.kton.bonded ?? BigNumber(0),
                       precision: 4,
                     })}
                   </div>

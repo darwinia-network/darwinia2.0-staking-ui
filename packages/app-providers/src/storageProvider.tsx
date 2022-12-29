@@ -11,7 +11,7 @@ import { keyring } from "@polkadot/ui-keyring";
 
 const initialState: StorageCtx = {
   power: undefined,
-  assetDistribution: undefined,
+  stakedAssetDistribution: undefined,
   stakedDepositsIds: undefined,
   deposits: undefined,
   isLoadingLedger: undefined,
@@ -36,10 +36,11 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     ring: BigNumber(0),
   });
 
-  const { stakingAsset, isLoadingLedger, deposits, stakedDepositsIds, assetDistribution, ktonBalance } = useLedger({
-    apiPromise,
-    selectedAccount,
-  });
+  const { stakingAsset, isLoadingLedger, deposits, stakedDepositsIds, stakedAssetDistribution, ktonBalance } =
+    useLedger({
+      apiPromise,
+      selectedAccount,
+    });
   const { isLoadingPool, power, calculatePower } = usePower({
     apiPromise,
     stakingAsset,
@@ -140,7 +141,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       value={{
         balance,
         power,
-        assetDistribution,
+        stakedAssetDistribution,
         deposits,
         stakedDepositsIds,
         isLoadingPool,

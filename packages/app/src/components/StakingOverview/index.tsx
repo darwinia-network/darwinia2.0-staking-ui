@@ -129,7 +129,7 @@ const StakingOverview = () => {
       if (!isValidAmount) {
         setRingHasError(true);
         notification.error({
-          message: <div>Invalid ring amount</div>,
+          message: <div>{t(localeKeys.invalidRingAmount, { ringSymbol: selectedNetwork?.ring.symbol })}</div>,
         });
         return;
       }
@@ -140,7 +140,7 @@ const StakingOverview = () => {
       if (!isValidAmount) {
         setKtonHasError(true);
         notification.error({
-          message: <div>Invalid kton amount</div>,
+          message: <div>{t(localeKeys.invalidKtonAmount, { ktonSymbol: selectedNetwork?.kton.symbol })}</div>,
         });
         return;
       }
@@ -202,6 +202,9 @@ const StakingOverview = () => {
       setDepositsToStake([]);
       setRingToStake("");
       setKtonToStake("");
+      setPowerByRing(BigNumber(0));
+      setPowerByKton(BigNumber(0));
+      setPowerByDeposits(BigNumber(0));
       setTransactionStatus(false);
       notification.success({
         message: <div>{t(localeKeys.operationSuccessful)}</div>,

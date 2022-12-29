@@ -69,7 +69,12 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
       const initialBondedRing = BigNumber(0);
       const initialBondedKton = BigNumber(0);
       const initialPower = convertAssetToPower(initialBondedRing, initialBondedKton, pool.ring, pool.kton);
-      const accumulatedPower = convertAssetToPower(stakingAsset.ring, stakingAsset.kton, pool.ring, pool.kton);
+      const accumulatedPower = convertAssetToPower(
+        initialBondedRing.plus(stakingAsset.ring),
+        initialBondedKton.plus(stakingAsset.kton),
+        pool.ring.plus(stakingAsset.ring),
+        pool.kton.plus(stakingAsset.kton)
+      );
       return accumulatedPower.minus(initialPower);
     },
     [pool]

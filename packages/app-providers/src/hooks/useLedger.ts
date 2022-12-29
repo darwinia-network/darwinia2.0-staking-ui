@@ -31,7 +31,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
   /*These are the IDs of the deposits that have been used in staking already*/
   const [stakedDepositsIds, setStakedDepositsIds] = useState<number[]>([]);
   /*staking asset distribution*/
-  const [assetDistribution, setAssetDistribution] = useState<AssetDistribution>();
+  const [stakedAssetDistribution, setStakedAssetDistribution] = useState<AssetDistribution>();
   const [ktonBalance, setKtonBalance] = useState<BigNumber>(BigNumber(0));
   const { currentBlock } = useBlock(apiPromise);
 
@@ -154,7 +154,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
             (acc, deposit) => acc.plus(deposit.value),
             BigNumber(0)
           );
-          setAssetDistribution({
+          setStakedAssetDistribution({
             ring: {
               bonded: BigNumber(ledgerData.stakedRing.toString()),
               totalStakingDeposit: BigNumber(totalStakingDeposit.toString()),
@@ -217,7 +217,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
     isLoadingLedger,
     deposits,
     stakedDepositsIds,
-    assetDistribution,
+    stakedAssetDistribution,
     ktonBalance,
   };
 };

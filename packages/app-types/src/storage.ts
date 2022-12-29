@@ -18,7 +18,7 @@ export interface AssetBalance {
 
 export interface StorageCtx {
   power: BigNumber | undefined;
-  assetDistribution: AssetDistribution | undefined;
+  stakedAssetDistribution: AssetDistribution | undefined;
   calculatePower: (stakingAsset: StakingAsset) => BigNumber;
   deposits: Deposit[] | undefined;
   stakedDepositsIds: number[] | undefined;
