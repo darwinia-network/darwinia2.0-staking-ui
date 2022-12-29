@@ -91,4 +91,25 @@ export interface Deposit {
   canEarlyWithdraw: boolean;
   isEarlyWithdrawn: boolean;
 }
+
+export interface Bond {
+  amount: BigNumber;
+  symbol: string;
+  isDeposit: boolean;
+}
+
+export interface Delegate {
+  id: string;
+  collator?: string;
+  previousReward?: string;
+  staked: BigNumber;
+  bondedTokens: Bond[];
+  isActive?: boolean;
+  isMigrated?: boolean;
+  isLoading?: boolean;
+  isUndelegating?: boolean;
+  canUndelegate?: boolean;
+  canChangeCollator?: boolean;
+}
+
 /*Staking types end here*/

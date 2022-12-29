@@ -19,28 +19,9 @@ import minusIcon from "../../assets/images/minus-square.svg";
 import helpIcon from "../../assets/images/help.svg";
 import reloadIcon from "../../assets/images/reload.svg";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { Deposit } from "@darwinia/app-types";
+import { Deposit, Delegate } from "@darwinia/app-types";
 import { formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import BigNumber from "bignumber.js";
-
-interface Bond {
-  amount: BigNumber;
-  symbol: string;
-  isDeposit: boolean;
-}
-
-interface Delegate extends TableRow {
-  collator?: string;
-  previousReward?: string;
-  staked: BigNumber;
-  bondedTokens: Bond[];
-  isActive?: boolean;
-  isMigrated?: boolean;
-  isLoading?: boolean;
-  isUndelegating?: boolean;
-  canUndelegate?: boolean;
-  canChangeCollator?: boolean;
-}
 
 const StakingRecordsTable = () => {
   const { t } = useAppTranslation();

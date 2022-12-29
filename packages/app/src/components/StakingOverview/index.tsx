@@ -110,7 +110,7 @@ const StakingOverview = () => {
     const totalSelectedRing = allSelectedItems.reduce((acc, deposit) => acc.plus(deposit.value), BigNumber(0));
     const power = calculateExtraPower({
       kton: BigNumber(0),
-      ring: BigNumber(formatToWei(totalSelectedRing.toString()).toString()),
+      ring: BigNumber(totalSelectedRing.toString()),
     });
     setPowerByDeposits(power);
     setDepositsToStake(allSelectedItems);
