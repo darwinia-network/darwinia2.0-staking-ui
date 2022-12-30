@@ -5,6 +5,7 @@ import { combineLatest, Subscription } from "rxjs";
 import { convertAssetToPower } from "@darwinia/app-utils";
 import { StakingAsset } from "@darwinia/app-types";
 import { UnSubscription } from "../storageProvider";
+import { Balance } from "@polkadot/types/interfaces";
 
 interface Pool {
   ring: BigNumber;
@@ -23,7 +24,6 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
 
   // fetch data from kton and ring pool
   useEffect(() => {
-    let subscription: Subscription | undefined;
     let ringUnsubscription: UnSubscription | undefined;
     let ktonUnsubscription: UnSubscription | undefined;
     const getPool = async () => {
@@ -31,17 +31,26 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
         return;
       }
       setLoadingPool(true);
-      // TODO wire ringPool and ktoPool to socket
-      const ring = apiPromise.query.staking.ringPool();
-      const kton = apiPromise.query.staking.ktonPool();
 
-      subscription = combineLatest([ring, kton]).subscribe(([ringValue, ktonValue]) => {
-        setPool({
-          kton: BigNumber(ktonValue.toString()),
-          ring: BigNumber(ringValue.toString()),
+      ringUnsubscription = (await apiPromise.query.staking.ringPool((value: Balance) => {
+        setPool((old) => {
+          return {
+            ...old,
+            ring: BigNumber(value.toString()),
+          };
         });
-        setLoadingPool(false);
-      });
+      })) as unknown as UnSubscription;
+
+      ktonUnsubscription = (await apiPromise.query.staking.ktonPool((value: Balance) => {
+        setPool((old) => {
+          return {
+            ...old,
+            kton: BigNumber(value.toString()),
+          };
+        });
+      })) as unknown as UnSubscription;
+
+      setLoadingPool(false);
     };
 
     getPool().catch(() => {
@@ -50,8 +59,11 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
     });
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
+      if (ringUnsubscription) {
+        ringUnsubscription();
+      }
+      if (ktonUnsubscription) {
+        ktonUnsubscription();
       }
     };
   }, [apiPromise]);
