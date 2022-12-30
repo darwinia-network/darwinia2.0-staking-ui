@@ -59,6 +59,7 @@ const AccountOverview = () => {
                         <div>
                           {prettifyNumber({
                             number: BigNumber(item.amount),
+                            precision: 9,
                           })}{" "}
                           {selectedNetwork?.ring.symbol}
                         </div>
