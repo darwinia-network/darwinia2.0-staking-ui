@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { combineLatest, Subscription } from "rxjs";
 import { convertAssetToPower } from "@darwinia/app-utils";
 import { StakingAsset } from "@darwinia/app-types";
+import { UnSubscription } from "../storageProvider";
 
 interface Pool {
   ring: BigNumber;
@@ -23,6 +24,8 @@ const usePower = ({ apiPromise, stakingAsset }: Params) => {
   // fetch data from kton and ring pool
   useEffect(() => {
     let subscription: Subscription | undefined;
+    let ringUnsubscription: UnSubscription | undefined;
+    let ktonUnsubscription: UnSubscription | undefined;
     const getPool = async () => {
       if (!apiPromise) {
         return;

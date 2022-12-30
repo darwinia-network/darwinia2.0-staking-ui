@@ -106,7 +106,6 @@ export interface Delegate {
   bondedTokens: Bond[];
   isActive?: boolean;
   isMigrated?: boolean;
-  isLoading?: boolean;
   isUndelegating?: boolean;
   canUndelegate?: boolean;
   canChangeCollator?: boolean;

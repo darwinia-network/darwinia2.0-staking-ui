@@ -109,7 +109,7 @@ const ModalEnhanced = forwardRef<ModalEnhancedRefs, ModalEnhancedProps>(
         modalStyles={modalStyles}
         isVisible={isModalVisible}
         className={className}
-        isCancellable={isCancellable}
+        isCancellable={isCancellable || !isLoading}
       >
         <div className={"dw-enhanced-modal"}>
           <div className={"dw-modal-enhanced-header"}>

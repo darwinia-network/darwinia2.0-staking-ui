@@ -1,12 +1,13 @@
 import { ChangeEvent, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Button, Column, Input, ModalEnhanced, Tab, Table, Tabs, Tooltip } from "@darwinia/ui";
+import { Button, Column, Input, ModalEnhanced, notification, Tab, Table, Tabs } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
 import JazzIcon from "../JazzIcon";
 import copyIcon from "../../assets/images/copy.svg";
 import { copyToClipboard, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
-import helpIcon from "../../assets/images/help.svg";
-import { useStorage } from "@darwinia/app-providers";
+import { useStorage, useWallet } from "@darwinia/app-providers";
+import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
+import { TransactionResponse } from "@ethersproject/providers";
 
 export interface SelectCollatorRefs {
   toggle: () => void;
@@ -25,10 +26,8 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
     const [keywords, setKeywords] = useState<string>("");
     const [selectedRowsIds, setSelectedRowsIds] = useState<string[]>([]);
     const selectedCollatorsList = useRef<Collator[]>([]);
-    const [commission, setCommission] = useState<string>("");
-    const [commissionHasError, setCommissionHasError] = useState<boolean>(false);
-    const [sessionKey, setSessionKey] = useState<string>("");
-    const [sessionKeyHasError, setSessionKeyHasError] = useState<boolean>(false);
+    const [isLoading, setLoading] = useState<boolean>(false);
+    const updatedCollator = useRef<Collator>();
     const { t } = useAppTranslation();
     const { collators } = useStorage();
 
@@ -36,7 +35,7 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
       if (selectedCollator) {
         selectedCollatorsList.current = [{ ...selectedCollator }];
       }
-    }, []);
+    }, [selectedCollator]);
 
     const tabs: Tab[] = [
       {
@@ -46,10 +45,6 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
       {
         id: "2",
         title: t(localeKeys.waitingPool),
-      },
-      {
-        id: "3",
-        title: t(localeKeys.joinCollator),
       },
     ];
 
@@ -162,11 +157,12 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
     ];
 
     const toggleModal = () => {
-      setSessionKey("");
-      setCommission("");
-      setSessionKeyHasError(false);
-      setCommissionHasError(false);
+      if (type === "update") {
+        setSelectedRowsIds([]);
+      }
       setActiveTabId("1");
+      setLoading(false);
+      updatedCollator.current = undefined;
       setIsVisible((oldStatus) => !oldStatus);
     };
 
@@ -190,38 +186,21 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
         onClose();
         return;
       }
+
+      /*The user is trying to update the collator, wait for him to click the confirm button by himself */
+      updatedCollator.current = row;
     };
 
-    const onCommissionValueChange = (event: ChangeEvent<HTMLInputElement>) => {
-      setCommissionHasError(false);
-      setCommission(event.target.value);
-    };
-
-    const getCommissionErrorJSX = () => {
-      return commissionHasError ? <div /> : null;
-    };
-
-    const onSessionKeyValueChange = (event: ChangeEvent<HTMLInputElement>) => {
-      setSessionKeyHasError(false);
-      setSessionKey(event.target.value);
-    };
-
-    const getSessionKeyErrorJSX = () => {
-      return sessionKeyHasError ? <div /> : null;
-    };
-
-    const onJoinCollator = () => {
-      if (sessionKey.trim().length === 0) {
-        setSessionKeyHasError(true);
-        return;
-      }
-
-      const isValidCommission = isValidNumber(commission);
-      if (!isValidCommission) {
-        setCommissionHasError(true);
-        return;
-      }
-      console.log("join collator");
+    const onConfirmCollator = () => {
+      /*the user is trying to update the collator, call the contract API right away*/
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        if (updatedCollator.current) {
+          onCollatorSelected(updatedCollator.current);
+        }
+        onClose();
+      }, 10000);
     };
 
     useImperativeHandle(ref, () => {
@@ -233,10 +212,12 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
     return (
       <ModalEnhanced
         className={"!max-w-[790px]"}
-        contentClassName={"h-[421px]"}
+        contentClassName={"h-[465px]"}
         onClose={onClose}
         modalTitle={t(localeKeys.selectCollator)}
         isVisible={isVisible}
+        isCancellable={false}
+        isLoading={isLoading}
       >
         <div>
           <Tabs onChange={onTabChange} tabs={tabs} activeTabId={activeTabId} />
@@ -259,6 +240,7 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
                 </div>
               </div>
               <Table
+                noDataText={t(localeKeys.noCollators)}
                 className={"!p-[0px]"}
                 maxHeight={"300px"}
                 minWidth={"700px"}
@@ -270,51 +252,12 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
               />
               {type === "update" && (
                 <div className={"flex gap-[10px]"}>
-                  <Button>{t(localeKeys.confirm)}</Button>
+                  <Button disabled={!updatedCollator.current} onClick={onConfirmCollator}>
+                    {t(localeKeys.confirm)}
+                  </Button>
                   {/*<Button>{t(localeKeys.cancel)}</Button>*/}
                 </div>
               )}
-            </div>
-          )}
-          {activeTabId === "3" && (
-            <div>
-              <div className={"flex flex-col gap-[10px] py-[10px]"}>
-                <div>{t(localeKeys.sessionKey)}</div>
-                <div>
-                  <Input
-                    value={sessionKey}
-                    onChange={onSessionKeyValueChange}
-                    hasErrorMessage={false}
-                    error={getSessionKeyErrorJSX()}
-                    leftIcon={null}
-                    placeholder={t(localeKeys.sessionKey)}
-                  />
-                </div>
-                <div
-                  className={"text-halfWhite text-12"}
-                  dangerouslySetInnerHTML={{
-                    __html: t(localeKeys.howToJoinCollator, { url: "https://www.baidu.com" }),
-                  }}
-                />
-                <div className={"flex items-center gap-[10px]"}>
-                  {t(localeKeys.commission)} (%){" "}
-                  <Tooltip message={t(localeKeys.commissionPercentInfo)}>
-                    <img className={"w-[16px]"} src={helpIcon} alt="image" />
-                  </Tooltip>
-                </div>
-                <div>
-                  <Input
-                    value={commission}
-                    onChange={onCommissionValueChange}
-                    hasErrorMessage={false}
-                    error={getCommissionErrorJSX()}
-                    leftIcon={null}
-                    placeholder={t(localeKeys.commission)}
-                    rightSlot={<div className={"flex items-center px-[10px] text-white"}>%</div>}
-                  />
-                </div>
-                <Button onClick={onJoinCollator}>{t(localeKeys.joinCollator)}</Button>
-              </div>
             </div>
           )}
         </div>

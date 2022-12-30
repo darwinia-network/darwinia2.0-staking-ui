@@ -121,8 +121,6 @@ const StakingOverview = () => {
   };
 
   const onStartStaking = async () => {
-    /*const isValidRing = isValidNumber(ringToStake);
-    const isValidKton = isValidNumber(ktonToStake);*/
     if (ringToStake.length > 0) {
       //user typed some ring value, validate it
       const isValidAmount = isValidNumber(ringToStake);

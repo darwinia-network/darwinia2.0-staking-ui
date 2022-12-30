@@ -3,7 +3,6 @@ import {
   Column,
   Table,
   Tooltip,
-  TableRow,
   Popover,
   ModalEnhanced,
   Input,
@@ -17,34 +16,32 @@ import warningIcon from "../../assets/images/warning.svg";
 import plusIcon from "../../assets/images/plus-square.svg";
 import minusIcon from "../../assets/images/minus-square.svg";
 import helpIcon from "../../assets/images/help.svg";
-import reloadIcon from "../../assets/images/reload.svg";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Deposit, Delegate } from "@darwinia/app-types";
 import { formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import BigNumber from "bignumber.js";
+import { BigNumber as EthersBigNumber } from "ethers";
+import { TransactionResponse } from "@ethersproject/providers";
+import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
 
 const StakingRecordsTable = () => {
+  const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const { t } = useAppTranslation();
   const { selectedNetwork } = useWallet();
   const { stakedAssetDistribution } = useStorage();
   const [showBondTokenModal, setShowBondTokenModal] = useState<boolean>(false);
-  const [showCommissionUpdateModal, setShowCommissionUpdateModal] = useState<boolean>(false);
   const [showSessionKeyUpdateModal, setShowSessionKeyUpdateModal] = useState<boolean>(false);
   const [showUndelegateModal, setShowUndelegateModal] = useState<boolean>(false);
   const [showBondDepositModal, setShowBondDepositModal] = useState<boolean>(false);
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
   const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
   const delegateToUpdate = useRef<Delegate | null>(null);
-  const { deposits, stakedDepositsIds, calculatePower, balance } = useStorage();
+  const { deposits, stakedDepositsIds, calculatePower } = useStorage();
   const [dataSource, setDataSource] = useState<Delegate[]>([]);
 
   const onCloseBondTokenModal = () => {
     delegateToUpdate.current = null;
     setShowBondTokenModal(false);
-  };
-
-  const onCloseCommissionUpdateModal = () => {
-    setShowCommissionUpdateModal(false);
   };
 
   const onCloseSessionKeyUpdateModal = () => {
@@ -73,23 +70,6 @@ const StakingRecordsTable = () => {
     setShowBondDepositModal(true);
   };
 
-  const onShowCommissionUpdateModal = (delegate: Delegate) => {
-    delegateToUpdate.current = delegate;
-    setShowCommissionUpdateModal(true);
-  };
-
-  const onShowSessionKeyUpdateModal = (delegate: Delegate) => {
-    delegateToUpdate.current = delegate;
-    // trigger click to auto close the popover
-    document.body.click();
-    setShowSessionKeyUpdateModal(true);
-  };
-
-  const onStopCollatingModal = (delegate: Delegate) => {
-    document.body.click();
-    console.log("stop collating=====");
-  };
-
   const onShowUndelegateModal = (delegate: Delegate) => {
     delegateToUpdate.current = delegate;
     // trigger click to auto close the popover
@@ -99,10 +79,6 @@ const StakingRecordsTable = () => {
 
   const onConfirmBondToken = () => {
     console.log("confirm bond token======");
-  };
-
-  const onConfirmCommissionUpdate = () => {
-    console.log("confirm commission update======");
   };
 
   const onConfirmSessionKeyUpdate = () => {
@@ -131,6 +107,14 @@ const StakingRecordsTable = () => {
 
   const onReleaseToken = () => {
     console.log("release token=====");
+  };
+
+  const onShowSelectCollatorModal = () => {
+    selectCollatorModalRef.current?.toggle();
+  };
+
+  const onCollatorSelected = () => {
+    selectCollatorModalRef.current?.toggle();
   };
 
   useEffect(() => {
@@ -171,130 +155,8 @@ const StakingRecordsTable = () => {
           },
         ],
         isMigrated: false,
-      },
-      /*{
-        id: "2",
-        collator: "chchainkoney.com",
-        previousReward: "0/0",
-        staked: "9,863",
-        isActive: true,
-        bondedTokens: [
-          {
-            amount: "12,983",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: false,
-          },
-          {
-            amount: "10,000",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: true,
-          },
-          {
-            amount: "9,899",
-            symbol: selectedNetwork?.kton.symbol ?? "",
-            isDeposit: false,
-          },
-        ],
-      },
-      {
-        id: "21",
-        collator: "chchainkoney.com",
-        previousReward: "0/0",
-        staked: "9,863",
-        isActive: true,
         canChangeCollator: true,
-        bondedTokens: [
-          {
-            amount: "12,983",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: false,
-          },
-          {
-            amount: "10,000",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: true,
-          },
-          {
-            amount: "9,899",
-            symbol: selectedNetwork?.kton.symbol ?? "",
-            isDeposit: false,
-          },
-        ],
       },
-      {
-        id: "3",
-        collator: "chchainkoney.com",
-        previousReward: "0/0",
-        staked: "9,863",
-        isActive: true,
-        isLoading: true,
-        bondedTokens: [
-          {
-            amount: "12,983",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: false,
-          },
-          {
-            amount: "10,000",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: true,
-          },
-          {
-            amount: "9,899",
-            symbol: selectedNetwork?.kton.symbol ?? "",
-            isDeposit: false,
-          },
-        ],
-      },
-      {
-        id: "4",
-        collator: "chchainkoney.com",
-        previousReward: "0/0",
-        staked: "9,863",
-        isUndelegating: true,
-        bondedTokens: [
-          {
-            amount: "12,983",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: false,
-          },
-          {
-            amount: "10,000",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: true,
-          },
-          {
-            amount: "9,899",
-            symbol: selectedNetwork?.kton.symbol ?? "",
-            isDeposit: false,
-          },
-        ],
-      },
-      {
-        id: "5",
-        collator: "chchainkoney.com",
-        previousReward: "0/0",
-        staked: "9,863",
-        canUndelegate: true,
-        isActive: true,
-        bondedTokens: [
-          {
-            amount: "12,983",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: false,
-          },
-          {
-            amount: "10,000",
-            symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: true,
-          },
-          {
-            amount: "9,899",
-            symbol: selectedNetwork?.kton.symbol ?? "",
-            isDeposit: false,
-          },
-        ],
-      },*/
     ]);
   }, [selectedNetwork, stakedAssetDistribution]);
 
@@ -306,7 +168,13 @@ const StakingRecordsTable = () => {
       render: (row) => {
         if (row.isMigrated) {
           return (
-            <Button btnType={"secondary"} className={"!px-[15px] !h-[30px]"}>
+            <Button
+              onClick={() => {
+                onShowSelectCollatorModal();
+              }}
+              btnType={"secondary"}
+              className={"!px-[15px] !h-[30px]"}
+            >
               {t(localeKeys.selectCollator)}
             </Button>
           );
@@ -519,69 +387,28 @@ const StakingRecordsTable = () => {
           );
         }
 
-        if (row.isLoading) {
-          return (
-            <div className={"flex items-center gap-[5px]"}>
-              <img className={"w-[24px]"} src={reloadIcon} alt="image" />
-              <div>{t(localeKeys.loading)}</div>
-            </div>
-          );
-        }
-
-        if (row.canChangeCollator) {
-          const options = (
-            <div className={"flex items-end flex-col gap-[5px]"}>
-              <Button
-                onClick={() => {
-                  onShowUndelegateModal(row);
-                }}
-                btnType={"secondary"}
-              >
-                {t(localeKeys.undelegate)}
-              </Button>
-            </div>
-          );
-          return (
-            <div className={"flex gap-[10px]"}>
-              <Button className={"!h-[36px] !px-[15px]"} btnType={"secondary"}>
-                {t(localeKeys.changeCollator)}
-              </Button>
-              <MoreOptions options={options} />
-            </div>
-          );
-        }
-
         const options = (
-          <div className={"flex flex-col items-end gap-[5px]"}>
+          <div className={"flex items-end flex-col gap-[5px]"}>
             <Button
               onClick={() => {
-                onShowSessionKeyUpdateModal(row);
+                onShowUndelegateModal(row);
               }}
               btnType={"secondary"}
             >
-              {t(localeKeys.sessionKey)}
-            </Button>
-            <Button
-              onClick={() => {
-                onStopCollatingModal(row);
-              }}
-              btnType={"secondary"}
-            >
-              {t(localeKeys.stopCollating)}
+              {t(localeKeys.undelegate)}
             </Button>
           </div>
         );
-
         return (
           <div className={"flex gap-[10px]"}>
             <Button
               onClick={() => {
-                onShowCommissionUpdateModal(row);
+                onShowSelectCollatorModal();
               }}
               className={"!h-[36px] !px-[15px]"}
               btnType={"secondary"}
             >
-              {t(localeKeys.commission)}
+              {t(localeKeys.changeCollator)}
             </Button>
             <MoreOptions options={options} />
           </div>
@@ -600,6 +427,7 @@ const StakingRecordsTable = () => {
           columns={columns}
         />
       </div>
+      <SelectCollatorModal ref={selectCollatorModalRef} onCollatorSelected={onCollatorSelected} type={"update"} />
       <BondTokenModal
         symbol={tokenSymbolToUpdate}
         onCancel={onCloseBondTokenModal}
@@ -616,12 +444,6 @@ const StakingRecordsTable = () => {
         type={bondModalType}
         isVisible={showBondDepositModal}
         onClose={onCloseBondDepositModal}
-      />
-      <UpdateCommissionModal
-        onCancel={onCloseCommissionUpdateModal}
-        onConfirm={onConfirmCommissionUpdate}
-        isVisible={showCommissionUpdateModal}
-        onClose={onCloseCommissionUpdateModal}
       />
       <UpdateSessionKeyModal
         onCancel={onCloseSessionKeyUpdateModal}
@@ -741,6 +563,7 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
       confirmText={type === "bondMore" ? t(localeKeys.bond) : t(localeKeys.unbond)}
       onConfirm={onConfirmBonding}
       isLoading={isLoading}
+      isCancellable={false}
       isVisible={isVisible}
       onClose={onClose}
       onCancel={onCancel}
@@ -860,6 +683,7 @@ const BondDepositModal = ({
       confirmText={type === "bondMore" ? t(localeKeys.bond) : t(localeKeys.unbond)}
       onConfirm={onConfirmUndelegate}
       confirmLoading={isLoading}
+      isCancellable={false}
       isVisible={isVisible}
       onClose={onClose}
       onCancel={onCancel}
@@ -877,81 +701,6 @@ const BondDepositModal = ({
             render={depositRenderer}
             onChange={onDepositSelectionChange}
             selectedOptions={selectedDeposits}
-          />
-        </div>
-      </div>
-    </ModalEnhanced>
-  );
-};
-
-interface CommissionProps {
-  isVisible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-/*update commission*/
-const UpdateCommissionModal = ({ isVisible, onClose, onConfirm, onCancel }: CommissionProps) => {
-  const { t } = useAppTranslation();
-  const [hasError, setHasError] = useState<boolean>(false);
-  const [isLoading, setLoading] = useState<boolean>(false);
-  const [value, setValue] = useState<string>("");
-  const getErrorJSX = () => {
-    return hasError ? <div /> : null;
-  };
-
-  useEffect(() => {
-    setValue("");
-    setLoading(false);
-    setHasError(false);
-  }, [isVisible]);
-
-  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setHasError(false);
-    setValue(event.target.value);
-  };
-
-  const onConfirmUpdate = () => {
-    const isValidPercentage = isValidNumber(value);
-    if (!isValidPercentage) {
-      setHasError(true);
-      return;
-    }
-    setValue(value);
-    console.log(value);
-    setLoading(true);
-    // onConfirm();
-  };
-
-  return (
-    <ModalEnhanced
-      modalTitle={t(localeKeys.updateCommission)}
-      cancelText={t(localeKeys.cancel)}
-      confirmText={t(localeKeys.update)}
-      onConfirm={onConfirmUpdate}
-      isLoading={isLoading}
-      isVisible={isVisible}
-      onClose={onClose}
-      onCancel={onCancel}
-      className={"!max-w-[400px]"}
-    >
-      <div className={"divider border-b pb-[20px]"}>
-        <div className={"flex flex-col gap-[10px]"}>
-          <div className={"flex items-center gap-[10px]"}>
-            <div className={"text-12-bold"}>{t(localeKeys.commission)} (%)</div>
-            <Tooltip message={t(localeKeys.commissionPercentInfo)}>
-              <img className={"w-[16px]"} src={helpIcon} alt="image" />
-            </Tooltip>
-          </div>
-          <Input
-            value={value}
-            onChange={onInputChange}
-            hasErrorMessage={false}
-            error={getErrorJSX()}
-            leftIcon={null}
-            placeholder={t(localeKeys.commission)}
-            rightSlot={<div className={"flex items-center px-[10px]"}>%</div>}
           />
         </div>
       </div>
@@ -987,6 +736,9 @@ const UpdateSessionKeyModal = ({ isVisible, onClose, onConfirm, onCancel }: Sess
     const sessionKey = value.trim();
     if (sessionKey.length === 0) {
       setHasError(true);
+      notification.error({
+        message: <div>{t(localeKeys.invalidSessionKey)}</div>,
+      });
       return;
     }
 
@@ -1002,9 +754,11 @@ const UpdateSessionKeyModal = ({ isVisible, onClose, onConfirm, onCancel }: Sess
       confirmText={t(localeKeys.update)}
       onConfirm={onConfirmUpdate}
       isLoading={isLoading}
+      isCancellable={false}
       isVisible={isVisible}
       onClose={onClose}
       onCancel={onCancel}
+      confirmDisabled={value.length === 0}
       className={"!max-w-[400px]"}
     >
       <div className={"divider border-b pb-[20px]"}>
@@ -1054,6 +808,7 @@ const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel }: Undelega
       confirmText={t(localeKeys.undelegate)}
       onConfirm={onConfirmUndelegation}
       confirmLoading={isLoading}
+      isCancellable={false}
       isVisible={isVisible}
       onClose={onClose}
       onCancel={onCancel}
