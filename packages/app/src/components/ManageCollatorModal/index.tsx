@@ -144,6 +144,7 @@ const ManageCollatorModal = forwardRef<ManageCollatorRefs>(({}, ref) => {
       const response = (await stakingContract?.chill()) as TransactionResponse;
       await response.wait(1);
       setLoading(false);
+      onClose();
       notification.success({
         message: <div>{t(localeKeys.operationSuccessful)}</div>,
       });
