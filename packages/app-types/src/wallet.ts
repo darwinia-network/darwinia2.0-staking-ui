@@ -78,3 +78,11 @@ export interface WalletCtx {
   setTransactionStatus: (value: boolean) => void;
   isLoadingTransaction: boolean | undefined;
 }
+
+export interface DispatchCtx {
+  setSessionKey: (
+    sessionKey: string,
+    signer: JsonRpcSigner | undefined,
+    provider: Web3Provider | undefined
+  ) => Promise<boolean>;
+}

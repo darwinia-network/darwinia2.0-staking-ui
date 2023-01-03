@@ -378,9 +378,9 @@ const StakingOverview = () => {
           </div>
         </div>
         <div className={"w-full flex flex-col lg:flex-row gap-[10px]"}>
-          <Button className={"w-full lg:w-auto !px-[55px]"}>
+          {/*<Button className={"w-full lg:w-auto !px-[55px]"}>
             {t(localeKeys.approveKton, { token: selectedNetwork?.kton.symbol })}
-          </Button>
+          </Button>*/}
           <Button onClick={onStartStaking} disabled={!canSubmitStakingForm()} className={"w-full lg:w-auto !px-[55px]"}>
             {t(localeKeys.stake)}
           </Button>

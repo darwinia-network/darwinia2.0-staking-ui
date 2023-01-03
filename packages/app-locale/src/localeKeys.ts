@@ -115,4 +115,6 @@ export const localeKeys = {
   invalidSessionKey: "invalidSessionKey",
   manageCollator: "manageCollator",
   stopCollatingInfo: "stopCollatingInfo",
+  noDepositsToUnbond: "noDepositsToUnbond",
+  noMoreDepositsToBond: "noMoreDepositsToBond",
 };

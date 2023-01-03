@@ -1,5 +1,5 @@
 import Root from "./Root";
-import { WalletProvider, StorageProvider, GraphQLProvider } from "@darwinia/app-providers";
+import { WalletProvider, StorageProvider, GraphQLProvider, DispatchProvider } from "@darwinia/app-providers";
 import { i18nTranslationInit } from "@darwinia/app-locale";
 
 i18nTranslationInit();
@@ -9,7 +9,9 @@ const App = () => {
     <WalletProvider>
       <GraphQLProvider>
         <StorageProvider>
-          <Root />
+          <DispatchProvider>
+            <Root />
+          </DispatchProvider>
         </StorageProvider>
       </GraphQLProvider>
     </WalletProvider>

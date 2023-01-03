@@ -30,7 +30,6 @@ const StakingRecordsTable = () => {
   const { selectedNetwork } = useWallet();
   const { stakedAssetDistribution } = useStorage();
   const [showBondTokenModal, setShowBondTokenModal] = useState<boolean>(false);
-  const [showSessionKeyUpdateModal, setShowSessionKeyUpdateModal] = useState<boolean>(false);
   const [showUndelegateModal, setShowUndelegateModal] = useState<boolean>(false);
   const [showBondDepositModal, setShowBondDepositModal] = useState<boolean>(false);
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
@@ -42,10 +41,6 @@ const StakingRecordsTable = () => {
   const onCloseBondTokenModal = () => {
     delegateToUpdate.current = null;
     setShowBondTokenModal(false);
-  };
-
-  const onCloseSessionKeyUpdateModal = () => {
-    setShowSessionKeyUpdateModal(false);
   };
 
   const onCloseUndelegateModal = () => {
@@ -81,16 +76,12 @@ const StakingRecordsTable = () => {
     console.log("confirm bond token======");
   };
 
-  const onConfirmSessionKeyUpdate = () => {
-    console.log("confirm session key update====");
-  };
-
   const onConfirmUndelegation = () => {
     console.log("confirm undelegation======");
   };
 
   const onConfirmBondDeposit = () => {
-    console.log("confirm bond token======");
+    setShowBondDepositModal(false);
   };
 
   const onCancelDepositUnbonding = () => {
@@ -142,16 +133,19 @@ const StakingRecordsTable = () => {
             amount: stakedAssetDistribution.ring.bonded,
             symbol: selectedNetwork?.ring.symbol ?? "",
             isDeposit: false,
+            isRing: true,
           },
           {
             amount: stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0),
             symbol: selectedNetwork?.ring.symbol ?? "",
             isDeposit: true,
+            isRing: true,
           },
           {
             amount: stakedAssetDistribution.kton.bonded,
             symbol: selectedNetwork?.kton.symbol ?? "",
             isDeposit: false,
+            isRing: false,
           },
         ],
         isMigrated: false,
@@ -437,6 +431,7 @@ const StakingRecordsTable = () => {
         onClose={onCloseBondTokenModal}
       />
       <BondDepositModal
+        delegateToUpdate={delegateToUpdate.current}
         bondedDeposits={stakedDepositsIds ?? []}
         allDeposits={deposits ?? []}
         onCancel={onCloseBondDepositModal}
@@ -445,14 +440,8 @@ const StakingRecordsTable = () => {
         isVisible={showBondDepositModal}
         onClose={onCloseBondDepositModal}
       />
-      <UpdateSessionKeyModal
-        onCancel={onCloseSessionKeyUpdateModal}
-        onConfirm={onConfirmSessionKeyUpdate}
-        isVisible={showSessionKeyUpdateModal}
-        onClose={onCloseSessionKeyUpdateModal}
-      />
       <UndelegationModal
-        delegation={delegateToUpdate.current}
+        delegateToUpdate={delegateToUpdate.current}
         onCancel={onCloseUndelegateModal}
         onConfirm={onConfirmUndelegation}
         isVisible={showUndelegateModal}
@@ -618,6 +607,7 @@ interface BondDepositProps {
   onCancel: () => void;
   allDeposits: Deposit[];
   bondedDeposits: number[];
+  delegateToUpdate: Delegate | null;
 }
 
 /*Bond more or less deposits*/
@@ -629,11 +619,13 @@ const BondDepositModal = ({
   onCancel,
   bondedDeposits,
   allDeposits,
+  delegateToUpdate,
 }: BondDepositProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
   const [selectedDeposits, setSelectedDeposit] = useState<Deposit[]>([]);
   const [renderDeposits, setRenderDeposits] = useState<Deposit[]>([]);
+  const { stakingContract } = useWallet();
 
   useEffect(() => {
     setSelectedDeposit([]);
@@ -672,8 +664,35 @@ const BondDepositModal = ({
     setSelectedDeposit(allItems);
   };
 
-  const onConfirmUndelegate = () => {
-    onConfirm();
+  const onConfirmBonding = async () => {
+    const ringAmount =
+      delegateToUpdate?.bondedTokens.find((item) => item.isRing && !item.isDeposit)?.amount ?? BigNumber(0);
+    const ktonAmount =
+      delegateToUpdate?.bondedTokens.find((item) => !item.isRing && !item.isDeposit)?.amount ?? BigNumber(0);
+    const ringBigNumber = EthersBigNumber.from(ringAmount.toString());
+    const ktonBigNumber = EthersBigNumber.from(ktonAmount.toString());
+    const depositsIds = selectedDeposits.map((item) => EthersBigNumber.from(item.id));
+
+    try {
+      setLoading(true);
+      const response = (await stakingContract?.unstake(
+        ringBigNumber,
+        ktonBigNumber,
+        depositsIds
+      )) as TransactionResponse;
+      await response.wait(1);
+      setLoading(false);
+      onConfirm();
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setLoading(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
   };
 
   return (
@@ -681,12 +700,13 @@ const BondDepositModal = ({
       modalTitle={type === "bondMore" ? t(localeKeys.bondMoreDeposits) : t(localeKeys.unbondDeposits)}
       cancelText={t(localeKeys.cancel)}
       confirmText={type === "bondMore" ? t(localeKeys.bond) : t(localeKeys.unbond)}
-      onConfirm={onConfirmUndelegate}
+      onConfirm={onConfirmBonding}
       confirmLoading={isLoading}
       isCancellable={false}
       isVisible={isVisible}
       onClose={onClose}
       onCancel={onCancel}
+      confirmDisabled={selectedDeposits.length === 0}
       className={"!max-w-[400px]"}
     >
       <div className={"divider border-b pb-[20px]"}>
@@ -696,84 +716,18 @@ const BondDepositModal = ({
           </div>
         )}
         <div className={"flex flex-col gap-[10px] max-h-[300px] dw-custom-scrollbar"}>
-          <CheckboxGroup
-            options={renderDeposits}
-            render={depositRenderer}
-            onChange={onDepositSelectionChange}
-            selectedOptions={selectedDeposits}
-          />
-        </div>
-      </div>
-    </ModalEnhanced>
-  );
-};
-
-interface SessionKeyProps {
-  isVisible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-/*update session key*/
-const UpdateSessionKeyModal = ({ isVisible, onClose, onConfirm, onCancel }: SessionKeyProps) => {
-  const { t } = useAppTranslation();
-  const [hasError, setHasError] = useState<boolean>(false);
-  const [isLoading, setLoading] = useState<boolean>(false);
-  const [value, setValue] = useState<string>("");
-
-  useEffect(() => {
-    setValue("");
-    setLoading(false);
-    setHasError(false);
-  }, [isVisible]);
-
-  const onInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setHasError(false);
-    setValue(event.target.value);
-  };
-
-  const onConfirmUpdate = () => {
-    const sessionKey = value.trim();
-    if (sessionKey.length === 0) {
-      setHasError(true);
-      notification.error({
-        message: <div>{t(localeKeys.invalidSessionKey)}</div>,
-      });
-      return;
-    }
-
-    console.log(sessionKey);
-    setLoading(true);
-    // onConfirm();
-  };
-
-  return (
-    <ModalEnhanced
-      modalTitle={t(localeKeys.updateSessionKey)}
-      cancelText={t(localeKeys.cancel)}
-      confirmText={t(localeKeys.update)}
-      onConfirm={onConfirmUpdate}
-      isLoading={isLoading}
-      isCancellable={false}
-      isVisible={isVisible}
-      onClose={onClose}
-      onCancel={onCancel}
-      confirmDisabled={value.length === 0}
-      className={"!max-w-[400px]"}
-    >
-      <div className={"divider border-b pb-[20px]"}>
-        <div className={"flex flex-col gap-[10px]"}>
-          <div className={"flex items-center gap-[10px]"}>
-            <div className={"text-12-bold"}>{t(localeKeys.sessionKey)}</div>
-          </div>
-          <textarea
-            value={value}
-            placeholder={t(localeKeys.sessionKey)}
-            onChange={onInputChange}
-            className={`bg-blackSecondary resize-none ${
-              hasError ? "border-[red]" : "border-white"
-            } border h-[180px] py-[2px] px-[10px]`}
-          />
+          {renderDeposits.length === 0 ? (
+            <div className={"text-12"}>
+              {type === "bondMore" ? t(localeKeys.noMoreDepositsToBond) : t(localeKeys.noDepositsToUnbond)}
+            </div>
+          ) : (
+            <CheckboxGroup
+              options={renderDeposits}
+              render={depositRenderer}
+              onChange={onDepositSelectionChange}
+              selectedOptions={selectedDeposits}
+            />
+          )}
         </div>
       </div>
     </ModalEnhanced>
@@ -785,7 +739,7 @@ interface UndelegationProps {
   onClose: () => void;
   onConfirm: () => void;
   onCancel: () => void;
-  delegation: Delegate | null;
+  delegateToUpdate: Delegate | null;
 }
 
 /*Bond more or less deposits*/

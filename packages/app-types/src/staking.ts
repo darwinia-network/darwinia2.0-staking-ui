@@ -96,6 +96,7 @@ export interface Bond {
   amount: BigNumber;
   symbol: string;
   isDeposit: boolean;
+  isRing: boolean;
 }
 
 export interface Delegate {

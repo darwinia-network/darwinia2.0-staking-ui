@@ -118,6 +118,8 @@ const enUs = {
   [localeKeys.invalidSessionKey]: "Invalid session key",
   [localeKeys.manageCollator]: "Manage collator",
   [localeKeys.stopCollatingInfo]: `Collators maintain parachains by collecting parachain transactions from users and producing state transition proofs for Relay Chain validators. Sure to stop collation now?`,
+  [localeKeys.noDepositsToUnbond]: "No deposits to unbond",
+  [localeKeys.noMoreDepositsToBond]: "No more deposits to bond",
 };
 
 export default enUs;

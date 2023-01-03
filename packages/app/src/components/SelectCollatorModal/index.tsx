@@ -4,7 +4,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
 import JazzIcon from "../JazzIcon";
 import copyIcon from "../../assets/images/copy.svg";
-import { copyToClipboard, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
+import { copyToClipboard, formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import { useStorage, useWallet } from "@darwinia/app-providers";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
 import { TransactionResponse } from "@ethersproject/providers";
@@ -30,6 +30,7 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
     const updatedCollator = useRef<Collator>();
     const { t } = useAppTranslation();
     const { collators } = useStorage();
+    const { stakingContract } = useWallet();
 
     useEffect(() => {
       if (selectedCollator) {
@@ -191,16 +192,30 @@ const SelectCollatorModal = forwardRef<SelectCollatorRefs, SelectCollatorProps>(
       updatedCollator.current = row;
     };
 
-    const onConfirmCollator = () => {
+    const onConfirmCollator = async () => {
       /*the user is trying to update the collator, call the contract API right away*/
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        if (updatedCollator.current) {
-          onCollatorSelected(updatedCollator.current);
+      try {
+        if (!updatedCollator.current) {
+          return;
         }
+        setLoading(true);
+        const response = (await stakingContract?.nominate(
+          updatedCollator.current.accountAddress
+        )) as TransactionResponse;
+        await response.wait(1);
+        setLoading(false);
+        onCollatorSelected(updatedCollator.current);
         onClose();
-      }, 10000);
+        notification.success({
+          message: <div>{t(localeKeys.operationSuccessful)}</div>,
+        });
+      } catch (e) {
+        setLoading(false);
+        notification.error({
+          message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+        });
+        console.log(e);
+      }
     };
 
     useImperativeHandle(ref, () => {

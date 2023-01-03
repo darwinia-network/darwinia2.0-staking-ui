@@ -6,7 +6,7 @@ import JazzIcon from "../JazzIcon";
 import copyIcon from "../../assets/images/copy.svg";
 import { copyToClipboard, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import helpIcon from "../../assets/images/help.svg";
-import { useStorage, useWallet } from "@darwinia/app-providers";
+import { useDispatch, useStorage, useWallet } from "@darwinia/app-providers";
 import BigNumber from "bignumber.js";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
 import { TransactionResponse } from "@ethersproject/providers";
@@ -27,7 +27,8 @@ const JoinCollatorModal = forwardRef<JoinCollatorRefs, JoinCollatorProps>(({ onC
   const [sessionKeyHasError, setSessionKeyHasError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const { t } = useAppTranslation();
-  const { stakingContract } = useWallet();
+  const { stakingContract, signer, provider } = useWallet();
+  const { setSessionKey: updateSessionKey } = useDispatch();
 
   const showModal = () => {
     setSessionKey("");
@@ -99,7 +100,7 @@ const JoinCollatorModal = forwardRef<JoinCollatorRefs, JoinCollatorProps>(({ onC
     }
   };
 
-  const onSetSessionKey = () => {
+  const onSetSessionKey = async () => {
     if (sessionKey.trim().length === 0) {
       setSessionKeyHasError(true);
       notification.error({
@@ -108,7 +109,10 @@ const JoinCollatorModal = forwardRef<JoinCollatorRefs, JoinCollatorProps>(({ onC
       return;
     }
 
-    console.log("set session key");
+    setLoading(true);
+    const response = await updateSessionKey(sessionKey, signer, provider);
+    setLoading(false);
+    console.log("set session key", response);
   };
 
   useImperativeHandle(ref, () => {
