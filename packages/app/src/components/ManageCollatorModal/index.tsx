@@ -1,10 +1,8 @@
 import { ChangeEvent, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Button, Column, Input, ModalEnhanced, notification, Tab, Table, Tabs, Tooltip } from "@darwinia/ui";
+import { Button, Input, ModalEnhanced, notification, Tab, Table, Tabs, Tooltip } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
-import JazzIcon from "../JazzIcon";
-import copyIcon from "../../assets/images/copy.svg";
-import { copyToClipboard, formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
+import { isValidNumber } from "@darwinia/app-utils";
 import helpIcon from "../../assets/images/help.svg";
 import { useStorage, useWallet } from "@darwinia/app-providers";
 import BigNumber from "bignumber.js";
@@ -15,7 +13,7 @@ export interface ManageCollatorRefs {
   show: () => void;
 }
 
-const ManageCollatorModal = forwardRef<ManageCollatorRefs>(({}, ref) => {
+const ManageCollatorModal = forwardRef<ManageCollatorRefs>((props, ref) => {
   const [isVisible, setIsVisible] = useState(false);
   const [activeTabId, setActiveTabId] = useState<string>("1");
   const [commission, setCommission] = useState<string>("");

@@ -76,7 +76,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         const account = forcedAccountAddress.current ? forcedAccountAddress.current : accounts[0];
         setSelectedAccount(account);
       }
-      console.log("account changed=====", accounts);
     };
 
     const onChainChanged = () => {
@@ -116,14 +115,11 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       });
 
       if (!isSuccessful) {
-        console.log("Something went wrong 💣");
         return;
       }
-
-      console.log("Token added successfully 🎉");
     } catch (e) {
       //ignore
-      console.log(e);
+      // console.log(e);
     }
   }, [selectedNetwork]);
 
@@ -161,7 +157,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         //The chain was switched successfully, request account permission
         // request account permission
         try {
-          console.log("lever 1=====");
           const accounts = await window.ethereum.request({
             method: "eth_requestAccounts",
           });
@@ -172,7 +167,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
             setWalletConnected(true);
           }
         } catch (e) {
-          console.log("cetch leve 1=====", e);
           setRequestingWalletConnection(false);
           setWalletConnected(false);
           setError({
@@ -182,7 +176,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         }
       }
     } catch (e) {
-      console.log("master catch=====", e);
       if ((e as { code: number }).code === 4902) {
         /*Unrecognized chain, add it first*/
         try {
@@ -203,7 +196,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
           if (!addedChainResponse) {
             // request account permission
             try {
-              console.log("try again======");
               const accounts = await window.ethereum.request({
                 method: "eth_requestAccounts",
               });
@@ -214,7 +206,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
                 setWalletConnected(true);
               }
             } catch (e) {
-              console.log("catch again ======");
               setRequestingWalletConnection(false);
               setError({
                 code: 3,
@@ -224,7 +215,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
             }
           }
         } catch (e) {
-          console.log("catch add ethereum======");
           setError({
             code: 1,
             message: "User rejected adding ethereum chain",
@@ -234,7 +224,6 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         }
         return;
       }
-      console.log("master catch under if======", e);
       setRequestingWalletConnection(false);
       setWalletConnected(false);
       if ((e as { code: number }).code === 4001) {
