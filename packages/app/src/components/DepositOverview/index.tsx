@@ -79,10 +79,10 @@ const DepositOverview = () => {
       return;
     }
     try {
-      const amountInWei = formatToWei(amount.toString());
+      const amountEthersBigNumber = formatToWei(amount.toString());
       setTransactionStatus(true);
       const response = (await depositContract?.lock(
-        EthersBigNumber.from(amountInWei.toString()),
+        amountEthersBigNumber,
         EthersBigNumber.from(depositTerm)
       )) as TransactionResponse;
       await response.wait(1);

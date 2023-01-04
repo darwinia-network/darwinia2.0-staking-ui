@@ -33,7 +33,7 @@ const StakingRecordsTable = () => {
   const [showUndelegateModal, setShowUndelegateModal] = useState<boolean>(false);
   const [showBondDepositModal, setShowBondDepositModal] = useState<boolean>(false);
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
-  const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
+  const [isUpdatingRing, setIsUpdatingRing] = useState(false);
   const delegateToUpdate = useRef<Delegate | null>(null);
   const { deposits, stakedDepositsIds, calculatePower } = useStorage();
   const [dataSource, setDataSource] = useState<Delegate[]>([]);
@@ -52,9 +52,9 @@ const StakingRecordsTable = () => {
     setShowBondDepositModal(false);
   };
 
-  const onShowBondTokenModal = (modalType: BondModalType, delegate: Delegate, symbol: string) => {
+  const onShowBondTokenModal = (modalType: BondModalType, delegate: Delegate, isRing: boolean) => {
     delegateToUpdate.current = delegate;
-    setTokenSymbolToUpdate(symbol);
+    setIsUpdatingRing(isRing);
     setBondModalType(modalType);
     setShowBondTokenModal(true);
   };
@@ -132,20 +132,17 @@ const StakingRecordsTable = () => {
           {
             amount: stakedAssetDistribution.ring.bonded,
             symbol: selectedNetwork?.ring.symbol ?? "",
-            isDeposit: false,
-            isRing: true,
+            isRingBonding: true,
           },
           {
             amount: stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0),
             symbol: selectedNetwork?.ring.symbol ?? "",
             isDeposit: true,
-            isRing: true,
           },
           {
             amount: stakedAssetDistribution.kton.bonded,
             symbol: selectedNetwork?.kton.symbol ?? "",
-            isDeposit: false,
-            isRing: false,
+            isKtonBonding: true,
           },
         ],
         isMigrated: false,
@@ -314,7 +311,7 @@ const StakingRecordsTable = () => {
                               onShowBondDepositModal("bondMore", row);
                               return;
                             }
-                            onShowBondTokenModal("bondMore", row, item.symbol);
+                            onShowBondTokenModal("bondMore", row, !!item.isRingBonding);
                           }}
                           src={plusIcon}
                           className={"clickable w-[16px]"}
@@ -326,7 +323,7 @@ const StakingRecordsTable = () => {
                               onShowBondDepositModal("unbond", row);
                               return;
                             }
-                            onShowBondTokenModal("unbond", row, item.symbol);
+                            onShowBondTokenModal("unbond", row, !!item.isRingBonding);
                           }}
                           src={minusIcon}
                           className={"clickable w-[16px]"}
@@ -423,12 +420,14 @@ const StakingRecordsTable = () => {
       </div>
       <SelectCollatorModal ref={selectCollatorModalRef} onCollatorSelected={onCollatorSelected} type={"update"} />
       <BondTokenModal
-        symbol={tokenSymbolToUpdate}
+        isUpdatingRing={isUpdatingRing}
+        delegateToUpdate={delegateToUpdate.current}
         onCancel={onCloseBondTokenModal}
         onConfirm={onConfirmBondToken}
         type={bondModalType}
         isVisible={showBondTokenModal}
         onClose={onCloseBondTokenModal}
+        bondedDeposits={stakedDepositsIds ?? []}
       />
       <BondDepositModal
         delegateToUpdate={delegateToUpdate.current}
@@ -474,16 +473,27 @@ const MoreOptions = ({ options }: MoreOptionsProps) => {
 type BondModalType = "bondMore" | "unbond";
 
 interface BondTokenProps {
-  symbol: string;
+  isUpdatingRing: boolean;
   type: BondModalType;
   isVisible: boolean;
   onClose: () => void;
   onConfirm: () => void;
   onCancel: () => void;
+  delegateToUpdate: Delegate | null;
+  bondedDeposits: number[];
 }
 
 /*Bond more or less tokens*/
-const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol }: BondTokenProps) => {
+const BondTokenModal = ({
+  isVisible,
+  type,
+  onClose,
+  onConfirm,
+  onCancel,
+  delegateToUpdate,
+  isUpdatingRing,
+  bondedDeposits,
+}: BondTokenProps) => {
   const { t } = useAppTranslation();
   const [hasError, setHasError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -491,7 +501,11 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
   const { balance, calculatePower } = useStorage();
   const { selectedNetwork } = useWallet();
   const [power, setPower] = useState<BigNumber>(BigNumber(0));
-  const isRing = symbol.toLowerCase().includes("ring");
+  const { stakingContract } = useWallet();
+  const symbol =
+    (isUpdatingRing
+      ? delegateToUpdate?.bondedTokens.find((item) => item.isRingBonding)?.symbol
+      : delegateToUpdate?.bondedTokens.find((item) => item.isKtonBonding)?.symbol) ?? "RING";
 
   const getErrorJSX = () => {
     return hasError ? <div /> : null;
@@ -509,11 +523,11 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
     const value = event.target.value;
     const isValidAmount = isValidNumber(value);
     if (isValidAmount) {
-      const ringAmount = isRing ? BigNumber(formatToWei(value).toString()) : BigNumber(0);
-      const ktonAmount = isRing ? BigNumber(0) : BigNumber(formatToWei(value).toString());
+      const ringBigNumber = isUpdatingRing ? BigNumber(formatToWei(value).toString()) : BigNumber(0);
+      const ktonBigNumber = isUpdatingRing ? BigNumber(0) : BigNumber(formatToWei(value).toString());
       const power = calculatePower({
-        ring: ringAmount,
-        kton: ktonAmount,
+        ring: ringBigNumber,
+        kton: ktonBigNumber,
       });
       setPower(power);
     } else {
@@ -522,10 +536,10 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
     setValue(event.target.value);
   };
 
-  const onConfirmBonding = () => {
+  const onConfirmBonding = async () => {
     const isValidAmount = isValidNumber(value);
     if (!isValidAmount) {
-      if (isRing) {
+      if (isUpdatingRing) {
         notification.error({
           message: <div>{t(localeKeys.invalidRingAmount, { ringSymbol: selectedNetwork?.ring.symbol })}</div>,
         });
@@ -537,13 +551,44 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol 
       setHasError(true);
       return;
     }
-    setValue(value);
-    console.log(value);
-    setLoading(true);
-    // onConfirm();
+    let ringEthersBigNumber = EthersBigNumber.from(0);
+    let ktonEthersBigNumber = EthersBigNumber.from(0);
+    const depositsIds = bondedDeposits.map((id) => EthersBigNumber.from(id));
+    if (isUpdatingRing) {
+      //the user is trying to update his ring deposits
+      const ktonBigNumber = delegateToUpdate?.bondedTokens.find((item) => item.isKtonBonding)?.amount ?? BigNumber(0);
+      ktonEthersBigNumber = EthersBigNumber.from(ktonBigNumber.toString());
+      ringEthersBigNumber = formatToWei(value);
+    } else {
+      // the user is trying to update kton deposits
+      const ringBigNumber = delegateToUpdate?.bondedTokens.find((item) => item.isRingBonding)?.amount ?? BigNumber(0);
+      ringEthersBigNumber = EthersBigNumber.from(ringBigNumber.toString());
+      ktonEthersBigNumber = formatToWei(value);
+    }
+
+    try {
+      setLoading(true);
+      const response = (await stakingContract?.unstake(
+        ringEthersBigNumber,
+        ktonEthersBigNumber,
+        depositsIds
+      )) as TransactionResponse;
+      await response.wait(1);
+      setLoading(false);
+      onConfirm();
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setLoading(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
   };
 
-  const balanceAmount = isRing ? balance?.ring ?? BigNumber(0) : balance?.kton ?? BigNumber(0);
+  const balanceAmount = isUpdatingRing ? balance?.ring ?? BigNumber(0) : balance?.kton ?? BigNumber(0);
 
   return (
     <ModalEnhanced
@@ -665,19 +710,17 @@ const BondDepositModal = ({
   };
 
   const onConfirmBonding = async () => {
-    const ringAmount =
-      delegateToUpdate?.bondedTokens.find((item) => item.isRing && !item.isDeposit)?.amount ?? BigNumber(0);
-    const ktonAmount =
-      delegateToUpdate?.bondedTokens.find((item) => !item.isRing && !item.isDeposit)?.amount ?? BigNumber(0);
-    const ringBigNumber = EthersBigNumber.from(ringAmount.toString());
-    const ktonBigNumber = EthersBigNumber.from(ktonAmount.toString());
+    const ringBigNumber = delegateToUpdate?.bondedTokens.find((item) => item.isRingBonding)?.amount ?? BigNumber(0);
+    const ktonBigNumber = delegateToUpdate?.bondedTokens.find((item) => !item.isKtonBonding)?.amount ?? BigNumber(0);
+    const ringEthersBigNumber = EthersBigNumber.from(ringBigNumber.toString());
+    const ktonEthersBigNumber = EthersBigNumber.from(ktonBigNumber.toString());
     const depositsIds = selectedDeposits.map((item) => EthersBigNumber.from(item.id));
 
     try {
       setLoading(true);
       const response = (await stakingContract?.unstake(
-        ringBigNumber,
-        ktonBigNumber,
+        ringEthersBigNumber,
+        ktonEthersBigNumber,
         depositsIds
       )) as TransactionResponse;
       await response.wait(1);

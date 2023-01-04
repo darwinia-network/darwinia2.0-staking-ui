@@ -187,15 +187,19 @@ const StakingOverview = () => {
       return;
     }
 
-    const ring =
-      ringToStake.trim().length > 0 ? EthersBigNumber.from(formatToWei(ringToStake.trim())) : EthersBigNumber.from(0);
-    const kton =
-      ktonToStake.trim().length > 0 ? EthersBigNumber.from(formatToWei(ktonToStake.trim())) : EthersBigNumber.from(0);
+    const ringEthersBigNumber =
+      ringToStake.trim().length > 0 ? formatToWei(ringToStake.trim()) : EthersBigNumber.from(0);
+    const ktonEthersBigNumber =
+      ktonToStake.trim().length > 0 ? formatToWei(ktonToStake.trim()) : EthersBigNumber.from(0);
 
     try {
       const depositsIds = depositsToStake.map((item) => EthersBigNumber.from(item.id));
       setTransactionStatus(true);
-      const response = (await stakingContract?.stake(ring, kton, depositsIds)) as TransactionResponse;
+      const response = (await stakingContract?.stake(
+        ringEthersBigNumber,
+        ktonEthersBigNumber,
+        depositsIds
+      )) as TransactionResponse;
       await response.wait(1);
       setDepositsToStake([]);
       setRingToStake("");

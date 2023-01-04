@@ -95,8 +95,9 @@ export interface Deposit {
 export interface Bond {
   amount: BigNumber;
   symbol: string;
-  isDeposit: boolean;
-  isRing: boolean;
+  isDeposit?: boolean;
+  isRingBonding?: boolean;
+  isKtonBonding?: boolean;
 }
 
 export interface Delegate {
