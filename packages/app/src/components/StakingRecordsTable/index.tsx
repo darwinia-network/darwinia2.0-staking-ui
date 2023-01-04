@@ -27,13 +27,14 @@ import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal"
 const StakingRecordsTable = () => {
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const { t } = useAppTranslation();
-  const { selectedNetwork } = useWallet();
+  const { selectedNetwork, stakingContract, setTransactionStatus } = useWallet();
   const { stakedAssetDistribution } = useStorage();
   const [showBondTokenModal, setShowBondTokenModal] = useState<boolean>(false);
   const [showUndelegateModal, setShowUndelegateModal] = useState<boolean>(false);
   const [showBondDepositModal, setShowBondDepositModal] = useState<boolean>(false);
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
   const [isUpdatingRing, setIsUpdatingRing] = useState(false);
+  const [tokenSymbolToUpdate, setTokenSymbolToUpdate] = useState<string>("RING");
   const delegateToUpdate = useRef<Delegate | null>(null);
   const { deposits, stakedDepositsIds, calculatePower, currentlyNominatedCollator } = useStorage();
   const [dataSource, setDataSource] = useState<Delegate[]>([]);
@@ -52,8 +53,9 @@ const StakingRecordsTable = () => {
     setShowBondDepositModal(false);
   };
 
-  const onShowBondTokenModal = (modalType: BondModalType, delegate: Delegate, isRing: boolean) => {
+  const onShowBondTokenModal = (modalType: BondModalType, delegate: Delegate, symbol: string, isRing: boolean) => {
     delegateToUpdate.current = delegate;
+    setTokenSymbolToUpdate(symbol);
     setIsUpdatingRing(isRing);
     setBondModalType(modalType);
     setShowBondTokenModal(true);
@@ -72,47 +74,85 @@ const StakingRecordsTable = () => {
     setShowUndelegateModal(true);
   };
 
+  /*TODO discuss with JiRan about whether to keep this functionality or not since backend doesn't support,
+   *  undelegation happens right away, doesn't need 14 days */
   const onCancelUndelegating = (delegate: Delegate) => {
     delegateToUpdate.current = delegate;
     console.log("cancel undelegating=====");
   };
 
+  /*TODO discuss with JiRan about whether to keep this functionality or not since backend doesn't support,
+   *  undelegation happens right away, doesn't need 14 days */
   const onCompleteUndelegating = (delegate: Delegate) => {
     delegateToUpdate.current = delegate;
     console.log("complete undelegating=====");
   };
 
-  const onShowUnbondAllModal = (delegate: Delegate) => {
-    delegateToUpdate.current = delegate;
-    console.log("unbond all=====");
+  const onUnbondAll = async () => {
+    try {
+      setTransactionStatus(true);
+      const ringBigNumber = stakedAssetDistribution?.ring.bonded ?? BigNumber(0);
+      const ktonBigNumber = stakedAssetDistribution?.kton.bonded ?? BigNumber(0);
+      const ringEthersBigNumber = EthersBigNumber.from(ringBigNumber.toString());
+      const ktonEthersBigNumber = EthersBigNumber.from(ktonBigNumber.toString());
+      const depositsIds = deposits?.map((item) => EthersBigNumber.from(item.id)) ?? [];
+      const response = (await stakingContract?.unstake(
+        ringEthersBigNumber,
+        ktonEthersBigNumber,
+        depositsIds
+      )) as TransactionResponse;
+      await response.wait(1);
+      setTransactionStatus(false);
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setTransactionStatus(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      // console.log(e);
+    }
   };
 
   const onConfirmBondToken = () => {
-    console.log("confirm bond token======");
+    setShowBondTokenModal(false);
   };
 
   const onConfirmUndelegation = () => {
-    console.log("confirm undelegation======");
+    setShowUndelegateModal(false);
   };
 
   const onConfirmBondDeposit = () => {
     setShowBondDepositModal(false);
   };
 
+  // TODO No API for now
   const onCancelDepositUnbonding = () => {
     console.log("cancel deposit unbonding====");
   };
 
+  // TODO No API for now
   const onCancelTokenUnbonding = () => {
     console.log("cancel token unbonding====");
   };
 
-  const onReleaseDeposit = () => {
-    console.log("release deposit=====");
-  };
-
-  const onReleaseToken = () => {
-    console.log("release token=====");
+  const onReleaseTokenOrDeposit = async () => {
+    try {
+      setTransactionStatus(true);
+      const response = (await stakingContract?.claim()) as TransactionResponse;
+      await response.wait(1);
+      setTransactionStatus(false);
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setTransactionStatus(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      // console.log(e);
+    }
   };
 
   const onShowSelectCollatorModal = () => {
@@ -128,13 +168,13 @@ const StakingRecordsTable = () => {
       return;
     }
     const stakedRing = stakedAssetDistribution.ring.bonded;
-    const stakedDeposits = stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0);
+    const totalOfStakedDeposits = stakedAssetDistribution.ring.totalOfDepositsInStaking ?? BigNumber(0);
     /* This is supposed to be the total amount of power invested in a certain collator
      * but for now since the user can only choose one collator, here it will only show the
      * total power that has been used in staking */
     const totalStakedPower = calculatePower({
       kton: stakedAssetDistribution.kton.bonded,
-      ring: stakedRing.plus(stakedDeposits),
+      ring: stakedRing.plus(totalOfStakedDeposits),
     });
 
     setDataSource([
@@ -144,7 +184,7 @@ const StakingRecordsTable = () => {
         previousReward: "0/0",
         staked: totalStakedPower,
         isActive: currentlyNominatedCollator?.isActive,
-        isMigrated: true,
+        isMigrated: false,
         canChangeCollator: true,
         bondedTokens: [
           {
@@ -153,7 +193,7 @@ const StakingRecordsTable = () => {
             isRingBonding: true,
           },
           {
-            amount: stakedAssetDistribution.ring.totalStakingDeposit ?? BigNumber(0),
+            amount: stakedAssetDistribution.ring.totalOfDepositsInStaking ?? BigNumber(0),
             symbol: selectedNetwork?.ring.symbol ?? "",
             isDeposit: true,
           },
@@ -269,7 +309,7 @@ const StakingRecordsTable = () => {
                       {t(localeKeys.depositsReadyToRelease, { amount: "11 RING" })}
                       <span
                         onClick={() => {
-                          onReleaseDeposit();
+                          onReleaseTokenOrDeposit();
                         }}
                         className={"text-primary clickable"}
                       >
@@ -298,7 +338,7 @@ const StakingRecordsTable = () => {
                       {t(localeKeys.tokensReadyToRelease, { amount: "11 RING" })}
                       <span
                         onClick={() => {
-                          onReleaseToken();
+                          onReleaseTokenOrDeposit();
                         }}
                         className={"text-primary pl-[8px] clickable"}
                       >
@@ -329,7 +369,7 @@ const StakingRecordsTable = () => {
                               onShowBondDepositModal("bondMore", row);
                               return;
                             }
-                            onShowBondTokenModal("bondMore", row, !!item.isRingBonding);
+                            onShowBondTokenModal("bondMore", row, item.symbol, !!item.isRingBonding);
                           }}
                           src={plusIcon}
                           className={"clickable w-[16px]"}
@@ -341,7 +381,7 @@ const StakingRecordsTable = () => {
                               onShowBondDepositModal("unbond", row);
                               return;
                             }
-                            onShowBondTokenModal("unbond", row, !!item.isRingBonding);
+                            onShowBondTokenModal("unbond", row, item.symbol, !!item.isRingBonding);
                           }}
                           src={minusIcon}
                           className={"clickable w-[16px]"}
@@ -374,7 +414,7 @@ const StakingRecordsTable = () => {
           return (
             <Button
               onClick={() => {
-                onShowUnbondAllModal(row);
+                onUnbondAll();
               }}
               btnType={"secondary"}
               className={"!px-[15px] !h-[30px]"}
@@ -458,14 +498,13 @@ const StakingRecordsTable = () => {
       </div>
       <SelectCollatorModal ref={selectCollatorModalRef} onCollatorSelected={onCollatorSelected} type={"update"} />
       <BondTokenModal
+        symbol={tokenSymbolToUpdate}
         isUpdatingRing={isUpdatingRing}
-        delegateToUpdate={delegateToUpdate.current}
         onCancel={onCloseBondTokenModal}
         onConfirm={onConfirmBondToken}
         type={bondModalType}
         isVisible={showBondTokenModal}
         onClose={onCloseBondTokenModal}
-        bondedDeposits={stakedDepositsIds ?? []}
       />
       <BondDepositModal
         delegateToUpdate={delegateToUpdate.current}
@@ -478,7 +517,6 @@ const StakingRecordsTable = () => {
         onClose={onCloseBondDepositModal}
       />
       <UndelegationModal
-        delegateToUpdate={delegateToUpdate.current}
         onCancel={onCloseUndelegateModal}
         onConfirm={onConfirmUndelegation}
         isVisible={showUndelegateModal}
@@ -517,21 +555,11 @@ interface BondTokenProps {
   onClose: () => void;
   onConfirm: () => void;
   onCancel: () => void;
-  delegateToUpdate: Delegate | null;
-  bondedDeposits: number[];
+  symbol: string;
 }
 
 /*Bond more or less tokens*/
-const BondTokenModal = ({
-  isVisible,
-  type,
-  onClose,
-  onConfirm,
-  onCancel,
-  delegateToUpdate,
-  isUpdatingRing,
-  bondedDeposits,
-}: BondTokenProps) => {
+const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol, isUpdatingRing }: BondTokenProps) => {
   const { t } = useAppTranslation();
   const [hasError, setHasError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -540,10 +568,6 @@ const BondTokenModal = ({
   const { selectedNetwork } = useWallet();
   const [power, setPower] = useState<BigNumber>(BigNumber(0));
   const { stakingContract } = useWallet();
-  const symbol =
-    (isUpdatingRing
-      ? delegateToUpdate?.bondedTokens.find((item) => item.isRingBonding)?.symbol
-      : delegateToUpdate?.bondedTokens.find((item) => item.isKtonBonding)?.symbol) ?? "RING";
 
   const getErrorJSX = () => {
     return hasError ? <div /> : null;
@@ -591,26 +615,23 @@ const BondTokenModal = ({
     }
     let ringEthersBigNumber = EthersBigNumber.from(0);
     let ktonEthersBigNumber = EthersBigNumber.from(0);
-    const depositsIds = bondedDeposits.map((id) => EthersBigNumber.from(id));
+    const depositsIds: EthersBigNumber[] = [];
     if (isUpdatingRing) {
-      //the user is trying to update his ring deposits
-      const ktonBigNumber = delegateToUpdate?.bondedTokens.find((item) => item.isKtonBonding)?.amount ?? BigNumber(0);
-      ktonEthersBigNumber = EthersBigNumber.from(ktonBigNumber.toString());
+      //the user is trying to update his ring bond
       ringEthersBigNumber = formatToWei(value);
     } else {
       // the user is trying to update kton deposits
-      const ringBigNumber = delegateToUpdate?.bondedTokens.find((item) => item.isRingBonding)?.amount ?? BigNumber(0);
-      ringEthersBigNumber = EthersBigNumber.from(ringBigNumber.toString());
       ktonEthersBigNumber = formatToWei(value);
     }
 
     try {
       setLoading(true);
-      const response = (await stakingContract?.unstake(
-        ringEthersBigNumber,
-        ktonEthersBigNumber,
-        depositsIds
-      )) as TransactionResponse;
+      const promise = (
+        type === "bondMore"
+          ? stakingContract?.stake(ringEthersBigNumber, ktonEthersBigNumber, depositsIds)
+          : stakingContract?.unstake(ringEthersBigNumber, ktonEthersBigNumber, depositsIds)
+      ) as Promise<TransactionResponse>;
+      const response = await promise;
       await response.wait(1);
       setLoading(false);
       onConfirm();
@@ -622,7 +643,7 @@ const BondTokenModal = ({
       notification.error({
         message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
       });
-      console.log(e);
+      // console.log(e);
     }
   };
 
@@ -748,19 +769,18 @@ const BondDepositModal = ({
   };
 
   const onConfirmBonding = async () => {
-    const ringBigNumber = delegateToUpdate?.bondedTokens.find((item) => item.isRingBonding)?.amount ?? BigNumber(0);
-    const ktonBigNumber = delegateToUpdate?.bondedTokens.find((item) => !item.isKtonBonding)?.amount ?? BigNumber(0);
-    const ringEthersBigNumber = EthersBigNumber.from(ringBigNumber.toString());
-    const ktonEthersBigNumber = EthersBigNumber.from(ktonBigNumber.toString());
+    const ringEthersBigNumber = EthersBigNumber.from(0);
+    const ktonEthersBigNumber = EthersBigNumber.from(0);
     const depositsIds = selectedDeposits.map((item) => EthersBigNumber.from(item.id));
 
     try {
       setLoading(true);
-      const response = (await stakingContract?.unstake(
-        ringEthersBigNumber,
-        ktonEthersBigNumber,
-        depositsIds
-      )) as TransactionResponse;
+      const promise = (
+        type === "bondMore"
+          ? stakingContract?.stake(ringEthersBigNumber, ktonEthersBigNumber, depositsIds)
+          : stakingContract?.unstake(ringEthersBigNumber, ktonEthersBigNumber, depositsIds)
+      ) as Promise<TransactionResponse>;
+      const response = await promise;
       await response.wait(1);
       setLoading(false);
       onConfirm();
@@ -772,7 +792,7 @@ const BondDepositModal = ({
       notification.error({
         message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
       });
-      console.log(e);
+      // console.log(e);
     }
   };
 
@@ -820,11 +840,10 @@ interface UndelegationProps {
   onClose: () => void;
   onConfirm: () => void;
   onCancel: () => void;
-  delegateToUpdate: Delegate | null;
 }
 
 /*Bond more or less deposits*/
-const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel, delegateToUpdate }: UndelegationProps) => {
+const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel }: UndelegationProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
   const { stakingContract } = useWallet();
@@ -836,8 +855,7 @@ const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel, delegateTo
   const onConfirmUndelegation = async () => {
     try {
       setLoading(true);
-      //TODO needs to c=be changed
-      const response = (await stakingContract?.unstake()) as TransactionResponse;
+      const response = (await stakingContract?.chill()) as TransactionResponse;
       await response.wait(1);
       setLoading(false);
       onConfirm();
@@ -849,7 +867,7 @@ const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel, delegateTo
       notification.error({
         message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
       });
-      console.log(e);
+      // console.log(e);
     }
   };
 

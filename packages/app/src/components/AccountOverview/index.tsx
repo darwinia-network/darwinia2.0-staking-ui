@@ -115,7 +115,7 @@ const AccountOverview = () => {
                   <div>{t(localeKeys.inDeposit)}</div>
                   <div>
                     {prettifyNumber({
-                      number: stakedAssetDistribution?.ring.totalStakingDeposit ?? BigNumber(0),
+                      number: stakedAssetDistribution?.ring.totalOfDepositsInStaking ?? BigNumber(0),
                       precision: 4,
                     })}
                   </div>

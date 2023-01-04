@@ -114,4 +114,10 @@ export interface Delegate {
   canChangeCollator?: boolean;
 }
 
+export interface UnbondingDeposit {
+  depositId: number;
+  isUnbondingComplete: boolean;
+  expireBlock: number;
+}
+
 /*Staking types end here*/

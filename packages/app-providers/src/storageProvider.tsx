@@ -62,7 +62,6 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       item.nominators.map((nominator) => nominator.toLowerCase()).includes(selectedAccount.toLowerCase())
     );
     setCurrentlyNominatedCollator(collator);
-    console.log("collator=====", collator);
   }, [collators, selectedAccount]);
 
   useEffect(() => {

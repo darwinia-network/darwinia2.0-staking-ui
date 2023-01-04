@@ -7,6 +7,7 @@ import {
   Deposit,
   DepositEncoded,
   StakingAsset,
+  UnbondingDeposit,
 } from "@darwinia/app-types";
 import { Option, Vec } from "@polkadot/types";
 import BigNumber from "bignumber.js";
@@ -67,13 +68,18 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
         const depositsList: Deposit[] = [];
 
         if (depositsOption.isSome) {
-          const unstakingDeposits: { depositId: number; expireBlock: number }[] = [];
+          /*These are the deposits that the user has decided to unbond from staking, they are in the
+           * 14 days unbonding period  */
+          const unstakingDeposits: UnbondingDeposit[] = [];
           if (ledgerOption.isSome) {
             const ledgerData = ledgerOption.unwrap().toHuman() as unknown as DarwiniaStakingLedger;
             ledgerData.unstakingDeposits?.forEach((item) => {
+              const expireBlock = Number(item[1].toString().replaceAll(",", ""));
+              const depositId = Number(item[0].toString().replaceAll(",", ""));
               unstakingDeposits.push({
-                depositId: Number(item[0]),
-                expireBlock: Number(item[1]),
+                depositId: depositId,
+                expireBlock: expireBlock,
+                isUnbondingComplete: currentBlock.number >= expireBlock,
               });
             });
           }
@@ -86,12 +92,13 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           depositsData.forEach((item) => {
             const startTime = Number(item.startTime.toString().replaceAll(",", ""));
             const expiredTime = Number(item.expiredTime.toString().replaceAll(",", ""));
+            // TODO isEarlyWithdrawn,isRegularWithdrawn, etc  need to be updated
             const isEarlyWithdrawn = false;
             const isRegularWithdrawn = false;
             // canWithdraw (canClaim) = item.expiredTime <= now
             const hasExpireTimeReached = currentBlock.timestamp >= expiredTime;
             const canEarlyWithdraw = !isEarlyWithdrawn && !hasExpireTimeReached;
-            const canRegularWithdraw = !isRegularWithdrawn && hasExpireTimeReached;
+            const canRegularWithdraw = hasExpireTimeReached;
 
             const ringAmount = BigNumber(item.value.toString().replaceAll(",", ""));
 
@@ -150,21 +157,21 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
 
           // find deposits that have been used in staking by their IDs
           const stakedDepositsList = depositsList.filter((deposit) => stakedDepositsIdsList.includes(deposit.id));
-          const totalStakingDeposit = stakedDepositsList.reduce(
+          const totalOfDepositsInStaking = stakedDepositsList.reduce(
             (acc, deposit) => acc.plus(deposit.value),
             BigNumber(0)
           );
           setStakedAssetDistribution({
             ring: {
               bonded: BigNumber(ledgerData.stakedRing.toString()),
-              totalStakingDeposit: BigNumber(totalStakingDeposit.toString()),
+              totalOfDepositsInStaking: BigNumber(totalOfDepositsInStaking.toString()),
             },
             kton: {
               bonded: BigNumber(ledgerData.stakedKton.toString()),
             },
           });
 
-          const totalRingInStaking = ledgerData.stakedRing.plus(totalStakingDeposit);
+          const totalRingInStaking = ledgerData.stakedRing.plus(totalOfDepositsInStaking);
           const totalKtonInStaking = ledgerData.stakedKton;
           totalStakedKton = ledgerData.stakedKton;
           setStakingAsset({

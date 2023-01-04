@@ -3,7 +3,7 @@ import { Collator, Deposit, StakingAsset } from "./staking";
 
 export interface AssetDetail {
   bonded: BigNumber;
-  totalStakingDeposit?: BigNumber;
+  totalOfDepositsInStaking?: BigNumber;
 }
 
 export interface AssetDistribution {

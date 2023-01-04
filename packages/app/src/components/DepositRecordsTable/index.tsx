@@ -1,4 +1,4 @@
-import { Button, Column, Table, Tooltip, ModalEnhanced } from "@darwinia/ui";
+import { Button, Column, Table, Tooltip, ModalEnhanced, notification } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { useStorage, useWallet } from "@darwinia/app-providers";
 import helpIcon from "../../assets/images/help.svg";
@@ -210,7 +210,7 @@ interface WithdrawProps {
 const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type }: WithdrawProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
-  const { selectedNetwork, depositContract } = useWallet();
+  const { selectedNetwork, depositContract, stakingContract } = useWallet();
 
   /*You'll be charged a penalty of 3 times the rewarded Kton if you want to
    * withdraw before the expiredTime */
@@ -220,7 +220,7 @@ const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type 
       ? `${t(localeKeys.payAmount, {
           amount: `${prettifyNumber({
             number: fineAmount,
-            precision: 3,
+            precision: 9,
           })} ${selectedNetwork?.kton.symbol.toUpperCase()}`,
         })}  ${selectedNetwork?.kton.symbol.toUpperCase()}`
       : `${t(localeKeys.withdraw)}`;
@@ -229,12 +229,51 @@ const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type 
     setLoading(false);
   }, [isVisible]);
 
-  const onConfirmWithdraw = async () => {
-    setLoading(true);
-    /*simulate a request*/
-    setTimeout(() => {
+  const regularWithdraw = async () => {
+    try {
+      setLoading(true);
+      const response = (await stakingContract?.claim()) as TransactionResponse;
+      await response.wait(1);
+      setLoading(false);
       onConfirm();
-    }, 6000);
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setLoading(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
+  };
+
+  const withdrawEarly = async () => {
+    try {
+      setLoading(true);
+      //TODO needs to be changed
+      const response = (await stakingContract?.claim()) as TransactionResponse;
+      await response.wait(1);
+      setLoading(false);
+      onConfirm();
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setLoading(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
+  };
+
+  const onConfirmWithdraw = async () => {
+    if (type === "early") {
+      withdrawEarly();
+    } else {
+      regularWithdraw();
+    }
   };
 
   const onCloseModal = () => {
