@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { AssetBalance, StakingAsset, StorageCtx } from "@darwinia/app-types";
+import { AssetBalance, Collator, StakingAsset, StorageCtx } from "@darwinia/app-types";
 import { useWallet } from "./walletProvider";
 import { WsProvider, ApiPromise } from "@polkadot/api";
 import { FrameSystemAccountInfo } from "@darwinia/api-derive/accounts/types";
@@ -18,6 +18,7 @@ const initialState: StorageCtx = {
   isLoadingPool: undefined,
   collators: undefined,
   balance: undefined,
+  currentlyNominatedCollator: undefined,
   // this whole function does nothing, it's just a blueprint
   calculatePower: (stakingAsset: StakingAsset): BigNumber => {
     return BigNumber(0);
@@ -50,6 +51,19 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
   });
 
   const isKeyringInitialized = useRef<boolean>(false);
+  const { collators } = useCollators(apiPromise);
+  const [currentlyNominatedCollator, setCurrentlyNominatedCollator] = useState<Collator>();
+
+  useEffect(() => {
+    if (!selectedAccount) {
+      return;
+    }
+    const collator = collators.find((item) =>
+      item.nominators.map((nominator) => nominator.toLowerCase()).includes(selectedAccount.toLowerCase())
+    );
+    setCurrentlyNominatedCollator(collator);
+    console.log("collator=====", collator);
+  }, [collators, selectedAccount]);
 
   useEffect(() => {
     setBalance((old) => {
@@ -74,8 +88,6 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
       //ignore
     }
   }, [selectedNetwork]);
-
-  const { collators } = useCollators(apiPromise);
 
   const initStorageNetwork = async (rpcURL: string) => {
     try {
@@ -152,6 +164,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         calculateExtraPower,
         calculatePower,
         collators,
+        currentlyNominatedCollator,
       }}
     >
       {children}

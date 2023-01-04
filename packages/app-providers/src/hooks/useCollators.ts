@@ -3,8 +3,7 @@ import { ApiPromise } from "@polkadot/api";
 import { Collator } from "@darwinia/app-types";
 import useBlock from "./useBlock";
 import BigNumber from "bignumber.js";
-import { combineLatest, Subscription } from "rxjs";
-import { Option, StorageKey, Struct } from "@polkadot/types";
+import { StorageKey, Struct } from "@polkadot/types";
 import type { AnyTuple, Codec } from "@polkadot/types/types";
 import useAccountPrettyName from "./useAccountPrettyName";
 import { UnSubscription } from "../storageProvider";
@@ -35,6 +34,7 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
 
       /*allCollatorsStakedPowersMap contains all the collators with their total powers*/
       const allCollatorsStakedPowersMap = new Map<string, BigNumber>();
+      const allCollatorsNominatorsMap = new Map<string, string[]>();
       /*Calculate collators' last session blocks */
       const allCollatorsLastSessionBlocksMap = new Map<string, number>();
 
@@ -53,6 +53,7 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
               const commission = `${result.toHuman()}`;
               const totalStaked = allCollatorsStakedPowersMap.get(accountAddress) ?? BigNumber(0);
               const blocksLastSession = allCollatorsLastSessionBlocksMap.get(accountAddress) ?? 0;
+              const nominators = allCollatorsNominatorsMap.get(accountAddress) ?? [];
 
               const prettyName = await getPrettyName(accountAddress);
 
@@ -64,6 +65,7 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
                 commission: commission,
                 totalStaked: totalStaked,
                 accountName: prettyName,
+                nominators: nominators,
               };
               allCollators.push(collator);
             }
@@ -75,10 +77,18 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
 
       exposureUnsubscription = (await apiPromise.query.staking.exposures.entries(
         (exposureEntries: [StorageKey<AnyTuple>, Codec][]) => {
+          allCollatorsNominatorsMap.clear();
           /*Get all the collators and the total powers staked to them */
           exposureEntries.forEach(([key, result]) => {
             const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
-            const exposureObj = result.toHuman() as unknown as { total: string };
+            const exposureObj = result.toHuman() as unknown as {
+              total: string;
+              nominators?: { who: string; value: string }[];
+            };
+            exposureObj.nominators?.forEach((nominator) => {
+              const oldNominators = allCollatorsNominatorsMap.get(accountAddress) ?? [];
+              allCollatorsNominatorsMap.set(accountAddress, [...oldNominators, nominator.who]);
+            });
             allCollatorsStakedPowersMap.set(
               accountAddress,
               BigNumber(exposureObj.total.toString().replaceAll(",", ""))
@@ -102,7 +112,8 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
             const singleCollatorPoints = Number(collatorsPoints[key].toString().replaceAll(",", ""));
             /*This staticNumber = 20 was given by the backend */
             const staticNumber = 20;
-            allCollatorsLastSessionBlocksMap.set(key, singleCollatorPoints / staticNumber);
+            const blocksNumber = singleCollatorPoints / staticNumber;
+            allCollatorsLastSessionBlocksMap.set(key, blocksNumber);
           });
           updateCollators();
         }

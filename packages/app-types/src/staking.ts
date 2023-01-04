@@ -30,6 +30,7 @@ export interface Collator {
   commission: string;
   lastSessionBlocks: number;
   isActive?: boolean;
+  nominators: string[];
 }
 
 export interface Reward {
@@ -109,7 +110,7 @@ export interface Delegate {
   isActive?: boolean;
   isMigrated?: boolean;
   isUndelegating?: boolean;
-  canUndelegate?: boolean;
+  isUndelegatingComplete?: boolean;
   canChangeCollator?: boolean;
 }
 

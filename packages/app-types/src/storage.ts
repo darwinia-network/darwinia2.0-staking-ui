@@ -27,4 +27,5 @@ export interface StorageCtx {
   isLoadingPool: boolean | undefined;
   collators: Collator[] | undefined;
   balance: AssetBalance | undefined;
+  currentlyNominatedCollator: Collator | undefined;
 }

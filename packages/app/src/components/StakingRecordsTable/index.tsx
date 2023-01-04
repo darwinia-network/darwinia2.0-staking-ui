@@ -35,7 +35,7 @@ const StakingRecordsTable = () => {
   const [bondModalType, setBondModalType] = useState<BondModalType>("bondMore");
   const [isUpdatingRing, setIsUpdatingRing] = useState(false);
   const delegateToUpdate = useRef<Delegate | null>(null);
-  const { deposits, stakedDepositsIds, calculatePower } = useStorage();
+  const { deposits, stakedDepositsIds, calculatePower, currentlyNominatedCollator } = useStorage();
   const [dataSource, setDataSource] = useState<Delegate[]>([]);
 
   const onCloseBondTokenModal = () => {
@@ -70,6 +70,21 @@ const StakingRecordsTable = () => {
     // trigger click to auto close the popover
     document.body.click();
     setShowUndelegateModal(true);
+  };
+
+  const onCancelUndelegating = (delegate: Delegate) => {
+    delegateToUpdate.current = delegate;
+    console.log("cancel undelegating=====");
+  };
+
+  const onCompleteUndelegating = (delegate: Delegate) => {
+    delegateToUpdate.current = delegate;
+    console.log("complete undelegating=====");
+  };
+
+  const onShowUnbondAllModal = (delegate: Delegate) => {
+    delegateToUpdate.current = delegate;
+    console.log("unbond all=====");
   };
 
   const onConfirmBondToken = () => {
@@ -124,10 +139,13 @@ const StakingRecordsTable = () => {
 
     setDataSource([
       {
-        id: "1",
-        collator: "chchainkoney.com",
+        id: currentlyNominatedCollator?.accountAddress ?? "1",
+        collator: currentlyNominatedCollator?.accountName || currentlyNominatedCollator?.accountAddress,
         previousReward: "0/0",
         staked: totalStakedPower,
+        isActive: currentlyNominatedCollator?.isActive,
+        isMigrated: true,
+        canChangeCollator: true,
         bondedTokens: [
           {
             amount: stakedAssetDistribution.ring.bonded,
@@ -145,11 +163,9 @@ const StakingRecordsTable = () => {
             isKtonBonding: true,
           },
         ],
-        isMigrated: false,
-        canChangeCollator: true,
       },
     ]);
-  }, [selectedNetwork, stakedAssetDistribution]);
+  }, [selectedNetwork, stakedAssetDistribution, currentlyNominatedCollator]);
 
   const columns: Column<Delegate>[] = [
     {
@@ -173,10 +189,12 @@ const StakingRecordsTable = () => {
         return (
           <div className={"flex gap-[5px] items-center"}>
             <JazzIcon size={30} address={row.collator ?? ""} />
-            <div>{row.collator}</div>
+            <div className={"flex-ellipsis"}>
+              <div>{row.collator}</div>
+            </div>
             {row.isActive ? null : (
-              <Tooltip message={t(localeKeys.waitingCollatorWarning)}>
-                <img className={"w-[21px]"} src={warningIcon} alt="image" />
+              <Tooltip className={"shrink-0"} message={t(localeKeys.waitingCollatorWarning)}>
+                <img className={"w-[21px] shrink-0"} src={warningIcon} alt="image" />
               </Tooltip>
             )}
           </div>
@@ -354,7 +372,13 @@ const StakingRecordsTable = () => {
       render: (row) => {
         if (row.isMigrated) {
           return (
-            <Button btnType={"secondary"} className={"!px-[15px] !h-[30px]"}>
+            <Button
+              onClick={() => {
+                onShowUnbondAllModal(row);
+              }}
+              btnType={"secondary"}
+              className={"!px-[15px] !h-[30px]"}
+            >
               {t(localeKeys.unbondAll)}
             </Button>
           );
@@ -364,16 +388,30 @@ const StakingRecordsTable = () => {
           return (
             <div>
               <span className={"pr-[8px]"}>{t(localeKeys.undelegationInfo, { undelegationTime: "14 days" })}</span>
-              <span className={"text-primary clickable inline-block"}>{t(localeKeys.cancel)}</span>
+              <span
+                onClick={() => {
+                  onCancelUndelegating(row);
+                }}
+                className={"text-primary clickable inline-block"}
+              >
+                {t(localeKeys.cancel)}
+              </span>
             </div>
           );
         }
 
-        if (row.canUndelegate) {
+        if (row.isUndelegatingComplete) {
           return (
             <div>
               <span className={"pr-[8px]"}>{t(localeKeys.executeUndelegation)}</span>
-              <span className={"text-primary clickable inline-block"}>{t(localeKeys.execute)}</span>
+              <span
+                onClick={() => {
+                  onCompleteUndelegating(row);
+                }}
+                className={"text-primary clickable inline-block"}
+              >
+                {t(localeKeys.execute)}
+              </span>
             </div>
           );
         }
@@ -786,16 +824,33 @@ interface UndelegationProps {
 }
 
 /*Bond more or less deposits*/
-const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel }: UndelegationProps) => {
+const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel, delegateToUpdate }: UndelegationProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
+  const { stakingContract } = useWallet();
 
   useEffect(() => {
     setLoading(false);
   }, [isVisible]);
 
-  const onConfirmUndelegation = () => {
-    onConfirm();
+  const onConfirmUndelegation = async () => {
+    try {
+      setLoading(true);
+      //TODO needs to c=be changed
+      const response = (await stakingContract?.unstake()) as TransactionResponse;
+      await response.wait(1);
+      setLoading(false);
+      onConfirm();
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setLoading(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      console.log(e);
+    }
   };
 
   return (
