@@ -4,8 +4,10 @@ import { Collator } from "@darwinia/app-types";
 import useBlock from "./useBlock";
 import BigNumber from "bignumber.js";
 import { combineLatest, Subscription } from "rxjs";
-import { Option, Struct } from "@polkadot/types";
+import { Option, StorageKey, Struct } from "@polkadot/types";
+import type { AnyTuple, Codec } from "@polkadot/types/types";
 import useAccountPrettyName from "./useAccountPrettyName";
+import { UnSubscription } from "../storageProvider";
 
 interface PalletIdentityIdentityInfo extends Struct {
   display: string;
@@ -21,31 +23,78 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
   const { getPrettyName } = useAccountPrettyName(apiPromise);
 
   useEffect(() => {
-    let subscription: Subscription | undefined;
+    let exposureUnsubscription: UnSubscription | undefined;
+    let collatorsUnsubscription: UnSubscription | undefined;
+    let rewardsUnsubscription: UnSubscription | undefined;
+    let allCollatorUnsubscription: UnSubscription | undefined;
+
     const listenToCollators = async () => {
       if (!apiPromise) {
         return;
       }
 
-      subscription = combineLatest([
-        apiPromise.query.staking.exposures.entries(),
-        apiPromise.query.session.validators(),
-        apiPromise.query.staking.rewardPoints(),
-      ]).subscribe(async ([exposureEntries, activeCollatorsAddressesEncoded, rewardPointsEncoded]) => {
-        /*Get all the collators and the total powers staked to them */
-        /*allCollatorsStakedPowersMap contains all the collators with their total powers*/
-        const allCollatorsStakedPowersMap = new Map<string, BigNumber>();
-        exposureEntries.forEach(([key, result]) => {
-          const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
-          const exposureObj = result.toHuman() as unknown as { total: string };
-          allCollatorsStakedPowersMap.set(accountAddress, BigNumber(exposureObj.total.toString().replaceAll(",", "")));
-        });
+      /*allCollatorsStakedPowersMap contains all the collators with their total powers*/
+      const allCollatorsStakedPowersMap = new Map<string, BigNumber>();
+      /*Calculate collators' last session blocks */
+      const allCollatorsLastSessionBlocksMap = new Map<string, number>();
 
+      let activeCollatorsAddresses: string[] = [];
+
+      const updateCollators = async () => {
+        if (allCollatorUnsubscription) {
+          allCollatorUnsubscription();
+        }
+        allCollatorUnsubscription = (await apiPromise.query.staking.collators.entries(
+          async (allCollatorEntries: [StorageKey<AnyTuple>, Codec][]) => {
+            const allCollators = [];
+            for (let i = 0; i < allCollatorEntries.length; i++) {
+              const [key, result] = allCollatorEntries[i];
+              const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
+              const commission = `${result.toHuman()}`;
+              const totalStaked = allCollatorsStakedPowersMap.get(accountAddress) ?? BigNumber(0);
+              const blocksLastSession = allCollatorsLastSessionBlocksMap.get(accountAddress) ?? 0;
+
+              const prettyName = await getPrettyName(accountAddress);
+
+              const collator: Collator = {
+                id: accountAddress,
+                accountAddress: accountAddress,
+                isActive: activeCollatorsAddresses.includes(accountAddress),
+                lastSessionBlocks: blocksLastSession,
+                commission: commission,
+                totalStaked: totalStaked,
+                accountName: prettyName,
+              };
+              allCollators.push(collator);
+            }
+
+            setCollators(allCollators);
+          }
+        )) as unknown as UnSubscription;
+      };
+
+      exposureUnsubscription = (await apiPromise.query.staking.exposures.entries(
+        (exposureEntries: [StorageKey<AnyTuple>, Codec][]) => {
+          /*Get all the collators and the total powers staked to them */
+          exposureEntries.forEach(([key, result]) => {
+            const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
+            const exposureObj = result.toHuman() as unknown as { total: string };
+            allCollatorsStakedPowersMap.set(
+              accountAddress,
+              BigNumber(exposureObj.total.toString().replaceAll(",", ""))
+            );
+          });
+          updateCollators();
+        }
+      )) as unknown as UnSubscription;
+
+      collatorsUnsubscription = (await apiPromise.query.session.validators((activeCollatorsAddressesEncoded: Codec) => {
         /*These are the collators that are active in this session */
-        const activeCollatorsAddresses = activeCollatorsAddressesEncoded.toHuman() as unknown as string[];
+        activeCollatorsAddresses = activeCollatorsAddressesEncoded.toHuman() as unknown as string[];
+        updateCollators();
+      })) as unknown as UnSubscription;
 
-        /*Calculate collators' last session blocks */
-        const allCollatorsLastSessionBlocksMap = new Map<string, number>();
+      rewardsUnsubscription = (await apiPromise.query.staking.rewardPoints((rewardPointsEncoded: Codec) => {
         const rewardPoints = rewardPointsEncoded.toHuman() as unknown as [string, { [key: string]: string }];
         if (rewardPoints.length >= 2) {
           const collatorsPoints = rewardPoints[1];
@@ -55,32 +104,9 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
             const staticNumber = 20;
             allCollatorsLastSessionBlocksMap.set(key, singleCollatorPoints / staticNumber);
           });
+          updateCollators();
         }
-
-        const allCollators: Collator[] = [];
-        const allCollatorEntries = await apiPromise.query.staking.collators.entries();
-        for (let i = 0; i < allCollatorEntries.length; i++) {
-          const [key, result] = allCollatorEntries[i];
-          const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
-          const commission = `${result.toHuman()}`;
-          const totalStaked = allCollatorsStakedPowersMap.get(accountAddress) ?? BigNumber(0);
-          const blocksLastSession = allCollatorsLastSessionBlocksMap.get(accountAddress) ?? 0;
-
-          const prettyName = await getPrettyName(accountAddress);
-
-          const collator: Collator = {
-            id: accountAddress,
-            accountAddress: accountAddress,
-            isActive: activeCollatorsAddresses.includes(accountAddress),
-            lastSessionBlocks: blocksLastSession,
-            commission: commission,
-            totalStaked: totalStaked,
-            accountName: prettyName,
-          };
-          allCollators.push(collator);
-        }
-        setCollators(allCollators);
-      });
+      })) as unknown as UnSubscription;
     };
 
     listenToCollators().catch((e) => {
@@ -88,8 +114,17 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
       //ignore
     });
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
+      if (exposureUnsubscription) {
+        exposureUnsubscription();
+      }
+      if (collatorsUnsubscription) {
+        collatorsUnsubscription();
+      }
+      if (rewardsUnsubscription) {
+        rewardsUnsubscription();
+      }
+      if (allCollatorUnsubscription) {
+        allCollatorUnsubscription();
       }
     };
   }, [apiPromise, currentBlock?.number]);
