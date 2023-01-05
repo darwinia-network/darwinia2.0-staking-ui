@@ -17,7 +17,7 @@ import plusIcon from "../../assets/images/plus-square.svg";
 import minusIcon from "../../assets/images/minus-square.svg";
 import helpIcon from "../../assets/images/help.svg";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { Deposit, Delegate } from "@darwinia/app-types";
+import { Deposit, Delegate, UnbondingAsset } from "@darwinia/app-types";
 import { formatToWei, isValidNumber, prettifyNumber } from "@darwinia/app-utils";
 import BigNumber from "bignumber.js";
 import { BigNumber as EthersBigNumber } from "ethers";
@@ -191,16 +191,19 @@ const StakingRecordsTable = () => {
             amount: stakedAssetDistribution.ring.bonded,
             symbol: selectedNetwork?.ring.symbol ?? "",
             isRingBonding: true,
+            unbondingRing: stakedAssetDistribution.ring.unbondingRing,
           },
           {
             amount: stakedAssetDistribution.ring.totalOfDepositsInStaking ?? BigNumber(0),
             symbol: selectedNetwork?.ring.symbol ?? "",
             isDeposit: true,
+            unbondingDeposits: stakedAssetDistribution.ring.unbondingDeposits,
           },
           {
             amount: stakedAssetDistribution.kton.bonded,
             symbol: selectedNetwork?.kton.symbol ?? "",
             isKtonBonding: true,
+            unbondingKton: stakedAssetDistribution.kton.unbondingKton,
           },
         ],
       },
@@ -290,78 +293,149 @@ const StakingRecordsTable = () => {
           <div>
             {row.bondedTokens.map((item, index) => {
               let message: JSX.Element = <div />;
+              let hasSomeUnbondingItems = false;
+              const amountPrecision = 6;
+              /*Create the message JSX for deposits that are ready to be released and the ones that aren't ready to be released */
               if (item.isDeposit) {
+                hasSomeUnbondingItems = !!item?.unbondingDeposits?.length;
+                const depositsNotReadyToBeReleased = item.unbondingDeposits?.filter((item) => !item.isExpired) ?? [];
+                const depositsReadyToBeReleased = item.unbondingDeposits?.filter((item) => item.isExpired) ?? [];
                 // create a message for unbonding deposits
                 message = (
                   <div className={"flex flex-col gap-[10px] text-14-bold !text-[10px] !leading-[15px]"}>
-                    <div>
-                      {t(localeKeys.depositsToBeReleased, { amount: "11", token: "RING", timeLeft: "7 days" })}
-                      <span
-                        onClick={() => {
-                          onCancelDepositUnbonding();
-                        }}
-                        className={"text-primary pl-[8px] clickable"}
-                      >
-                        {t(localeKeys.cancelUnbonding)}
-                      </span>
-                    </div>
-                    <div>
-                      {t(localeKeys.depositsReadyToRelease, { amount: "11 RING" })}
-                      <span
-                        onClick={() => {
-                          onReleaseTokenOrDeposit();
-                        }}
-                        className={"text-primary clickable"}
-                      >
-                        &nbsp;{t(localeKeys.releaseThem)}&nbsp;
-                      </span>
-                      {t(localeKeys.toTermDeposit)}
-                    </div>
+                    {depositsNotReadyToBeReleased.map((asset, index) => {
+                      return (
+                        <div key={index}>
+                          {t(localeKeys.depositsToBeReleased, {
+                            amount: prettifyNumber({
+                              number: asset.amount,
+                              precision: amountPrecision,
+                              keepTrailingZeros: false,
+                              shouldFormatToEther: true,
+                            }),
+                            ringSymbol: selectedNetwork?.ring.symbol,
+                            timeLeft: asset.expiredHumanTime,
+                          })}
+                          <span
+                            onClick={() => {
+                              onCancelDepositUnbonding();
+                            }}
+                            className={"text-primary pl-[8px] clickable"}
+                          >
+                            {t(localeKeys.cancelUnbonding)}
+                          </span>
+                        </div>
+                      );
+                    })}
+
+                    {depositsReadyToBeReleased.map((asset, index) => {
+                      return (
+                        <div key={index}>
+                          {t(localeKeys.depositsReadyToRelease, {
+                            amount: prettifyNumber({
+                              number: asset.amount,
+                              precision: amountPrecision,
+                              keepTrailingZeros: false,
+                              shouldFormatToEther: true,
+                            }),
+                            ringSymbol: selectedNetwork?.ring.symbol,
+                          })}
+                          <span
+                            onClick={() => {
+                              onReleaseTokenOrDeposit();
+                            }}
+                            className={"text-primary clickable"}
+                          >
+                            &nbsp;{t(localeKeys.releaseThem)}&nbsp;
+                          </span>
+                          {t(localeKeys.toTermDeposit)}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               } else {
+                /*Create the message JSX for RINGs and KTONs that are ready to be released and the ones that aren't ready to be released */
+                let unbondingAsset: UnbondingAsset[] = [];
+                if (item.isRingBonding) {
+                  unbondingAsset = item?.unbondingRing ?? [];
+                  hasSomeUnbondingItems = !!item?.unbondingRing?.length;
+                } else if (item.isKtonBonding) {
+                  unbondingAsset = item?.unbondingKton ?? [];
+                  hasSomeUnbondingItems = !!item?.unbondingKton?.length;
+                }
+                const assetsNotReadyToBeReleased = unbondingAsset.filter((item) => !item.isExpired);
+                const assetsReadyToBeReleased = unbondingAsset.filter((item) => item.isExpired);
                 // create a message for unbonding RING
                 message = (
                   <div className={"flex flex-col gap-[10px] text-14-bold !text-[10px] !leading-[15px]"}>
-                    <div>
-                      {t(localeKeys.tokensToBeReleased, { amount: "11 RING", timeLeft: "7 days" })}
-                      <span
-                        onClick={() => {
-                          onCancelTokenUnbonding();
-                        }}
-                        className={"text-primary pl-[8px] clickable"}
-                      >
-                        {t(localeKeys.cancelUnbonding)}
-                      </span>
-                    </div>
-                    <div>
-                      {t(localeKeys.tokensReadyToRelease, { amount: "11 RING" })}
-                      <span
-                        onClick={() => {
-                          onReleaseTokenOrDeposit();
-                        }}
-                        className={"text-primary pl-[8px] clickable"}
-                      >
-                        {t(localeKeys.releaseNow)}
-                      </span>
-                    </div>
+                    {assetsNotReadyToBeReleased.map((asset, index) => {
+                      return (
+                        <div key={index}>
+                          {t(localeKeys.tokensToBeReleased, {
+                            amount: prettifyNumber({
+                              number: asset.amount,
+                              precision: amountPrecision,
+                              keepTrailingZeros: false,
+                              shouldFormatToEther: true,
+                            }),
+                            token: item.isRingBonding ? selectedNetwork?.ring.symbol : selectedNetwork?.kton.symbol,
+                            timeLeft: asset.expiredHumanTime,
+                          })}
+                          <span
+                            onClick={() => {
+                              onCancelTokenUnbonding();
+                            }}
+                            className={"text-primary pl-[8px] clickable"}
+                          >
+                            {t(localeKeys.cancelUnbonding)}
+                          </span>
+                        </div>
+                      );
+                    })}
+
+                    {assetsReadyToBeReleased.map((asset, index) => {
+                      return (
+                        <div key={index}>
+                          {t(localeKeys.tokensReadyToRelease, {
+                            amount: prettifyNumber({
+                              number: asset.amount,
+                              precision: amountPrecision,
+                              keepTrailingZeros: false,
+                              shouldFormatToEther: true,
+                            }),
+                            token: item.isRingBonding ? selectedNetwork?.ring.symbol : selectedNetwork?.kton.symbol,
+                          })}
+                          <span
+                            onClick={() => {
+                              onReleaseTokenOrDeposit();
+                            }}
+                            className={"text-primary pl-[8px] clickable"}
+                          >
+                            {t(localeKeys.releaseNow)}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               }
               const bondJSX = (
-                <div className={"flex gap-[5px]"}>
+                <div
+                  className={`flex gap-[5px] ${hasSomeUnbondingItems ? "text-halfWhite cursor-default" : "text-white"}`}
+                >
                   <div>
                     <>
                       {prettifyNumber({
                         number: item.amount,
-                        precision: 6,
+                        precision: amountPrecision,
                         shouldFormatToEther: true,
                       })}{" "}
                       {item.isDeposit ? t(localeKeys.deposit) : ""} {item.symbol.toUpperCase()}
                     </>
                   </div>
                   {row.isMigrated ? null : (
-                    <div>
+                    <div className={"flex items-center"}>
                       <div className={"flex gap-[5px]"}>
                         <img
                           onClick={() => {
@@ -394,9 +468,13 @@ const StakingRecordsTable = () => {
               );
               return (
                 <div className={"flex"} key={`${row.collator}-${index}`}>
-                  <Tooltip extendTriggerToPopover={true} offset={[0, 0]} message={message}>
-                    {bondJSX}
-                  </Tooltip>
+                  {hasSomeUnbondingItems ? (
+                    <Tooltip extendTriggerToPopover={true} offset={[0, 0]} message={message}>
+                      {bondJSX}
+                    </Tooltip>
+                  ) : (
+                    bondJSX
+                  )}
                 </div>
               );
             })}
@@ -564,7 +642,7 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol,
   const [hasError, setHasError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
-  const { balance, calculatePower } = useStorage();
+  const { balance, calculateExtraPower } = useStorage();
   const { selectedNetwork } = useWallet();
   const [power, setPower] = useState<BigNumber>(BigNumber(0));
   const { stakingContract } = useWallet();
@@ -587,7 +665,7 @@ const BondTokenModal = ({ isVisible, type, onClose, onConfirm, onCancel, symbol,
     if (isValidAmount) {
       const ringBigNumber = isUpdatingRing ? BigNumber(formatToWei(value).toString()) : BigNumber(0);
       const ktonBigNumber = isUpdatingRing ? BigNumber(0) : BigNumber(formatToWei(value).toString());
-      const power = calculatePower({
+      const power = calculateExtraPower({
         ring: ringBigNumber,
         kton: ktonBigNumber,
       });
@@ -802,8 +880,8 @@ const BondDepositModal = ({
       cancelText={t(localeKeys.cancel)}
       confirmText={type === "bondMore" ? t(localeKeys.bond) : t(localeKeys.unbond)}
       onConfirm={onConfirmBonding}
-      confirmLoading={isLoading}
       isCancellable={false}
+      isLoading={isLoading}
       isVisible={isVisible}
       onClose={onClose}
       onCancel={onCancel}
@@ -877,7 +955,7 @@ const UndelegationModal = ({ isVisible, onClose, onConfirm, onCancel }: Undelega
       cancelText={t(localeKeys.cancel)}
       confirmText={t(localeKeys.undelegate)}
       onConfirm={onConfirmUndelegation}
-      confirmLoading={isLoading}
+      isLoading={isLoading}
       isCancellable={false}
       isVisible={isVisible}
       onClose={onClose}

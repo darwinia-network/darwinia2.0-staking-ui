@@ -42,6 +42,7 @@ export interface ChainConfig {
   contractInterface: ContractABI;
   contractAddresses: ContractAddress;
   substrate: Substrate;
+  secondsPerBlock: number;
 }
 
 export interface WalletExtension {

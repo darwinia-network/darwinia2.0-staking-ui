@@ -32,4 +32,5 @@ export const testNet: ChainConfig = {
     wssURL: "ws://g1.dev.darwinia.network:20000",
     httpsURL: "https://pangolin-rpc.darwinia.network",
   },
+  secondsPerBlock: 12,
 };

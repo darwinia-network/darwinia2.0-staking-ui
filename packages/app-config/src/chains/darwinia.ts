@@ -31,4 +31,5 @@ export const darwinia: ChainConfig = {
     wssURL: "wss://rpc.darwinia.network",
     httpsURL: "https://rpc.darwinia.network",
   },
+  secondsPerBlock: 12,
 };

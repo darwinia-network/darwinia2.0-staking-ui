@@ -31,4 +31,5 @@ export const crab: ChainConfig = {
     wssURL: "wss://crab-rpc.darwinia.network",
     httpsURL: "https://crab-rpc.darwinia.network",
   },
+  secondsPerBlock: 12,
 };

@@ -17,16 +17,16 @@ interface StakingStashQuery {
 
 const AccountOverview = () => {
   const { t } = useAppTranslation();
-  const { selectedNetwork } = useWallet();
+  const { selectedNetwork, selectedAccount } = useWallet();
   const { power, stakedAssetDistribution, isLoadingLedger } = useStorage();
-  const account = "5C4yTgZHMFLrv1YMkKvUAtP8WhENvNBNiXKZPa1aA7ka4fnS";
+
   const {
     loading: isLoadingStakingData,
     data: stakingData,
     error,
   } = useQuery<{ stakingStash: StakingStash }, StakingStashQuery>(GET_LATEST_STAKING_REWARDS, {
     variables: {
-      accountAddress: account,
+      accountAddress: selectedAccount ?? "",
       itemsCount: 3,
     },
   });

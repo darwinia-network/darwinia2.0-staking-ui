@@ -2,6 +2,7 @@ import { u128, Struct, Vec } from "@polkadot/types";
 import type { AccountId, BlockNumber } from "@polkadot/types/interfaces/runtime";
 import BigNumber from "bignumber.js";
 import { RegistrationJudgement } from "@polkadot/types/interfaces";
+import { UnbondingAsset } from "./storage";
 
 export interface PalletIdentityIdentityInfo extends Struct {
   display?: string;
@@ -99,6 +100,9 @@ export interface Bond {
   isDeposit?: boolean;
   isRingBonding?: boolean;
   isKtonBonding?: boolean;
+  unbondingRing?: UnbondingAsset[];
+  unbondingKton?: UnbondingAsset[];
+  unbondingDeposits?: UnbondingAsset[];
 }
 
 export interface Delegate {

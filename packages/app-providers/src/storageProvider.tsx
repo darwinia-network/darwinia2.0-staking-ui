@@ -35,6 +35,8 @@ const StorageContext = createContext(initialState);
 export const StorageProvider = ({ children }: PropsWithChildren) => {
   const { selectedNetwork, selectedAccount } = useWallet();
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
+  /* Balance will be formed by manually combining data, ktonBalance from useLedger() hook and
+   * and useEffect from storageProvider */
   const [balance, setBalance] = useState<AssetBalance>({
     kton: BigNumber(0),
     ring: BigNumber(0),
@@ -44,6 +46,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     useLedger({
       apiPromise,
       selectedAccount,
+      secondsPerBlock: selectedNetwork?.secondsPerBlock,
     });
   const { isLoadingPool, power, calculateExtraPower, calculatePower } = usePower({
     apiPromise,
@@ -110,7 +113,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  /*Monitor account balance*/
+  /*Monitor account ring balance*/
   useEffect(() => {
     let unsubscription: UnSubscription | undefined;
     const getBalance = async () => {

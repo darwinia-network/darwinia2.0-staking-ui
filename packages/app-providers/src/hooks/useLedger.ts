@@ -7,6 +7,7 @@ import {
   Deposit,
   DepositEncoded,
   StakingAsset,
+  UnbondingAsset,
   UnbondingDeposit,
 } from "@darwinia/app-types";
 import { Option, Vec } from "@polkadot/types";
@@ -14,14 +15,15 @@ import BigNumber from "bignumber.js";
 import { ApiPromise } from "@polkadot/api";
 import { UnSubscription } from "../storageProvider";
 import useBlock from "./useBlock";
-import { calculateKtonFromRingDeposit, getMonthsRange } from "@darwinia/app-utils";
+import { calculateKtonFromRingDeposit, getMonthsRange, secondsToHumanTime } from "@darwinia/app-utils";
 
 interface Params {
   apiPromise: ApiPromise | undefined;
   selectedAccount: string | undefined;
+  secondsPerBlock: number | undefined;
 }
 
-const useLedger = ({ apiPromise, selectedAccount }: Params) => {
+const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params) => {
   /*This is the total amount of RING and KTON that the user has invested in staking, it will be used in calculating
    * the total power that he has*/
   const [stakingAsset, setStakingAsset] = useState<StakingAsset>({ ring: BigNumber(0), kton: BigNumber(0) });
@@ -36,7 +38,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
   const [ktonBalance, setKtonBalance] = useState<BigNumber>(BigNumber(0));
   const { currentBlock } = useBlock(apiPromise);
 
-  /*Get staking ledger and deposits. The data that comes back from the server needs a lot of decoding */
+  /*Get staking ledger and deposits. The data that comes back from the server needs a lot of decoding,
+   * This useEffect will run on every new block */
   useEffect(() => {
     let depositsUnsubscription: UnSubscription | undefined;
     let ledgerUnsubscription: UnSubscription | undefined;
@@ -102,6 +105,7 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
 
             const ringAmount = BigNumber(item.value.toString().replaceAll(",", ""));
 
+            /* Calculate the total kton that has been rewarded from every deposit */
             const reward = calculateKtonFromRingDeposit({
               ringAmount: ringAmount,
               depositMonths: getMonthsRange(startTime, expiredTime),
@@ -161,13 +165,57 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
             (acc, deposit) => acc.plus(deposit.value),
             BigNumber(0)
           );
+          const unbondingDeposits: UnbondingAsset[] = [];
+          ledgerData.unstakingDeposits.forEach(([depositId, lastBlockNumber]) => {
+            const depositAmount = depositsList.find((item) => item.id === depositId)?.value ?? BigNumber(0);
+            const blocksLeft = lastBlockNumber - currentBlock.number;
+            const secondsLeft = blocksLeft / secondsPerBlock;
+            const humanTime = secondsToHumanTime(secondsLeft);
+            unbondingDeposits.push({
+              depositId: depositId,
+              amount: depositAmount,
+              expiredAtBlock: lastBlockNumber,
+              isExpired: currentBlock.number >= lastBlockNumber,
+              expiredHumanTime: `${humanTime.time} ${humanTime.unit}`,
+            });
+          });
+
+          const unbondingRing: UnbondingAsset[] = [];
+          ledgerData.unstakingRing.forEach(([amount, lastBlockNumber]) => {
+            const blocksLeft = lastBlockNumber - currentBlock.number;
+            const secondsLeft = blocksLeft / secondsPerBlock;
+            const humanTime = secondsToHumanTime(secondsLeft);
+            unbondingRing.push({
+              amount: BigNumber(amount.toString()),
+              expiredAtBlock: lastBlockNumber,
+              isExpired: currentBlock.number >= lastBlockNumber,
+              expiredHumanTime: `${humanTime.time} ${humanTime.unit}`,
+            });
+          });
+
+          const unbondingKton: UnbondingAsset[] = [];
+          ledgerData.unstakingKton.forEach(([amount, lastBlockNumber]) => {
+            const blocksLeft = lastBlockNumber - currentBlock.number;
+            const secondsLeft = blocksLeft / secondsPerBlock;
+            const humanTime = secondsToHumanTime(secondsLeft);
+            unbondingKton.push({
+              amount: BigNumber(amount.toString()),
+              expiredAtBlock: lastBlockNumber,
+              isExpired: currentBlock.number >= lastBlockNumber,
+              expiredHumanTime: `${humanTime.time} ${humanTime.unit}`,
+            });
+          });
+
           setStakedAssetDistribution({
             ring: {
               bonded: BigNumber(ledgerData.stakedRing.toString()),
               totalOfDepositsInStaking: BigNumber(totalOfDepositsInStaking.toString()),
+              unbondingDeposits: unbondingDeposits,
+              unbondingRing: unbondingRing,
             },
             kton: {
               bonded: BigNumber(ledgerData.stakedKton.toString()),
+              unbondingKton: unbondingKton,
             },
           });
 
@@ -183,6 +231,8 @@ const useLedger = ({ apiPromise, selectedAccount }: Params) => {
           setLoadingLedger(false);
         }
 
+        /*This is the kton amount that will be used to display the kton balance, and
+         * will also in storageProvider to create the account balance (AssetBalance)  */
         const usableKton = totalKtonRewarded.minus(totalStakedKton);
         setKtonBalance(usableKton);
       };

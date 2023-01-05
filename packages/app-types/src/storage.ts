@@ -1,9 +1,20 @@
 import BigNumber from "bignumber.js";
 import { Collator, Deposit, StakingAsset } from "./staking";
 
+export interface UnbondingAsset {
+  depositId?: number;
+  amount: BigNumber;
+  expiredAtBlock: number;
+  expiredHumanTime: string;
+  isExpired: boolean;
+}
+
 export interface AssetDetail {
   bonded: BigNumber;
   totalOfDepositsInStaking?: BigNumber;
+  unbondingRing?: UnbondingAsset[];
+  unbondingKton?: UnbondingAsset[];
+  unbondingDeposits?: UnbondingAsset[];
 }
 
 export interface AssetDistribution {
