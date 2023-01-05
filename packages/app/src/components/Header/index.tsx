@@ -127,18 +127,14 @@ const Header = () => {
             {/*This connect wallet button / selected account info will only be shown on mobile phones*/}
             <div className={"shrink-0 h-full flex items-center lg:hidden"}>
               {selectedAccount ? (
-                <div className={"border-primary border px-[15px] py-[7px]"}>
+                <div className={"border-primary border pl-[15px]"}>
                   <div className={"flex items-center gap-[10px]"}>
                     <JazzIcon size={20} address={ethers.utils.getAddress(selectedAccount)} />
-                    <div
-                      ref={setMoreOptionsTriggerMobile}
-                      onClick={onShowJoinCollatorModal}
-                      className={"select-none flex gap-[10px]"}
-                    >
+                    <div ref={setMoreOptionsTriggerMobile} className={"select-none pr-[15px] py-[7px] flex gap-[10px]"}>
                       <div>{toShortAddress(ethers.utils.getAddress(selectedAccount))}</div>
                       <img className={"w-[16px]"} src={caretIcon} alt="image" />
                     </div>
-                    <Popover offset={[16, 10]} triggerElementState={moreOptionsTriggerMobile} triggerEvent={"click"}>
+                    <Popover offset={[0, 5]} triggerElementState={moreOptionsTriggerMobile} triggerEvent={"click"}>
                       <div>{accountOptions()}</div>
                     </Popover>
                   </div>
@@ -173,14 +169,17 @@ const Header = () => {
                 );
               })}
               {selectedAccount ? (
-                <div className={"border-primary border px-[15px] py-[5px] cursor-pointer"}>
+                <div className={"border-primary border pl-[15px]"}>
                   <div className={"flex items-center gap-[10px]"}>
                     <JazzIcon size={20} address={ethers.utils.getAddress(selectedAccount)} />
-                    <div ref={setMoreOptionsTrigger} className={"select-none flex gap-[10px]"}>
+                    <div
+                      ref={setMoreOptionsTrigger}
+                      className={"select-none cursor-pointer pr-[15px] py-[5px] flex gap-[10px]"}
+                    >
                       <div>{toShortAddress(ethers.utils.getAddress(selectedAccount))}</div>
                       <img className={"w-[16px]"} src={caretIcon} alt="image" />
                     </div>
-                    <Popover offset={[16, 10]} triggerElementState={moreOptionsTrigger} triggerEvent={"click"}>
+                    <Popover offset={[0, 5]} triggerElementState={moreOptionsTrigger} triggerEvent={"click"}>
                       <div>{accountOptions()}</div>
                     </Popover>
                   </div>
