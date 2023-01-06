@@ -95,12 +95,9 @@ const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params
           depositsData.forEach((item) => {
             const startTime = Number(item.startTime.toString().replaceAll(",", ""));
             const expiredTime = Number(item.expiredTime.toString().replaceAll(",", ""));
-            // TODO isEarlyWithdrawn,isRegularWithdrawn, etc  need to be updated
-            const isEarlyWithdrawn = false;
-            const isRegularWithdrawn = false;
             // canWithdraw (canClaim) = item.expiredTime <= now
             const hasExpireTimeReached = currentBlock.timestamp >= expiredTime;
-            const canEarlyWithdraw = !isEarlyWithdrawn && !hasExpireTimeReached;
+            const canEarlyWithdraw = !hasExpireTimeReached;
             const canRegularWithdraw = hasExpireTimeReached;
 
             const ringAmount = BigNumber(item.value.toString().replaceAll(",", ""));
@@ -120,12 +117,8 @@ const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params
               accountId: selectedAccount,
               reward: BigNumber(reward),
               expiredTime: expiredTime,
-              inUse: item.inUse,
               value: ringAmount,
               canEarlyWithdraw: canEarlyWithdraw,
-              isEarlyWithdrawn: isEarlyWithdrawn,
-              canRegularWithdraw: canRegularWithdraw,
-              isRegularWithdrawn: isRegularWithdrawn,
             });
           });
         }
@@ -169,7 +162,7 @@ const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params
           ledgerData.unstakingDeposits.forEach(([depositId, lastBlockNumber]) => {
             const depositAmount = depositsList.find((item) => item.id === depositId)?.value ?? BigNumber(0);
             const blocksLeft = lastBlockNumber - currentBlock.number;
-            const secondsLeft = blocksLeft / secondsPerBlock;
+            const secondsLeft = blocksLeft * secondsPerBlock;
             const humanTime = secondsToHumanTime(secondsLeft);
             unbondingDeposits.push({
               depositId: depositId,
@@ -183,7 +176,7 @@ const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params
           const unbondingRing: UnbondingAsset[] = [];
           ledgerData.unstakingRing.forEach(([amount, lastBlockNumber]) => {
             const blocksLeft = lastBlockNumber - currentBlock.number;
-            const secondsLeft = blocksLeft / secondsPerBlock;
+            const secondsLeft = blocksLeft * secondsPerBlock;
             const humanTime = secondsToHumanTime(secondsLeft);
             unbondingRing.push({
               amount: BigNumber(amount.toString()),
@@ -196,7 +189,7 @@ const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params
           const unbondingKton: UnbondingAsset[] = [];
           ledgerData.unstakingKton.forEach(([amount, lastBlockNumber]) => {
             const blocksLeft = lastBlockNumber - currentBlock.number;
-            const secondsLeft = blocksLeft / secondsPerBlock;
+            const secondsLeft = blocksLeft > 0 ? blocksLeft * secondsPerBlock : 0;
             const humanTime = secondsToHumanTime(secondsLeft);
             unbondingKton.push({
               amount: BigNumber(amount.toString()),
@@ -228,13 +221,28 @@ const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params
           });
 
           setStakedDepositsIds(stakedDepositsIdsList);
-          setLoadingLedger(false);
+        } else {
+          setStakedAssetDistribution({
+            ring: {
+              bonded: BigNumber(0),
+              totalOfDepositsInStaking: BigNumber(0),
+              unbondingDeposits: [],
+              unbondingRing: [],
+            },
+            kton: {
+              bonded: BigNumber(0),
+              unbondingKton: [],
+            },
+          });
+          setStakingAsset({ ring: BigNumber(0), kton: BigNumber(0) });
+          setStakedDepositsIds([]);
         }
 
         /*This is the kton amount that will be used to display the kton balance, and
          * will also in storageProvider to create the account balance (AssetBalance)  */
         const usableKton = totalKtonRewarded.minus(totalStakedKton);
         setKtonBalance(usableKton);
+        setLoadingLedger(false);
       };
 
       ledgerUnsubscription = (await apiPromise.query.staking.ledgers(

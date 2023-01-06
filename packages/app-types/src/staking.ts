@@ -87,11 +87,7 @@ export interface Deposit {
   reward: BigNumber;
   startTime: number;
   expiredTime: number;
-  inUse: boolean;
-  canRegularWithdraw: boolean;
-  isRegularWithdrawn: boolean;
   canEarlyWithdraw: boolean;
-  isEarlyWithdrawn: boolean;
 }
 
 export interface Bond {
@@ -108,14 +104,10 @@ export interface Bond {
 export interface Delegate {
   id: string;
   collator?: string;
-  previousReward?: string;
   staked: BigNumber;
   bondedTokens: Bond[];
   isActive?: boolean;
-  isMigrated?: boolean;
-  isUndelegating?: boolean;
-  isUndelegatingComplete?: boolean;
-  canChangeCollator?: boolean;
+  accountNeedsACollator?: boolean;
 }
 
 export interface UnbondingDeposit {

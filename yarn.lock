@@ -3264,10 +3264,10 @@ dargs@^7.0.0:
   resolved "https://registry.npmjs.org/dargs/-/dargs-7.0.0.tgz"
   integrity sha512-2iy1EkLdlBzQGvbweYRFxmFath8+K7+AKB0TlhHWkNuH+TmovaMH/Wp7V7R4u7f4SnX3OgLsU9t1NI9ioDnUpg==
 
-darwinia-js-sdk@^1.2.4:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/darwinia-js-sdk/-/darwinia-js-sdk-1.2.4.tgz#62c5ecb1bf1d884ec9c459421c0f4f7504e50cd8"
-  integrity sha512-OkZJ8aIJeNfRlUzq76Q/I+kmHkGXHoJriX97C0EUOJ6p9a73JR4ddjSRFC2pqlZ9JzC3jwG2LurziTUK0a7piQ==
+darwinia-js-sdk@^1.2.9:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/darwinia-js-sdk/-/darwinia-js-sdk-1.2.9.tgz#790808fb675dae288af72de0be33f91fada04030"
+  integrity sha512-skeePZIbnlrqEoAgo2jr3LFWPEIJt0ELgDARnrGGacPCl7IRBIy7ct5yecE2Ub38m9P7k1FSI6DMixnMxFycLg==
   dependencies:
     "@polkadot/types" "^9.9.4"
     ethers "^5.7.2"

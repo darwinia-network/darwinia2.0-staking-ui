@@ -81,9 +81,5 @@ export interface WalletCtx {
 }
 
 export interface DispatchCtx {
-  setSessionKey: (
-    sessionKey: string,
-    signer: JsonRpcSigner | undefined,
-    provider: Web3Provider | undefined
-  ) => Promise<boolean>;
+  setCollatorSessionKey: (sessionKey: string, provider: Web3Provider | undefined) => Promise<boolean>;
 }

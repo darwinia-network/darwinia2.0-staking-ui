@@ -52,6 +52,6 @@ export const secondsToHumanTime = (time: number): HumanTime => {
   const value = Math.ceil(minutes);
   return {
     time: value,
-    unit: value === 1 ? "minute" : "minutes",
+    unit: value >= 0 ? "minute" : "minutes",
   };
 };

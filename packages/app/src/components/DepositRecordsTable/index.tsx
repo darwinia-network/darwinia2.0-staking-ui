@@ -114,43 +114,7 @@ const DepositRecordsTable = () => {
       width: "240px",
       render: (row) => {
         let actionButton: JSX.Element;
-        if (row.isEarlyWithdrawn) {
-          actionButton = (
-            <>
-              <Button disabled btnType={"secondary"} className={"!h-[30px]"}>
-                {t(localeKeys.withdrawEarlier)}
-              </Button>
-              <Tooltip message={t(localeKeys.earlyWithdrawMessage)}>
-                <img className={"w-[16px]"} src={helpIcon} alt="image" />
-              </Tooltip>
-            </>
-          );
-        } else if (row.isRegularWithdrawn) {
-          actionButton = (
-            <>
-              <Button disabled btnType={"secondary"} className={"!h-[30px]"}>
-                {t(localeKeys.withdraw)}
-              </Button>
-              <Tooltip message={t(localeKeys.regularWithdrawMessage)}>
-                <img className={"w-[16px]"} src={helpIcon} alt="image" />
-              </Tooltip>
-            </>
-          );
-        } else if (row.canRegularWithdraw) {
-          actionButton = (
-            <>
-              <Button
-                onClick={() => {
-                  onShowWithdrawModal(row, "regular");
-                }}
-                btnType={"secondary"}
-                className={"!h-[30px]"}
-              >
-                {t(localeKeys.withdraw)}
-              </Button>
-            </>
-          );
-        } else {
+        if (row.canEarlyWithdraw) {
           // these can all be withdrawn early
           actionButton = (
             <>
@@ -162,6 +126,20 @@ const DepositRecordsTable = () => {
                 className={"!h-[30px]"}
               >
                 {t(localeKeys.withdrawEarlier)}
+              </Button>
+            </>
+          );
+        } else {
+          actionButton = (
+            <>
+              <Button
+                onClick={() => {
+                  onShowWithdrawModal(row, "regular");
+                }}
+                btnType={"secondary"}
+                className={"!h-[30px]"}
+              >
+                {t(localeKeys.withdraw)}
               </Button>
             </>
           );

@@ -4,7 +4,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
 import { isValidNumber } from "@darwinia/app-utils";
 import helpIcon from "../../assets/images/help.svg";
-import { useStorage, useWallet } from "@darwinia/app-providers";
+import { useDispatch, useStorage, useWallet } from "@darwinia/app-providers";
 import BigNumber from "bignumber.js";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
 import { TransactionResponse } from "@ethersproject/providers";
@@ -23,7 +23,8 @@ const ManageCollatorModal = forwardRef<ManageCollatorRefs>((props, ref) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const updatedCollator = useRef<Collator>();
   const { t } = useAppTranslation();
-  const { stakingContract } = useWallet();
+  const { stakingContract, provider } = useWallet();
+  const { setCollatorSessionKey } = useDispatch();
 
   const tabs: Tab[] = [
     {
@@ -120,7 +121,7 @@ const ManageCollatorModal = forwardRef<ManageCollatorRefs>((props, ref) => {
     }
   };
 
-  const onSetSessionKey = () => {
+  const onSetSessionKey = async () => {
     if (sessionKey.trim().length === 0) {
       setSessionKeyHasError(true);
       notification.error({
@@ -129,11 +130,9 @@ const ManageCollatorModal = forwardRef<ManageCollatorRefs>((props, ref) => {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSessionKey("");
-    }, 6000);
-    console.log("update session key");
+    const response = await setCollatorSessionKey(sessionKey, provider);
+    setLoading(false);
+    console.log("response=====", response);
   };
 
   const onStopCollating = async () => {

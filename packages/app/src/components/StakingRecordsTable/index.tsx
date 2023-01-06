@@ -28,7 +28,7 @@ const StakingRecordsTable = () => {
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const { t } = useAppTranslation();
   const { selectedNetwork, stakingContract, setTransactionStatus } = useWallet();
-  const { stakedAssetDistribution } = useStorage();
+  const { stakedAssetDistribution, isLoadingLedger } = useStorage();
   const [showBondTokenModal, setShowBondTokenModal] = useState<boolean>(false);
   const [showUndelegateModal, setShowUndelegateModal] = useState<boolean>(false);
   const [showBondDepositModal, setShowBondDepositModal] = useState<boolean>(false);
@@ -72,20 +72,6 @@ const StakingRecordsTable = () => {
     // trigger click to auto close the popover
     document.body.click();
     setShowUndelegateModal(true);
-  };
-
-  /*TODO discuss with JiRan about whether to keep this functionality or not since backend doesn't support,
-   *  undelegation happens right away, doesn't need 14 days */
-  const onCancelUndelegating = (delegate: Delegate) => {
-    delegateToUpdate.current = delegate;
-    console.log("cancel undelegating=====");
-  };
-
-  /*TODO discuss with JiRan about whether to keep this functionality or not since backend doesn't support,
-   *  undelegation happens right away, doesn't need 14 days */
-  const onCompleteUndelegating = (delegate: Delegate) => {
-    delegateToUpdate.current = delegate;
-    console.log("complete undelegating=====");
   };
 
   const onUnbondAll = async () => {
@@ -177,15 +163,28 @@ const StakingRecordsTable = () => {
       ring: stakedRing.plus(totalOfStakedDeposits),
     });
 
+    const hasSomeStakingAmount =
+      stakedAssetDistribution.ring.bonded.gt(0) ||
+      (stakedAssetDistribution.ring.unbondingRing || []).length > 0 ||
+      (stakedAssetDistribution.ring.totalOfDepositsInStaking || BigNumber(0)).gt(0) ||
+      (stakedAssetDistribution.ring.unbondingDeposits || []).length > 0 ||
+      stakedAssetDistribution.kton.bonded.gt(0) ||
+      (stakedAssetDistribution.kton.unbondingKton || []).length > 0;
+
+    if (!hasSomeStakingAmount && !currentlyNominatedCollator) {
+      setDataSource([]);
+      return;
+    }
+
+    const accountNeedsACollator = hasSomeStakingAmount && !currentlyNominatedCollator;
+
     setDataSource([
       {
         id: currentlyNominatedCollator?.accountAddress ?? "1",
         collator: currentlyNominatedCollator?.accountName || currentlyNominatedCollator?.accountAddress,
-        previousReward: "0/0",
         staked: totalStakedPower,
         isActive: currentlyNominatedCollator?.isActive,
-        isMigrated: false,
-        canChangeCollator: true,
+        accountNeedsACollator: accountNeedsACollator,
         bondedTokens: [
           {
             amount: stakedAssetDistribution.ring.bonded,
@@ -216,7 +215,7 @@ const StakingRecordsTable = () => {
       title: <div>{t(localeKeys.collator)}</div>,
       key: "collator",
       render: (row) => {
-        if (row.isMigrated) {
+        if (row.accountNeedsACollator) {
           return (
             <Button
               onClick={() => {
@@ -245,18 +244,12 @@ const StakingRecordsTable = () => {
       },
     },
     {
-      id: "2",
-      title: <div>{t(localeKeys.rewardLastSession)}</div>,
-      key: "previousReward",
-      width: "200px",
-    },
-    {
       id: "3",
       title: <div>{t(localeKeys.youStaked)}</div>,
       key: "staked",
-      width: "150px",
+      width: "250px",
       render: (row) => {
-        if (row.isMigrated) {
+        if (row.accountNeedsACollator) {
           return (
             <div className={"flex items-center gap-[10px]"}>
               <div className={"text-halfWhite"}>
@@ -434,7 +427,7 @@ const StakingRecordsTable = () => {
                       {item.isDeposit ? t(localeKeys.deposit) : ""} {item.symbol.toUpperCase()}
                     </>
                   </div>
-                  {row.isMigrated ? null : (
+                  {row.accountNeedsACollator ? null : (
                     <div className={"flex items-center"}>
                       <div className={"flex gap-[5px]"}>
                         <img
@@ -484,11 +477,11 @@ const StakingRecordsTable = () => {
     },
     {
       id: "5",
-      title: <div />,
+      title: <div>{t(localeKeys.action)}</div>,
       key: "collator",
-      width: "250px",
+      width: "300px",
       render: (row) => {
-        if (row.isMigrated) {
+        if (row.accountNeedsACollator) {
           return (
             <Button
               onClick={() => {
@@ -499,38 +492,6 @@ const StakingRecordsTable = () => {
             >
               {t(localeKeys.unbondAll)}
             </Button>
-          );
-        }
-
-        if (row.isUndelegating) {
-          return (
-            <div>
-              <span className={"pr-[8px]"}>{t(localeKeys.undelegationInfo, { undelegationTime: "14 days" })}</span>
-              <span
-                onClick={() => {
-                  onCancelUndelegating(row);
-                }}
-                className={"text-primary clickable inline-block"}
-              >
-                {t(localeKeys.cancel)}
-              </span>
-            </div>
-          );
-        }
-
-        if (row.isUndelegatingComplete) {
-          return (
-            <div>
-              <span className={"pr-[8px]"}>{t(localeKeys.executeUndelegation)}</span>
-              <span
-                onClick={() => {
-                  onCompleteUndelegating(row);
-                }}
-                className={"text-primary clickable inline-block"}
-              >
-                {t(localeKeys.execute)}
-              </span>
-            </div>
           );
         }
 
@@ -568,8 +529,9 @@ const StakingRecordsTable = () => {
     <div className={"flex flex-col"}>
       <div className={"flex flex-col mt-[20px]"}>
         <Table
-          headerSlot={<div className={"text-14-bold pb-[10px]"}>{t(localeKeys.stakingDelegations)}</div>}
-          noDataText={t(localeKeys.noDelegations)}
+          isLoading={isLoadingLedger}
+          headerSlot={<div className={"text-14-bold pb-[10px]"}>{t(localeKeys.stakingDelegation)}</div>}
+          noDataText={t(localeKeys.noDelegation)}
           dataSource={dataSource}
           columns={columns}
         />

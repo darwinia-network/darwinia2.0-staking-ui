@@ -27,8 +27,8 @@ const JoinCollatorModal = forwardRef<JoinCollatorRefs, JoinCollatorProps>(({ onC
   const [sessionKeyHasError, setSessionKeyHasError] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const { t } = useAppTranslation();
-  const { stakingContract, signer, provider } = useWallet();
-  const { setSessionKey: updateSessionKey } = useDispatch();
+  const { stakingContract, provider } = useWallet();
+  const { setCollatorSessionKey } = useDispatch();
 
   const showModal = () => {
     setSessionKey("");
@@ -110,7 +110,7 @@ const JoinCollatorModal = forwardRef<JoinCollatorRefs, JoinCollatorProps>(({ onC
     }
 
     setLoading(true);
-    const response = await updateSessionKey(sessionKey, signer, provider);
+    const response = await setCollatorSessionKey(sessionKey, provider);
     setLoading(false);
     console.log("set session key", response);
   };

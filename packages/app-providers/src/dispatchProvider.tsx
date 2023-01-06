@@ -1,17 +1,11 @@
 import { DispatchCtx } from "@darwinia/app-types";
 import { createContext, PropsWithChildren, useCallback, useContext } from "react";
-import {
-  buildMetadata,
-  dispatch,
-  setSessionKeys as updateSessionKey,
-  pangolinMetaStatic,
-  pangolin2MetaStatic,
-} from "darwinia-js-sdk";
-import { JsonRpcSigner, Web3Provider } from "@ethersproject/providers";
+import { clientBuilder } from "darwinia-js-sdk";
+import { Web3Provider } from "@ethersproject/providers";
 import { HexString } from "@polkadot/util/types";
 
 const initialState: DispatchCtx = {
-  setSessionKey: (sessionKey: string, signer: JsonRpcSigner | undefined, provider: Web3Provider | undefined) => {
+  setCollatorSessionKey: (sessionKey: string, provider: Web3Provider | undefined) => {
     //do nothing
     return Promise.resolve(true);
   },
@@ -20,20 +14,20 @@ const initialState: DispatchCtx = {
 const DispatchContext = createContext(initialState);
 
 export const DispatchProvider = ({ children }: PropsWithChildren) => {
-  const setSessionKey = useCallback(
-    async (
-      sessionKey: string,
-      signer: JsonRpcSigner | undefined,
-      provider: Web3Provider | undefined
-    ): Promise<boolean> => {
+  const setCollatorSessionKey = useCallback(
+    async (sessionKey: string, provider: Web3Provider | undefined): Promise<boolean> => {
       try {
-        if (!signer || !provider) {
+        if (!provider) {
           return Promise.resolve(false);
         }
-        const metadata = buildMetadata(pangolin2MetaStatic);
-        const networkDispatch = dispatch(provider, metadata);
-        const res = await updateSessionKey(networkDispatch, signer, sessionKey as HexString);
-        console.log(res);
+        console.log("clientBuilder", clientBuilder);
+        console.log("clientBuilder.buildPangolin2Client", clientBuilder.buildPangolin2Client);
+        const client = clientBuilder.buildPangolin2Client(provider);
+        /* We appended 00 to the session key to represent that we don't need any proof. Originally the setKeys method
+         * required two params which are session key and proof but here we append both values into one param */
+        const sessionKeyWithProof = `${sessionKey}00`;
+        const res = await client.calls.session.setKeysD(provider.getSigner(), sessionKeyWithProof as HexString);
+        console.log("sessionKeyRes=======", res);
         return Promise.resolve(true);
       } catch (e) {
         console.log(e);
@@ -47,7 +41,7 @@ export const DispatchProvider = ({ children }: PropsWithChildren) => {
   return (
     <DispatchContext.Provider
       value={{
-        setSessionKey,
+        setCollatorSessionKey,
       }}
     >
       {children}

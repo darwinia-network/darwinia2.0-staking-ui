@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiPromise } from "@polkadot/api";
 import { Collator } from "@darwinia/app-types";
 import useBlock from "./useBlock";
 import BigNumber from "bignumber.js";
-import { StorageKey, Struct } from "@polkadot/types";
+import { Option, StorageKey, Struct } from "@polkadot/types";
 import type { AnyTuple, Codec } from "@polkadot/types/types";
 import useAccountPrettyName from "./useAccountPrettyName";
 import { UnSubscription } from "../storageProvider";
@@ -20,30 +20,33 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
   const [collators, setCollators] = useState<Collator[]>([]);
   const { currentBlock } = useBlock(apiPromise);
   const { getPrettyName } = useAccountPrettyName(apiPromise);
+  /*allCollatorsStakedPowersMap contains all the collators with their total powers*/
+  const allCollatorsStakedPowersMap = useRef<Map<string, BigNumber>>(new Map<string, BigNumber>());
+  const allCollatorsNominatorsMap = useRef<Map<string, string[]>>(new Map<string, string[]>());
+  /*Calculate collators' last session blocks */
+  const allCollatorsLastSessionBlocksMap = useRef<Map<string, number>>(new Map<string, number>());
+  const activeCollatorsAddresses = useRef<string[]>([]);
 
   useEffect(() => {
     let exposureUnsubscription: UnSubscription | undefined;
     let collatorsUnsubscription: UnSubscription | undefined;
     let rewardsUnsubscription: UnSubscription | undefined;
     let allCollatorUnsubscription: UnSubscription | undefined;
+    let nominatorsUnsubscription: UnSubscription | undefined;
 
     const listenToCollators = async () => {
       if (!apiPromise) {
         return;
       }
 
-      /*allCollatorsStakedPowersMap contains all the collators with their total powers*/
-      const allCollatorsStakedPowersMap = new Map<string, BigNumber>();
-      const allCollatorsNominatorsMap = new Map<string, string[]>();
-      /*Calculate collators' last session blocks */
-      const allCollatorsLastSessionBlocksMap = new Map<string, number>();
-
-      let activeCollatorsAddresses: string[] = [];
-
       const updateCollators = async () => {
         if (allCollatorUnsubscription) {
           allCollatorUnsubscription();
         }
+
+        /* apiPromise.query.staking.collators and apiPromise.query.staking.exposures.entries return almost the same
+         * kind of data (both active and waiting collators), the ONLY difference is that staking.collators contains commission percentage which staking.exposures.entries
+         * doesn't. Here we have to call staking.collators since we need commission percentage */
         allCollatorUnsubscription = (await apiPromise.query.staking.collators.entries(
           async (allCollatorEntries: [StorageKey<AnyTuple>, Codec][]) => {
             const allCollators = [];
@@ -51,16 +54,16 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
               const [key, result] = allCollatorEntries[i];
               const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
               const commission = `${result.toHuman()}`;
-              const totalStaked = allCollatorsStakedPowersMap.get(accountAddress) ?? BigNumber(0);
-              const blocksLastSession = allCollatorsLastSessionBlocksMap.get(accountAddress) ?? 0;
-              const nominators = allCollatorsNominatorsMap.get(accountAddress) ?? [];
+              const totalStaked = allCollatorsStakedPowersMap.current.get(accountAddress) ?? BigNumber(0);
+              const blocksLastSession = allCollatorsLastSessionBlocksMap.current.get(accountAddress) ?? 0;
+              const nominators = allCollatorsNominatorsMap.current.get(accountAddress) ?? [];
 
               const prettyName = await getPrettyName(accountAddress);
 
               const collator: Collator = {
                 id: accountAddress,
                 accountAddress: accountAddress,
-                isActive: activeCollatorsAddresses.includes(accountAddress),
+                isActive: activeCollatorsAddresses.current.includes(accountAddress),
                 lastSessionBlocks: blocksLastSession,
                 commission: commission,
                 totalStaked: totalStaked,
@@ -75,32 +78,48 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
         )) as unknown as UnSubscription;
       };
 
+      nominatorsUnsubscription = (await apiPromise.query.staking.nominators.entries(
+        (nominatorsEntries: [StorageKey<AnyTuple>, Option<Codec>][]) => {
+          allCollatorsNominatorsMap.current.clear();
+          nominatorsEntries.forEach(([key, result]) => {
+            const nominator = key.args.map((item) => item.toHuman())[0] as unknown as string;
+            if (result.isSome) {
+              const collator = result.unwrap().toHuman() as unknown as string;
+              const previousNominators = allCollatorsNominatorsMap.current.get(collator) ?? [];
+              allCollatorsNominatorsMap.current.set(collator, [...new Set([...previousNominators, nominator])]);
+            }
+          });
+
+          updateCollators();
+        }
+      )) as unknown as UnSubscription;
+
+      /* apiPromise.query.staking.collators and apiPromise.query.staking.exposures.entries return almost the same
+       * kind of data (both active and waiting collators), but staking.exposures.entries has some other properties
+       * that staking.collators doesn't have */
       exposureUnsubscription = (await apiPromise.query.staking.exposures.entries(
         (exposureEntries: [StorageKey<AnyTuple>, Codec][]) => {
-          allCollatorsNominatorsMap.clear();
+          allCollatorsStakedPowersMap.current.clear();
           /*Get all the collators and the total powers staked to them */
           exposureEntries.forEach(([key, result]) => {
             const accountAddress = key.args.map((item) => item.toHuman())[0] as unknown as string;
             const exposureObj = result.toHuman() as unknown as {
               total: string;
-              nominators?: { who: string; value: string }[];
             };
-            exposureObj.nominators?.forEach((nominator) => {
-              const oldNominators = allCollatorsNominatorsMap.get(accountAddress) ?? [];
-              allCollatorsNominatorsMap.set(accountAddress, [...oldNominators, nominator.who]);
-            });
-            allCollatorsStakedPowersMap.set(
+            allCollatorsStakedPowersMap.current.set(
               accountAddress,
               BigNumber(exposureObj.total.toString().replaceAll(",", ""))
             );
           });
+
           updateCollators();
         }
       )) as unknown as UnSubscription;
 
       collatorsUnsubscription = (await apiPromise.query.session.validators((activeCollatorsAddressesEncoded: Codec) => {
         /*These are the collators that are active in this session */
-        activeCollatorsAddresses = activeCollatorsAddressesEncoded.toHuman() as unknown as string[];
+        activeCollatorsAddresses.current = activeCollatorsAddressesEncoded.toHuman() as unknown as string[];
+
         updateCollators();
       })) as unknown as UnSubscription;
 
@@ -108,13 +127,15 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
         const rewardPoints = rewardPointsEncoded.toHuman() as unknown as [string, { [key: string]: string }];
         if (rewardPoints.length >= 2) {
           const collatorsPoints = rewardPoints[1];
+          allCollatorsLastSessionBlocksMap.current.clear();
           Object.keys(collatorsPoints).forEach((key) => {
             const singleCollatorPoints = Number(collatorsPoints[key].toString().replaceAll(",", ""));
             /*This staticNumber = 20 was given by the backend */
             const staticNumber = 20;
             const blocksNumber = singleCollatorPoints / staticNumber;
-            allCollatorsLastSessionBlocksMap.set(key, blocksNumber);
+            allCollatorsLastSessionBlocksMap.current.set(key, blocksNumber);
           });
+
           updateCollators();
         }
       })) as unknown as UnSubscription;
@@ -136,6 +157,9 @@ const useCollators = (apiPromise: ApiPromise | undefined) => {
       }
       if (allCollatorUnsubscription) {
         allCollatorUnsubscription();
+      }
+      if (nominatorsUnsubscription) {
+        nominatorsUnsubscription();
       }
     };
   }, [apiPromise, currentBlock?.number]);
