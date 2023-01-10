@@ -33,7 +33,6 @@ const DepositRecordsTable = () => {
 
   const onConfirmWithdraw = () => {
     setShowWithdrawModal(false);
-    console.log("confirm early withdraw======");
   };
 
   const dataSource: Deposit[] = deposits ?? [];
@@ -188,19 +187,19 @@ interface WithdrawProps {
 const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type }: WithdrawProps) => {
   const { t } = useAppTranslation();
   const [isLoading, setLoading] = useState<boolean>(false);
-  const { selectedNetwork, depositContract, stakingContract } = useWallet();
+  const { selectedNetwork, depositContract } = useWallet();
 
   /*You'll be charged a penalty of 3 times the rewarded Kton if you want to
    * withdraw before the expiredTime */
-  const fineAmount = deposit?.reward.times(3) ?? BigNumber(0);
+  const penaltyAmount = deposit?.reward.times(3) ?? BigNumber(0);
   const btnText: string =
     type === "early"
       ? `${t(localeKeys.payAmount, {
           amount: `${prettifyNumber({
-            number: fineAmount,
+            number: penaltyAmount,
             precision: 9,
           })} ${selectedNetwork?.kton.symbol.toUpperCase()}`,
-        })}  ${selectedNetwork?.kton.symbol.toUpperCase()}`
+        })}`
       : `${t(localeKeys.withdraw)}`;
 
   useEffect(() => {
@@ -210,7 +209,7 @@ const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type 
   const regularWithdraw = async () => {
     try {
       setLoading(true);
-      const response = (await stakingContract?.claim()) as TransactionResponse;
+      const response = (await depositContract?.claim()) as TransactionResponse;
       await response.wait(1);
       setLoading(false);
       onConfirm();
@@ -229,8 +228,9 @@ const WithdrawModal = ({ isVisible, onClose, onConfirm, onCancel, deposit, type 
   const withdrawEarly = async () => {
     try {
       setLoading(true);
-      //TODO needs to be changed
-      const response = (await stakingContract?.claim()) as TransactionResponse;
+      const response = (await depositContract?.claim_with_penalty(
+        EthersBigNumber.from(deposit?.id)
+      )) as TransactionResponse;
       await response.wait(1);
       setLoading(false);
       onConfirm();

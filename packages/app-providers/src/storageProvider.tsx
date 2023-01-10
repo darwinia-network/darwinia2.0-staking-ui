@@ -131,6 +131,7 @@ export const StorageProvider = ({ children }: PropsWithChildren) => {
         });
         unsubscription = res as unknown as UnSubscription;
       } catch (e) {
+        console.log(e);
         // ignore
       }
     };

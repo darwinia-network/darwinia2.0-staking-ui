@@ -81,6 +81,35 @@
 				"type": "uint8[]"
 			}
 		],
+		"name": "restake",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "result",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "ring_amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "kton_amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8[]",
+				"name": "deposits",
+				"type": "uint8[]"
+			}
+		],
 		"name": "stake",
 		"outputs": [
 			{

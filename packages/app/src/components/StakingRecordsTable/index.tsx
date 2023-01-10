@@ -24,6 +24,12 @@ import { BigNumber as EthersBigNumber } from "ethers";
 import { TransactionResponse } from "@ethersproject/providers";
 import SelectCollatorModal, { SelectCollatorRefs } from "../SelectCollatorModal";
 
+interface RestakeParams {
+  ringEthersBigNumber: EthersBigNumber;
+  ktonEthersBigNumber: EthersBigNumber;
+  depositsIds: EthersBigNumber[];
+}
+
 const StakingRecordsTable = () => {
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const { t } = useAppTranslation();
@@ -113,14 +119,48 @@ const StakingRecordsTable = () => {
     setShowBondDepositModal(false);
   };
 
-  // TODO No API for now
-  const onCancelDepositUnbonding = () => {
-    console.log("cancel deposit unbonding====");
+  const reStake = async ({ ringEthersBigNumber, ktonEthersBigNumber, depositsIds }: RestakeParams) => {
+    try {
+      setTransactionStatus(true);
+      const response = (await stakingContract?.restake(
+        ringEthersBigNumber,
+        ktonEthersBigNumber,
+        depositsIds
+      )) as TransactionResponse;
+      await response.wait(1);
+      setTransactionStatus(false);
+      notification.success({
+        message: <div>{t(localeKeys.operationSuccessful)}</div>,
+      });
+    } catch (e) {
+      setTransactionStatus(false);
+      notification.error({
+        message: <div>{t(localeKeys.somethingWrongHappened)}</div>,
+      });
+      // console.log(e);
+    }
   };
 
-  // TODO No API for now
-  const onCancelTokenUnbonding = () => {
-    console.log("cancel token unbonding====");
+  const onCancelDepositUnbonding = (depositId: number) => {
+    const ringAmount = EthersBigNumber.from(0);
+    const ktonAmount = EthersBigNumber.from(0);
+    const depositIds: EthersBigNumber[] = [EthersBigNumber.from(depositId)];
+    reStake({
+      ringEthersBigNumber: ringAmount,
+      ktonEthersBigNumber: ktonAmount,
+      depositsIds: depositIds,
+    });
+  };
+
+  const onCancelTokenUnbonding = (amount: BigNumber, isRing: boolean) => {
+    const ringAmount = isRing ? EthersBigNumber.from(amount.toString()) : EthersBigNumber.from(0);
+    const ktonAmount = isRing ? EthersBigNumber.from(0) : EthersBigNumber.from(amount.toString());
+    const depositIds: EthersBigNumber[] = [];
+    reStake({
+      ringEthersBigNumber: ringAmount,
+      ktonEthersBigNumber: ktonAmount,
+      depositsIds: depositIds,
+    });
   };
 
   const onReleaseTokenOrDeposit = async () => {
@@ -311,7 +351,10 @@ const StakingRecordsTable = () => {
                           })}
                           <span
                             onClick={() => {
-                              onCancelDepositUnbonding();
+                              if (!asset.depositId) {
+                                return;
+                              }
+                              onCancelDepositUnbonding(asset.depositId);
                             }}
                             className={"text-primary pl-[8px] clickable"}
                           >
@@ -377,7 +420,7 @@ const StakingRecordsTable = () => {
                           })}
                           <span
                             onClick={() => {
-                              onCancelTokenUnbonding();
+                              onCancelTokenUnbonding(asset.amount, !!item.isRingBonding);
                             }}
                             className={"text-primary pl-[8px] clickable"}
                           >
