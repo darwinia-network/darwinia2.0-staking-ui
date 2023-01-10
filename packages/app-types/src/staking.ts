@@ -3,6 +3,8 @@ import type { AccountId, BlockNumber } from "@polkadot/types/interfaces/runtime"
 import BigNumber from "bignumber.js";
 import { RegistrationJudgement } from "@polkadot/types/interfaces";
 import { UnbondingAsset } from "./storage";
+import { BigNumber as EthersBigNumber } from "ethers";
+import { Web3Provider } from "@ethersproject/providers";
 
 export interface PalletIdentityIdentityInfo extends Struct {
   display?: string;
@@ -117,3 +119,11 @@ export interface UnbondingDeposit {
 }
 
 /*Staking types end here*/
+
+export interface StakeAndNominateParams {
+  ringAmount: EthersBigNumber;
+  ktonAmount: EthersBigNumber;
+  depositIds: EthersBigNumber[];
+  collatorAddress: string;
+  provider: Web3Provider | undefined;
+}

@@ -1,11 +1,10 @@
-import { ChangeEvent, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Button, Input, ModalEnhanced, notification, Tab, Table, Tabs, Tooltip } from "@darwinia/ui";
+import { ChangeEvent, forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { Button, Input, ModalEnhanced, notification, Tab, Tabs, Tooltip } from "@darwinia/ui";
 import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Collator } from "@darwinia/app-types";
 import { isValidNumber } from "@darwinia/app-utils";
 import helpIcon from "../../assets/images/help.svg";
-import { useDispatch, useStorage, useWallet } from "@darwinia/app-providers";
-import BigNumber from "bignumber.js";
+import { useDispatch, useWallet } from "@darwinia/app-providers";
 import { BigNumber as EthersBigNumber } from "@ethersproject/bignumber/lib/bignumber";
 import { TransactionResponse } from "@ethersproject/providers";
 

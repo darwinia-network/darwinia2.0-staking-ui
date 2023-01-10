@@ -2,7 +2,7 @@ import { localeKeys, useAppTranslation } from "@darwinia/app-locale";
 import { Button, CheckboxGroup, Dropdown, Input, notification } from "@darwinia/ui";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
-import { useStorage, useWallet } from "@darwinia/app-providers";
+import { useDispatch, useStorage, useWallet } from "@darwinia/app-providers";
 import caretDownIcon from "../../assets/images/caret-down.svg";
 import JazzIcon from "../JazzIcon";
 import switchIcon from "../../assets/images/switch.svg";
@@ -17,7 +17,7 @@ import { TransactionResponse } from "@ethersproject/providers";
 
 const StakingOverview = () => {
   const { t } = useAppTranslation();
-  const { selectedNetwork, stakingContract, setTransactionStatus } = useWallet();
+  const { selectedNetwork, stakingContract, setTransactionStatus, provider } = useWallet();
   const { deposits, stakedDepositsIds, calculateExtraPower, balance } = useStorage();
   const selectCollatorModalRef = useRef<SelectCollatorRefs>(null);
   const [selectedCollator, setSelectedCollator] = useState<Collator>();
@@ -30,6 +30,7 @@ const StakingOverview = () => {
   const [powerByRing, setPowerByRing] = useState(BigNumber(0));
   const [powerByKton, setPowerByKton] = useState(BigNumber(0));
   const [powerByDeposits, setPowerByDeposits] = useState(BigNumber(0));
+  const { stakeAndNominate } = useDispatch();
   /*This is the minimum Ring balance that should be left on the account
    * for gas fee */
   const minimumRingBalance = 2;
@@ -193,8 +194,18 @@ const StakingOverview = () => {
       ktonToStake.trim().length > 0 ? formatToWei(ktonToStake.trim()) : EthersBigNumber.from(0);
 
     try {
+      if (!selectedCollator?.accountAddress) {
+        return;
+      }
       const depositsIds = depositsToStake.map((item) => EthersBigNumber.from(item.id));
       setTransactionStatus(true);
+      /*const response = await stakeAndNominate({
+        ringAmount: ringEthersBigNumber,
+        ktonAmount: ktonEthersBigNumber,
+        provider: provider,
+        collatorAddress: selectedCollator?.accountAddress,
+        depositIds: depositsIds
+      });*/
       const response = (await stakingContract?.stake(
         ringEthersBigNumber,
         ktonEthersBigNumber,

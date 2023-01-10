@@ -1,6 +1,7 @@
 import { ContractInterface } from "ethers";
 import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
+import { StakeAndNominateParams } from "./staking";
 
 export type SupportedWallet = "MetaMask";
 export type SupportedBrowser = "Chrome" | "Firefox" | "Brave" | "Edge" | "Opera";
@@ -82,4 +83,5 @@ export interface WalletCtx {
 
 export interface DispatchCtx {
   setCollatorSessionKey: (sessionKey: string, provider: Web3Provider | undefined) => Promise<boolean>;
+  stakeAndNominate: (params: StakeAndNominateParams) => Promise<boolean>;
 }
