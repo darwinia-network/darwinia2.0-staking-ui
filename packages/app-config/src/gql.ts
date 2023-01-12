@@ -1,10 +1,10 @@
 import { gql } from "@apollo/client";
 export const GET_LATEST_STAKING_REWARDS = gql`
   query stakingRewards($accountAddress: String!, $itemsCount: Int) {
-    stakingStash(id: $accountAddress) {
+    stakingRecord(id: $accountAddress) {
       id
-      totalRewarded
-      rewardeds(first: $itemsCount, orderBy: BLOCK_TIME_DESC) {
+      totalReward
+      rewards(first: $itemsCount, orderBy: BLOCK_NUMBER_DESC) {
         nodes {
           id
           blockTime

@@ -23,6 +23,7 @@ interface Params {
   secondsPerBlock: number | undefined;
 }
 
+/* seconds per block = 12 is the constant time given by the backend */
 const useLedger = ({ apiPromise, selectedAccount, secondsPerBlock = 12 }: Params) => {
   /*This is the total amount of RING and KTON that the user has invested in staking, it will be used in calculating
    * the total power that he has*/

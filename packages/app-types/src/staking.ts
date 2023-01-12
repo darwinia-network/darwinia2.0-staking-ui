@@ -43,14 +43,14 @@ export interface Reward {
   blockTime: string;
 }
 
-export interface RewardedNode {
+export interface RewardNode {
   nodes: Reward[];
 }
 
-export interface StakingStash {
+export interface StakingRecord {
   id: string; //accountId
-  totalRewarded: string; //RING/PRING,etc amount in string
-  rewardeds: RewardedNode;
+  totalReward: string; //RING/PRING,etc amount in string
+  rewards: RewardNode;
 }
 
 export interface StakingAsset {

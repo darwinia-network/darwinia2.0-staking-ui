@@ -28,7 +28,7 @@ export const testNet: ChainConfig = {
   },
   chainId: 43,
   substrate: {
-    graphQlURL: "https://subql.darwinia.network/subql-apps-crab/",
+    graphQlURL: "https://api.subquery.network/sq/isunaslabs/pangolin2",
     wssURL: "ws://g1.dev.darwinia.network:20000",
     httpsURL: "https://pangolin-rpc.darwinia.network",
   },

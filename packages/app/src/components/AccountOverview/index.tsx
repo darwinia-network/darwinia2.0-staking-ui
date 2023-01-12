@@ -4,11 +4,12 @@ import BigNumber from "bignumber.js";
 import ringIcon from "../../assets/images/ring.svg";
 import ktonIcon from "../../assets/images/kton.svg";
 import { useStorage, useWallet } from "@darwinia/app-providers";
-import { StakingStash } from "@darwinia/app-types";
+import { StakingRecord } from "@darwinia/app-types";
 import { prettifyNumber, toTimeAgo } from "@darwinia/app-utils";
 import { useQuery } from "@apollo/client";
 import { GET_LATEST_STAKING_REWARDS } from "@darwinia/app-config";
 import { Spinner } from "@darwinia/ui";
+import { ethers } from "ethers";
 
 interface StakingStashQuery {
   accountAddress: string;
@@ -24,9 +25,9 @@ const AccountOverview = () => {
     loading: isLoadingStakingData,
     data: stakingData,
     error,
-  } = useQuery<{ stakingStash: StakingStash }, StakingStashQuery>(GET_LATEST_STAKING_REWARDS, {
+  } = useQuery<{ stakingRecord: StakingRecord }, StakingStashQuery>(GET_LATEST_STAKING_REWARDS, {
     variables: {
-      accountAddress: selectedAccount ?? "",
+      accountAddress: ethers.utils.getAddress(selectedAccount ?? ""),
       itemsCount: 3,
     },
   });
@@ -51,15 +52,15 @@ const AccountOverview = () => {
           <div className={"flex gap-[10px] flex-col"}>
             <div className={"border-b divider pb-[10px] text-14-bold"}>{t(localeKeys.latestStakingRewards)}</div>
             <div className={"min-h-[92px] flex flex-col text-14-bold"}>
-              {!error && stakingData?.stakingStash && stakingData?.stakingStash.rewardeds.nodes.length > 0 ? (
+              {!error && stakingData?.stakingRecord && stakingData?.stakingRecord.rewards.nodes.length > 0 ? (
                 <div className={"flex flex-col gap-[10px]"}>
-                  {stakingData.stakingStash.rewardeds.nodes.map((item) => {
+                  {stakingData.stakingRecord.rewards.nodes.map((item) => {
                     return (
                       <div className={"flex justify-between"} key={item.id}>
                         <div>
                           {prettifyNumber({
                             number: BigNumber(item.amount),
-                            precision: 9,
+                            precision: 6,
                           })}{" "}
                           {selectedNetwork?.ring.symbol}
                         </div>
