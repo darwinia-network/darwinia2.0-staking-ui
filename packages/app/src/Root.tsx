@@ -1,44 +1,48 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { notification, Spinner } from "@darwinia/ui";
-import { useWallet } from "@darwinia/app-wallet";
+import { useWallet } from "@darwinia/app-providers";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { getStore, setStore } from "@darwinia/app-utils";
 
 const Root = () => {
-  const { isRequestingWalletConnection, error, connectWallet, isWalletConnected, selectedNetwork } = useWallet();
-  const [loading, setLoading] = useState(false);
+  const {
+    isRequestingWalletConnection,
+    error,
+    connectWallet,
+    isWalletConnected,
+    selectedNetwork,
+    isLoadingTransaction,
+  } = useWallet();
+  const [loading, setLoading] = useState<boolean | undefined>(false);
   const navigate = useNavigate();
   const location = useLocation();
-  /*This lock will prevent the app from infinite redirecting sometimes */
-  const isUserAuthed = useRef(false);
 
   useEffect(() => {
-    setLoading(isRequestingWalletConnection);
-  }, [isRequestingWalletConnection, isWalletConnected]);
+    setLoading(isRequestingWalletConnection || isLoadingTransaction);
+  }, [isRequestingWalletConnection, isWalletConnected, isLoadingTransaction]);
+
+  const redirect = useCallback(() => {
+    setStore("isConnectedToWallet", true);
+    if (location.pathname === "/") {
+      navigate(`/staking${location.search}`, { replace: true });
+      return;
+    }
+
+    /* only navigate if the user is supposed to be redirected to another URL */
+    if (location.state && location.state.from) {
+      const nextPath = location.state.from.pathname ? location.state.from.pathname : "/staking";
+      navigate(`${nextPath}${location.search}`, { replace: true });
+    }
+  }, [location, navigate]);
 
   /*Monitor wallet connection and redirect to the required location */
   useEffect(() => {
-    /* if the user has just connected to the wallet, this will redirect to the
-     * staking page */
-    if (isWalletConnected && !isUserAuthed.current) {
-      setStore("isConnectedToWallet", isWalletConnected);
-      if (location.pathname === "/") {
-        /* This user is connected to wallet already but trying to go to the homepage,
-         * force redirect him to the staking page  */
-        isUserAuthed.current = true;
-        navigate(`/staking${location.search}`, { replace: true });
-        return;
-      }
-
-      /* only navigate if the user is supposed to be redirected to another URL */
-      if (location.state && location.state.from) {
-        const nextPath = location.state.from.pathname ? location.state.from.pathname : "/staking";
-        navigate(`${nextPath}${location.search}`, { replace: true });
-      }
+    if (isWalletConnected) {
+      redirect();
     }
-  }, [isWalletConnected, location.state]);
+  }, [isWalletConnected]);
 
   useEffect(() => {
     if (error) {
@@ -57,7 +61,7 @@ const Root = () => {
   }, [selectedNetwork]);
 
   return (
-    <Spinner isLoading={loading}>
+    <Spinner isLoading={!!loading} maskClassName={"!fixed !z-[99]"}>
       <div className={"w-full"}>
         <Header />
         <div className={"flex flex-col min-h-screen justify-center flex-1 pt-[80px] lg:pt-[90px]"}>
